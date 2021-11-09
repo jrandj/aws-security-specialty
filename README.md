@@ -85,6 +85,8 @@
 
     * By default CloudTrail logs are encrypted by SSE-S3 even if there is no S3 bucket level encryption.
 
+	* Auditors are given access to CloudTrail logs throuhg the AWSCloudTrailReadOnlyAccess IAM Policy.
+
 ### Design and implement a logging solution.
 
 1.  Analyze architecture and identify logging requirements and sources for log ingestion.
@@ -97,7 +99,17 @@
 
 1.  Given the absence of logs, determine the incorrect configuration and define remediation steps.
 
+	* If CloudTrail logs are not appearing in S3, first check if CloudTrail is enabled. Also check that the correct S3 bucket name is provided and that the S3 Bucket Policy is correct.
+
+	* S3 and Lambda Data Events are high volume so they are not enabled by default as they also incur added costs.
+
 1. Analyze logging access permissions to determine incorrect configuration and define remediation steps.
+
+	* Always check that IAM users have the correct permissions to allow them to do what they need to do. This includes IAM permissions as well as resource level permissions.
+
+	* CloudWatch Logs require an agent to be installed and running on an EC2 instance.
+
+	* For CloudWatch Events the Event Target needs the correct permissions to take whatever action it needs to. For example, if Lambda is expected to terminate unauthorised instances it will need the permission for termination.
 
 1.  Based on the security policy requirements, determine the correct log level, type, and sources.
 
@@ -107,7 +119,15 @@
 
 1. For a given workload, assess and limit the attack surface.
 
+	* Attack surface can be limited by minimising the number of components, libraries, and externally consumable services in use. You can find many hardening and security configuration guides for common operating systems and server software. 
+
+	* In EC2 you can create your own patched and hardened AMIs to meet specific security requirements for your organisation. Note that these are effective at the point in time in which they were created, they would need to be dynamically updated with Systems Manager.
+
 1. Reduce blast radius (e.g. by distributing applications across accounts and regions).
+
+	* The blast radius is the maximum impact that may be sustained in the event of a system failure.
+
+	* AWS provides fault isolation at the resource and request level as part of every AWS service. Fault isolation at the AZ level is achieved by deploying your services across multiple AZs, and fault isolation at the region level is achieved by deploying your services across multiple regions.
 
 1.  Choose appropriate AWS and/or third-party edge services such as WAF, CloudFront and Route 53 to protect against DDoS or filter application-level attacks.
 
@@ -213,7 +233,7 @@
 
 1. Within an organization’s policy, determine when to federate a directory services to IAM.
 
-    * The AWS Security Toke Service (STS) provides a token after authenticating against an LDAP directory (such as AD). Once we have the token, any attempt to access an AWS resource will go via IAM first to check the token.
+    * The AWS Security Toke Service (STS) provides a SAML token after authenticating against an LDAP directory (such as AD). Once we have the token, any attempt to access an AWS resource will go via IAM first to check the token.
  
 1. Design a scalable authorization model that includes users, groups, roles, and policies.
 
@@ -332,7 +352,11 @@
 
 1. AWS Network Firewall
 
+	* AWS WAF and host based firewalls such as iptables and Windows firewall do not provide network packet inspection (IDS/IPS). To provide this capability third party software can be installed on EC2 from the AWS Marketplace.
+
 1. AWS Security Hub
+
+	* Security Hub provides a single place to manage and aggregate the findings and alerts from key security service. It integrates with a lot of AWS security services. Automated ongoing security auditing and built-in checks for PCI-DSS and CIS are provided.
 
 1. AWS Shield
 
