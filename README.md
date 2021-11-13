@@ -6,6 +6,7 @@
 - [Identity and Access Management](#Identity-and-Access-Management)
 - [Data Protection](#Data-Protection)
 - [Appendix](#Appendix)
+- [Practise Questions](#Practise-Questions)
 
 ## Incident Response
 
@@ -13,19 +14,48 @@
 
 1. Given an AWS Abuse report about an EC2 instance, securely isolate the instance as part of a forensic investigation.
 
-    * The instance should be stopped immediately and a snapshot of the EBS volume taken. The instance should then be deployed in a totally isolated environment with no internet access. The workstation should be accessed using a forensic workstation.
+    * The AWS Trust & Safety Team may send an abuse report to the security contact on your account. The notice should be reviewed to see what content or activity was reported. Logs that implicate abuse are included along with the abuse report.
+
+    * You need to reply to the report to explain how you're preventing the abusing activity from recurring. You can also reply to obtain more information.
+
+    * The following steps are recommended if notified of a potential security anomaly on an EC2 instance:
+        * Capture  the  metadata  from  the  Amazon  EC2  instance,  before  you  make  any  changes  to  your environment.
+        * Protect  the  Amazon  EC2  instance  from  accidental  termination  by  enabling  termination  protection  for the  instance.
+        * Isolate  the  Amazon  EC2  instance  by  switching  the  VPC  Security  Group.  However,  be  aware  of  VPC connection  tracking  and  other  containment  techniques.
+        * Detach  the  Amazon  EC2  instance  from  any  AWS  Auto  Scaling  groups.
+        * Deregister  the  Amazon  EC2  instance  from  any  related  Elastic Load Balancing  service.
+        * Snapshot  the  Amazon  EBS  data  volumes  that  are  attached  to  the  EC2  instance  for  preservation  and follow-up  investigations.
+        * Tag  the  Amazon  EC2  instance  as  quarantined  for  investigation,  and  add  any  pertinent  metadata,  such as  the  trouble  ticket  associated  with  the  investigation.
 
 1. Analyze logs relevant to a reported instance to verify a breach, and collect relevant data.
 
+    * Before logs can be analysed your workloads must be configured to log. This includes application logs, resource logs, and AWS service logs. AWS CloudTrail, Amazon CloudWatch Logs, Amazon GuardDuty, and AWS Security Hub should all be enabled.
+
+    * All logs should be collected centrally, and automatically analysed to detect anomalies and indicators of unauthorised activity.
+
+    * Automation should be used to investigate and remediate events as this reduces human effort and error, and enables you to scale investigation capabilities.
+
+    * Alerts should be configured so that they can be actioned by the incident response team. Amazon GuardDuty and AWS Security Hub can be configured to send alerts.
+
 1. Capture a memory dump from a suspected instance for later deep analysis or for legal compliance reasons.
+
+    * Different tools will be required depending on the operating system of the EC2 instance. The tools can be used by accessing the instance via SSH or RDP.
 
 ### Verify that the Incident Response plan includes relevant AWS services.
 
 1. Determine if changes to baseline security configuration have been made.
 
+    * Amazon Machine Images (AMIs) provide an initial configuration for an Amazon EC2 instance, which includes the Windows OS and optional customer-specific customizations, such as applications and security controls.
+
+    * Patch Manager is a capability of AWS Systems Manager, which provides predefined patch baselines for each of the operating systems supported by Patch Manager.
+
 1. Determine if list omits services, processes, or procedures which facilitate Incident Response.
 
+    * The AWS Security Incident Response Guide contains additional details on this topic.
+
 1. Recommend services, processes, procedures to remediate gaps.
+
+    * The AWS Security Incident Response Guide contains additional details on this topic.
 
 ### Evaluate the configuration of automated alerting, and execute possible remediation of security-related incidents and emerging issues.
 
@@ -85,7 +115,7 @@
 
     * By default CloudTrail logs are encrypted by SSE-S3 even if there is no S3 bucket level encryption.
 
-	* Auditors are given access to CloudTrail logs throuhg the AWSCloudTrailReadOnlyAccess IAM Policy.
+    * Auditors are given access to CloudTrail logs through the AWSCloudTrailReadOnlyAccess IAM Policy.
 
 ### Design and implement a logging solution.
 
@@ -99,17 +129,17 @@
 
 1.  Given the absence of logs, determine the incorrect configuration and define remediation steps.
 
-	* If CloudTrail logs are not appearing in S3, first check if CloudTrail is enabled. Also check that the correct S3 bucket name is provided and that the S3 Bucket Policy is correct.
+    * If CloudTrail logs are not appearing in S3, first check if CloudTrail is enabled. Also check that the correct S3 bucket name is provided and that the S3 Bucket Policy is correct.
 
-	* S3 and Lambda Data Events are high volume so they are not enabled by default as they also incur added costs.
+    * S3 and Lambda Data Events are high volume, so they are not enabled by default as they also incur added costs.
 
 1. Analyze logging access permissions to determine incorrect configuration and define remediation steps.
 
-	* Always check that IAM users have the correct permissions to allow them to do what they need to do. This includes IAM permissions as well as resource level permissions.
+    * Always check that IAM users have the correct permissions to allow them to do what they need to do. This includes IAM permissions as well as resource level permissions.
 
-	* CloudWatch Logs require an agent to be installed and running on an EC2 instance.
+    * CloudWatch Logs require an agent to be installed and running on an EC2 instance.
 
-	* For CloudWatch Events the Event Target needs the correct permissions to take whatever action it needs to. For example, if Lambda is expected to terminate unauthorised instances it will need the permission for termination.
+    * For CloudWatch Events the Event Target needs the correct permissions to take whatever action it needs to. For example, if Lambda is expected to terminate unauthorised instances it will need the permission for termination.
 
 1.  Based on the security policy requirements, determine the correct log level, type, and sources.
 
@@ -119,15 +149,15 @@
 
 1. For a given workload, assess and limit the attack surface.
 
-	* Attack surface can be limited by minimising the number of components, libraries, and externally consumable services in use. You can find many hardening and security configuration guides for common operating systems and server software. 
+    * Attack surface can be limited by minimising the number of components, libraries, and externally consumable services in use. You can find many hardening and security configuration guides for common operating systems and server software. 
 
-	* In EC2 you can create your own patched and hardened AMIs to meet specific security requirements for your organisation. Note that these are effective at the point in time in which they were created, they would need to be dynamically updated with Systems Manager.
+    * In EC2 you can create your own patched and hardened AMIs to meet specific security requirements for your organisation. Note that these are effective at the point in time in which they were created, they would need to be dynamically updated with Systems Manager.
 
-1. Reduce blast radius (e.g. by distributing applications across accounts and regions).
+1. Reduce blast radius (e.g., by distributing applications across accounts and regions).
 
-	* The blast radius is the maximum impact that may be sustained in the event of a system failure.
+    * The blast radius is the maximum impact that may be sustained in the event of a system failure.
 
-	* AWS provides fault isolation at the resource and request level as part of every AWS service. Fault isolation at the AZ level is achieved by deploying your services across multiple AZs, and fault isolation at the region level is achieved by deploying your services across multiple regions.
+    * AWS provides fault isolation at the resource and request level as part of every AWS service. Fault isolation at the AZ level is achieved by deploying your services across multiple AZs, and fault isolation at the region level is achieved by deploying your services across multiple regions.
 
 1.  Choose appropriate AWS and/or third-party edge services such as WAF, CloudFront and Route 53 to protect against DDoS or filter application-level attacks.
 
@@ -135,7 +165,7 @@
 
     * The infrastructure can be setup to scale as needed.
     
-    * Amazon CloudFront can block traffic based on specific countries (using whitelists or blacklists).You can also use Origin Access Identity to restrict access to your S3 bucket using CloudFront URLs. Route53 provides Alias Record Sets to redirect your traffic to an Amazon CloudFront distribution, or to a different Elastic Load Balancer with higher capacity E2 instances running WAFs or other security tools.
+    * Amazon CloudFront can block traffic based on specific countries (using whitelists or blacklists). You can also use Origin Access Identity to restrict access to your S3 bucket using CloudFront URLs. Route53 provides Alias Record Sets to redirect your traffic to an Amazon CloudFront distribution, or to a different Elastic Load Balancer with higher capacity E2 instances running WAFs or other security tools.
 
     * Alerts can be configured based on abnormal network traffic.
 
@@ -157,9 +187,9 @@
 
 1. Given a set of edge protection requirements, evaluate the security groups and NACLs of an application for compliance and recommend required changes.
 
-1.  Given security requirements, decide on network segmentation (e.g. security groups and NACLs) that allow the minimum ingress/egress access required.
+1.  Given security requirements, decide on network segmentation (e.g., security groups and NACLs) that allow the minimum ingress/egress access required.
 
-    * For optimal use of EC2 resources, terminate TLS/SSL on the Elastic Load Balancer (ELB). If there is a requirement to ensure traffic is encrypted all the way to the ECT instance, terminate TLS/SSL on the EC2 instance. If you need to terminate traffic at the EC2 instances then you will need to use the TCP protocol with a Network or Classic Load Balancer (Application Load Balancer is HTTP/HTTPS only).
+    * For optimal use of EC2 resources, terminate TLS/SSL on the Elastic Load Balancer (ELB). If there is a requirement to ensure traffic is encrypted all the way to the ECT instance, terminate TLS/SSL on the EC2 instance. If you need to terminate traffic at the EC2 instances, then you will need to use the TCP protocol with a Network or Classic Load Balancer (Application Load Balancer is HTTP/HTTPS only).
 
 1.  Determine the use case for VPN or Direct Connect.
 
@@ -189,9 +219,18 @@
 
     * An Internet Gateway allows instances with public IPs to access the internet. A NAT Gateway (or NAT instance) allows instances with no public IPs to access the internet.
 
+    * Remember that a Security Group is the firewall of EC2 Instances, and a NACL is the firewall of the VPC Subnets. An example architecture is shown below to illustrate this:
+        <p align="center">
+        <img src="/res/network.JPG">
+        </p>
+
 ### Troubleshoot a secure network infrastructure.
 
 1. Determine where network traffic flow is being denied.
+
+    * Check routing tables, Security Groups, and NACLs. VPC Flow Logs will show allow and deny messages useful for troubleshooting.
+
+    * Remember that NACLs are stateless so you need to configure both inbound and outbound rules. Security Groups are stateful, so you only need 1 rule. 
 
 1. Given a configuration, confirm security groups and NACLs have been implemented correctly.
 
@@ -264,7 +303,18 @@
 
 1. Investigate a user’s inability to switch roles to a different account.
 
+    * For cross account access to S3:
+        * The IAM policy in the external account needs to allow the user to call STS:AssumeRole.
+        * The IAM policy in the trusting account needs to allow the action.
+
+    * For cross account access to KMS:
+        * The Key Policy must allow access to the external account as well as the IAM policy in the local account.
+
 1. Investigate an Amazon EC2 instance’s inability to access a given AWS resource.
+
+    * If Lambda cannot perform an action (e.g., write to S3, log to CloudWatch), first check that the Lambda execution role has the correct permissions. If CloudWatch Events or some other event source cannot invoke a Lambda function, double check that the Function policy allows it.
+
+    * Some services have their own resource-based policies which can also impact who or what can access them (e.g. S3 Bucket Policies, Key Policies).
 
 ## Data Protection
 
@@ -279,6 +329,10 @@
 ### Troubleshoot key management.
 
 1. Break down the difference between a KMS key grant and IAM policy.
+
+    * The Key Policy is a resource based policy attached to the CMK, it defines key users and key administrators and trusted external accounts.
+
+    * The IAM Policy is assigned to a User, Group, or Role, and defines the allows actions e.g. kms:ListKeys.
 
 1. Deduce the precedence given different conflicting policies for a given key.
 
@@ -336,11 +390,11 @@
 
 1. AWS Systems Manager
 
-	* Systems Manager can store confidential information in the Parameter Store such as passwords, database connection strings, and license codes. Values can be stored as plain text or encrypted. These values can then be referenced by using their names.
+    * Systems Manager can store confidential information in the Parameter Store such as passwords, database connection strings, and license codes. Values can be stored as plain text or encrypted. These values can then be referenced by using their names.
 
-	* The SSM agent needs to be installed on your managed instances. Commands can then be issued using AWS console, AWS CLI, AWS Tools for Windows PowerShell, Systems Manager API or Amazon SDKs.
+    * The SSM agent needs to be installed on your managed instances. Commands can then be issued using AWS console, AWS CLI, AWS Tools for Windows PowerShell, Systems Manager API or Amazon SDKs.
 
-	* The Systems Manager Run Command lets you remotely and securely manage the configuration of your managed instances.
+    * The Systems Manager Run Command lets you remotely and securely manage the configuration of your managed instances.
 
 1. AWS Trusted Advisor
 
@@ -352,11 +406,11 @@
 
 1. AWS Network Firewall
 
-	* AWS WAF and host based firewalls such as iptables and Windows firewall do not provide network packet inspection (IDS/IPS). To provide this capability third party software can be installed on EC2 from the AWS Marketplace.
+    * AWS WAF and host-based firewalls such as iptables and Windows firewall do not provide network packet inspection (IDS/IPS). To provide this capability third party software can be installed on EC2 from the AWS Marketplace.
 
 1. AWS Security Hub
 
-	* Security Hub provides a single place to manage and aggregate the findings and alerts from key security service. It integrates with a lot of AWS security services. Automated ongoing security auditing and built-in checks for PCI-DSS and CIS are provided.
+    * Security Hub provides a single place to manage and aggregate the findings and alerts from key security service. It integrates with a lot of AWS security services. Automated ongoing security auditing and built-in checks for PCI-DSS and CIS are provided.
 
 1. AWS Shield
 
@@ -390,13 +444,13 @@
 
 1. AWS Certificate Manager (ACM)
 
-	* ACM lets you you provision, manage, and deploy public and private certificates for use with AWS services. Supported services include:
-		* ELB
-		* CloudFront
-		* Elastic Beanstalk
-		* API Gateway
-		* Nitro Enclaves
-		* CloudFormation
+    * ACM lets you provision, manage, and deploy public and private certificates for use with AWS services. Supported services include:
+        * ELB
+        * CloudFront
+        * Elastic Beanstalk
+        * API Gateway
+        * Nitro Enclaves
+        * CloudFormation
 
 1. AWS CloudHSM
 
@@ -412,11 +466,11 @@
 
 1. Amazon GuardDuty
 
-	* GuardDuty is a threat detection service which uses ML to continuously monitor for malicious behaviour, particularly around EC2 instances. This includes unusual API calls or calls from a known malicious IP, attempts to disable CloudTrail logging, port scanning etc.
+    * GuardDuty is a threat detection service which uses ML to continuously monitor for malicious behaviour, particularly around EC2 instances. This includes unusual API calls or calls from a known malicious IP, attempts to disable CloudTrail logging, port scanning etc.
 
-	* Alerts appear in the GuardDuty console and CloudWatch Events. Automated responses can be setup using CloudWatch Events and Lambda.
+    * Alerts appear in the GuardDuty console and CloudWatch Events. Automated responses can be setup using CloudWatch Events and Lambda.
 
-	* GuardDuty requires 7-14 days to set a baseline for what is normal behaviour on your account.
+    * GuardDuty requires 7-14 days to set a baseline for what is normal behaviour on your account.
 
 1. AWS Identity and Access Management (IAM)
 
@@ -436,7 +490,7 @@
 
     * KMS is a managed service that makes it easy for you to create and control the encryption keys used to encrypt your data and uses Hardware Security Modules (HSMs) to protect the security of your keys.
 
-    * The Customer Master Key (CMK) includes the alias, creation date, description, key state, and key material (either customer provided or AWS provided). It can never be exported.
+    * The Customer Master Key (CMK) includes the alias, creation date, description, key state, and key material (either customer provided, or AWS provided). It can never be exported.
 
     * To setup a CMK:
         * Create an alias and description.
@@ -470,7 +524,7 @@
 
     * Multiple public keys can be attached to an EC2 instance. You can add roles to existing E2 instances.
 
-    * Deleting a key pair in the console will not delete it from the instance or the instances metadata. If you lose a key pair (public or private), simply take a snapshot of the EC2 instance and then deploy it as a new instance. This will APPEND a new public key to `/home/ec2-users/.ssh/authorized_keys`. You can then go into that file and delete the outdated public keys.
+    * Deleting a key pair in the console will not delete it from the instance or the instances metadata. If you lose a key pair (public or private), simply take a snapshot of the EC2 instance, and then deploy it as a new instance. This will APPEND a new public key to `/home/ec2-users/.ssh/authorized_keys`. You can then go into that file and delete the outdated public keys.
 
     * You cannot use KMS with SSH for EC2 as you cannot export keys from KMS. You can do this with CloudHSM because you can export keys from CloudHSM.
 
@@ -488,13 +542,13 @@
         * Enable access in the Key Policy for the account which owns the CMK.
         * Enable access to KMS in the IAM Policy for external account.
 
-	* Secrets Manager is typically used for database credentials and API/SSH keys. It has built in integration with RDS and rotation of RDS secrets. For this service you pay per secret per month and also per 10,000 API calls.
+    * Secrets Manager is typically used for database credentials and API/SSH keys. It has built in integration with RDS and rotation of RDS secrets. For this service you pay per secret per month and also per 10,000 API calls.
 
-	* Parameter Store is typically used for passwords, database strings, license codes, configuration data, and parameter values. You can have user defined parameters and they can be encrypted. It is integrated with AWS Systems Manager. There is no additional charge for this service.
+    * Parameter Store is typically used for passwords, database strings, license codes, configuration data, and parameter values. You can have user defined parameters and they can be encrypted. It is integrated with AWS Systems Manager. There is no additional charge for this service.
 
 1. Amazon Macie
 
-	* Macie uses Machine Learning and Natural Language Processing to discover, classify, and protect sensitive data stored in S3. It provides dashboards, reporting, and alerts. Data is classified by content type, theme, file extension, and regular expression.
+    * Macie uses Machine Learning and Natural Language Processing to discover, classify, and protect sensitive data stored in S3. It provides dashboards, reporting, and alerts. Data is classified by content type, theme, file extension, and regular expression.
 
 1. AWS Single Sign-On
 
@@ -509,3 +563,5 @@
 1. Media services
 
 1. Migration and transfer services
+
+## Practise Questions
