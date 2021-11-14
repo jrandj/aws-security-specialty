@@ -49,6 +49,8 @@
 
     * Patch Manager is a capability of AWS Systems Manager, which provides predefined patch baselines for each of the operating systems supported by Patch Manager.
 
+	* AWS Config is a service that enables you to assess, audit, and evaluate the configurations of your AWS resources. Config continuously monitors and records your AWS resource configurations and allows you to automate the evaluation of recorded configurations against desired configurations. 
+
 1. Determine if list omits services, processes, or procedures which facilitate Incident Response.
 
     * The AWS Security Incident Response Guide contains additional details on this topic.
@@ -61,9 +63,15 @@
 
 1. Automate evaluation of conformance with rules for new/changed/removed resources.
 
+	* A custom AWS Config rule can be created. The rule can be set to trigger based on configuration changes, such as whether a resource is created, changed, or deleted. For example, the rule can require that EC2 volumes are encrypted.
+
 1. Apply rule-based alerts for common infrastructure misconfigurations.
 
+	* An AWS Lambda function can provide an alert based on an AWS Config rule.
+
 1. Review previous security incidents and recommend improvements to existing systems.
+
+    * The AWS Security Incident Response Guide contains additional details on this topic.
 
 ## Logging and Monitoring
 
@@ -71,21 +79,17 @@
 
 1. Analyze architecture and identify monitoring requirements and sources for monitoring statistics.
 
-    * CloudWatch is a monitoring service for AWS cloud resources and the applications you run on AWS.
+    * AWS CloudWatch is a monitoring service for AWS cloud resources and the applications you run on AWS.
 
-    * CloudWatch can provide real time metrics, alarms, and notifications. CloudWatch Logs are pushed from some AWS services and are stored internally indefinitely. CloudWatch Events can provide a near real-time stream of system events.
-
-    * Config is a service that enables you to assess, audit, and evaluate the configurations of your AWS resources. Config continuously monitors and records your AWS resource configurations and allows you to automate the evaluation of recorded configurations against desired configurations.
-
-    * Config requires an IAM role with read only permissions to the recorded resources, write access to the S3 logging bucket, and publish access to Simple Notification Service (SNS) if it is being used.
-
-    * Access to Config is restricted by requiring authentication with AWS and having the appropriate permissions set via IAM policies. Only administrators needing to setup and manage Config require full access. Read only permissions for Config should be provided for day-to-day use.
-
-    * CloudTrail can be used with Config to provide deeper insight into resources. CloudTrail can also be used to monitor access to Config, such as someone disabling Config.
-
-    * VPC Flow Logs monitor network traffic.
+    * CloudWatch can provide real time metrics, alarms, and notifications. CloudWatch Logs are pushed from some AWS services and are stored internally indefinitely. EventBridge can provide a near real-time stream of system events.
 
 1. Analyze architecture to determine which AWS services can be used to automate monitoring and alerting.
+
+	* AWS provides additional instance status data than the state (pending, running, stopping etc.) of an instance. This data can troubleshoot network connectivity, system power, software, and hardware issues on the host. These checks can be viewed in the console or using the CLI.
+
+	* A CloudWatch alarm can be created from the Status Checks tab of the instance. The action can be set to send a notification to AWS SNS.
+
+	* AWS EventBridge (previously called CloudWatch Events) can automate AWS services and respond automatically to system events.
 
 1.  Analyze the requirements for custom application monitoring, and determine how this could be achieved.
 
@@ -139,7 +143,7 @@
 
     * CloudWatch Logs require an agent to be installed and running on an EC2 instance.
 
-    * For CloudWatch Events the Event Target needs the correct permissions to take whatever action it needs to. For example, if Lambda is expected to terminate unauthorised instances it will need the permission for termination.
+    * For EventBridge the Event Target needs the correct permissions to take whatever action it needs to. For example, if Lambda is expected to terminate unauthorised instances it will need the permission for termination.
 
 1.  Based on the security policy requirements, determine the correct log level, type, and sources.
 
@@ -312,7 +316,7 @@
 
 1. Investigate an Amazon EC2 instance’s inability to access a given AWS resource.
 
-    * If Lambda cannot perform an action (e.g., write to S3, log to CloudWatch), first check that the Lambda execution role has the correct permissions. If CloudWatch Events or some other event source cannot invoke a Lambda function, double check that the Function policy allows it.
+    * If Lambda cannot perform an action (e.g., write to S3, log to CloudWatch), first check that the Lambda execution role has the correct permissions. If EventBridge or some other event source cannot invoke a Lambda function, double check that the Function policy allows it.
 
     * Some services have their own resource-based policies which can also impact who or what can access them (e.g. S3 Bucket Policies, Key Policies).
 
@@ -383,6 +387,14 @@
 1. Amazon CloudWatch
 
 1. AWS Config
+
+    * AWS Config is a service that enables you to assess, audit, and evaluate the configurations of your AWS resources. Config continuously monitors and records your AWS resource configurations and allows you to automate the evaluation of recorded configurations against desired configurations.
+
+    * Config requires an IAM role with read only permissions to the recorded resources, write access to the S3 logging bucket, and publish access to Simple Notification Service (SNS) if it is being used.
+
+    * Access to Config is restricted by requiring authentication with AWS and having the appropriate permissions set via IAM policies. Only administrators needing to setup and manage Config require full access. Read only permissions for Config should be provided for day-to-day use.
+
+    * CloudTrail can be used with Config to provide deeper insight into resources. CloudTrail can also be used to monitor access to Config, such as someone disabling Config.
 
 1. AWS Organizations
 
@@ -468,7 +480,7 @@
 
     * GuardDuty is a threat detection service which uses ML to continuously monitor for malicious behaviour, particularly around EC2 instances. This includes unusual API calls or calls from a known malicious IP, attempts to disable CloudTrail logging, port scanning etc.
 
-    * Alerts appear in the GuardDuty console and CloudWatch Events. Automated responses can be setup using CloudWatch Events and Lambda.
+    * Alerts appear in the GuardDuty console and EventBridge. Automated responses can be setup using EventBridge and Lambda.
 
     * GuardDuty requires 7-14 days to set a baseline for what is normal behaviour on your account.
 
@@ -565,3 +577,48 @@
 1. Migration and transfer services
 
 ## Practise Questions
+
+### Infrastructure Security
+
+1. A company hosts a popular web application that connects to an Amazon RDS MySQL DB instance running in a private VPC subnet created with default Network ACL settings. The IT Security department has a suspicion that a DoS attack is coming from a suspecting IP. How can you protect the subnets from this attack?
+	* Change the inbound NACL to deny access from the suspecting IP. The NACL is responsible for controlling traffic in and out of a subnet. Security Groups work on the Instance level and not the Subnet level, and you cannot configure a Security Group to deny access.
+
+### Identity and Access Management
+
+1.  You are designing a custom IAM policy that would allow users to list buckets in S3 only if they are MFA authenticated. Which of the following would best match this requirement?
+	* The actions for ListAllMyBuckets and GetBucketLocation are required, and the type for the condition is also required. The policy should be:
+    ```JSON
+	{
+	    "Version": "2012-10-17",
+	    "Statement": {
+	        "Effect": "Allow",
+	        "Action": [
+	            "s3:ListAllMyBuckets",
+	            "s3:GetBucketLocation"
+	        ],
+	        "Resource": "arn:aws:s3:::*",
+	        "Condition": {
+	            "Bool": {
+	                "aws:MutliFactorAuthPresent": true
+	            }
+	        }
+	    }
+	}
+    ```
+
+### Data Protection
+
+1. In your organisation, a customer-managed key named TestCMK has been created for a new project. This key is supposed to be used only by related AWS services in this project including EC2 and RDS in region us-west-2. For security concerns, you need to make sure that no other services can encrypt or decrypt using this particular CMK. In the meantime, EC2 and RDS should use the key without issues. How should you implement this?
+	* An IAM policy is insufficient as it cannot restrict based on EC2 or RDS. A service role is also insufficient as other services could use the key if the role is attached to them. the key policy should be:
+	    ```JSON
+		{
+		    "Condition": {
+		        "ForAnyValue:StringEquals": {
+		            "kms:ViaService": [
+		                "ec2.us-west-2.amazonaws.com",
+		                "rds.us-west-2.amazonaws.com"
+		            ]
+		        }
+		    }
+		}
+    	```
