@@ -49,7 +49,7 @@
 
     * Patch Manager is a capability of AWS Systems Manager, which provides predefined patch baselines for each of the operating systems supported by Patch Manager.
 
-	* AWS Config is a service that enables you to assess, audit, and evaluate the configurations of your AWS resources. Config continuously monitors and records your AWS resource configurations and allows you to automate the evaluation of recorded configurations against desired configurations. 
+    * AWS Config is a service that enables you to assess, audit, and evaluate the configurations of your AWS resources. Config continuously monitors and records your AWS resource configurations and allows you to automate the evaluation of recorded configurations against desired configurations. 
 
 1. Determine if list omits services, processes, or procedures which facilitate Incident Response.
 
@@ -63,11 +63,11 @@
 
 1. Automate evaluation of conformance with rules for new/changed/removed resources.
 
-	* A custom AWS Config rule can be created. The rule can be set to trigger based on configuration changes, such as whether a resource is created, changed, or deleted. For example, the rule can require that EC2 volumes are encrypted.
+    * A custom AWS Config rule can be created. The rule can be set to trigger based on configuration changes, such as whether a resource is created, changed, or deleted. For example, the rule can require that EC2 volumes are encrypted.
 
 1. Apply rule-based alerts for common infrastructure misconfigurations.
 
-	* An AWS Lambda function can provide an alert based on an AWS Config rule.
+    * An AWS Lambda function can provide an alert based on an AWS Config rule.
 
 1. Review previous security incidents and recommend improvements to existing systems.
 
@@ -85,11 +85,11 @@
 
 1. Analyze architecture to determine which AWS services can be used to automate monitoring and alerting.
 
-	* AWS provides additional instance status data than the state (pending, running, stopping etc.) of an instance. This data can troubleshoot network connectivity, system power, software, and hardware issues on the host. These checks can be viewed in the console or using the CLI.
+    * AWS provides additional instance status data than the state (pending, running, stopping etc.) of an instance. This data can troubleshoot network connectivity, system power, software, and hardware issues on the host. These checks can be viewed in the console or using the CLI.
 
-	* A CloudWatch alarm can be created from the Status Checks tab of the instance. The action can be set to send a notification to AWS SNS.
+    * A CloudWatch alarm can be created from the Status Checks tab of the instance. The action can be set to send a notification to AWS SNS.
 
-	* AWS EventBridge (previously called CloudWatch Events) can automate AWS services and respond automatically to system events.
+    * AWS EventBridge (previously called CloudWatch Events) can automate AWS services and respond automatically to system events.
 
 1.  Analyze the requirements for custom application monitoring, and determine how this could be achieved.
 
@@ -318,7 +318,7 @@
 
     * If Lambda cannot perform an action (e.g., write to S3, log to CloudWatch), first check that the Lambda execution role has the correct permissions. If EventBridge or some other event source cannot invoke a Lambda function, double check that the Function policy allows it.
 
-    * Some services have their own resource-based policies which can also impact who or what can access them (e.g. S3 Bucket Policies, Key Policies).
+    * Some services have their own resource-based policies which can also impact who or what can access them (e.g., S3 Bucket Policies, Key Policies).
 
 ## Data Protection
 
@@ -350,7 +350,7 @@
 
 1. Distinguish the compliance state of data through tag-based data classifications and automate remediation.
 
-1. Evaluate a number of transport encryption techniques and select the appropriate method (i.e. TLS, IPsec, client-side KMS encryption).
+1. Evaluate a number of transport encryption techniques and select the appropriate method (i.e., TLS, IPsec, client-side KMS encryption).
 
 ## Appendix
 
@@ -554,7 +554,7 @@
         * Enable access in the Key Policy for the account which owns the CMK.
         * Enable access to KMS in the IAM Policy for external account.
 
-    * Secrets Manager is typically used for database credentials and API/SSH keys. It has built in integration with RDS and rotation of RDS secrets. For this service you pay per secret per month and also per 10,000 API calls.
+    * Secrets Manager is typically used for database credentials and API/SSH keys. It has built in integration with RDS and rotation of RDS secrets. For this service you pay per secret per month and per 10,000 API calls.
 
     * Parameter Store is typically used for passwords, database strings, license codes, configuration data, and parameter values. You can have user defined parameters and they can be encrypted. It is integrated with AWS Systems Manager. There is no additional charge for this service.
 
@@ -581,44 +581,73 @@
 ### Infrastructure Security
 
 1. A company hosts a popular web application that connects to an Amazon RDS MySQL DB instance running in a private VPC subnet created with default Network ACL settings. The IT Security department has a suspicion that a DoS attack is coming from a suspecting IP. How can you protect the subnets from this attack?
-	* Change the inbound NACL to deny access from the suspecting IP. The NACL is responsible for controlling traffic in and out of a subnet. Security Groups work on the Instance level and not the Subnet level, and you cannot configure a Security Group to deny access.
+    * Change the inbound NACL to deny access from the suspecting IP. The NACL is responsible for controlling traffic in and out of a subnet. Security Groups work on the Instance level and not the Subnet level, and you cannot configure a Security Group to deny access.
+
+1. A company is hosting a website that must be accessible to users for HTTPS traffic. Also, port 22 should be open for administrative purposes. The administrator's workstation has static IP addresses of 203.0.113.1/32. Which of the following security group configurations is the MOST secure but still functional to support these requirements?
+    * Port 443 from 0.0.0.0/0 (all addresses) should be open. Port 22 from 203.0.113.1/32 (the administrative workstation only) should be open.
+
+1. You have a website that is sitting behind AWS CloudFront. You need to protect the website against threats such as SQL injection and Cross-site scripting attacks. Which services can help in such a scenario?
+    * AWS Config is not relevant here as it is used to check configuration changes on your AWS account. AWS Inspector is not relevant here as it can be used to scan EC2 Instances for vulnerabilities but not protect against the threats in this question. AWS Trusted Advisor is also not relevant here as that is to improve the security on your AWS account. AWS WAF allows you to create rules that can help to protect against common web exploits.
+
+### Logging and Monitoring
+Your company has an EC2 Instance that is hosted in an AWS VPC. There is a requirement to ensure that log files from the EC2 Instance are stored in a secure manner. The access should be limited to the log files. How can this be accomplished? Choose 2 answers from the options given below. Each answer forms part of the solution.
+    * CloudTrail is not relevant here as it is for recording API activities. The log files should be streamed to a separate Cloudwatch Log group and an IAM policy should be created to give access to the Cloudwatch Log group.
 
 ### Identity and Access Management
 
 1.  You are designing a custom IAM policy that would allow users to list buckets in S3 only if they are MFA authenticated. Which of the following would best match this requirement?
-	* The actions for ListAllMyBuckets and GetBucketLocation are required, and the type for the condition is also required. The policy should be:
+    * The actions for ListAllMyBuckets and GetBucketLocation are required, and the type for the condition is also required. The policy should be:
     ```JSON
-	{
-	    "Version": "2012-10-17",
-	    "Statement": {
-	        "Effect": "Allow",
-	        "Action": [
-	            "s3:ListAllMyBuckets",
-	            "s3:GetBucketLocation"
-	        ],
-	        "Resource": "arn:aws:s3:::*",
-	        "Condition": {
-	            "Bool": {
-	                "aws:MutliFactorAuthPresent": true
-	            }
-	        }
-	    }
-	}
+    {
+        "Version": "2012-10-17",
+        "Statement": {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListAllMyBuckets",
+                "s3:GetBucketLocation"
+            ],
+            "Resource": "arn:aws:s3:::*",
+            "Condition": {
+                "Bool": {
+                    "aws:MutliFactorAuthPresent": true
+                }
+            }
+        }
+    }
     ```
 
 ### Data Protection
 
-1. In your organisation, a customer-managed key named TestCMK has been created for a new project. This key is supposed to be used only by related AWS services in this project including EC2 and RDS in region us-west-2. For security concerns, you need to make sure that no other services can encrypt or decrypt using this particular CMK. In the meantime, EC2 and RDS should use the key without issues. How should you implement this?
-	* An IAM policy is insufficient as it cannot restrict based on EC2 or RDS. A service role is also insufficient as other services could use the key if the role is attached to them. the key policy should be:
-	    ```JSON
-		{
-		    "Condition": {
-		        "ForAnyValue:StringEquals": {
-		            "kms:ViaService": [
-		                "ec2.us-west-2.amazonaws.com",
-		                "rds.us-west-2.amazonaws.com"
-		            ]
-		        }
-		    }
-		}
-    	```
+1. In your organisation, a customer-managed key named TestCMK has been created for a new project. This key is supposed to be used only by related AWS services in this project including EC2 and RDS in region us-west-2. For security concerns, you need to make sure that no other services can encrypt or decrypt using this CMK. In the meantime, EC2 and RDS should use the key without issues. How should you implement this?
+    * An IAM policy is insufficient as it cannot restrict based on EC2 or RDS. A service role is also insufficient as other services could use the key if the role is attached to them. the key policy should be:
+        ```JSON
+        {
+            "Condition": {
+                "ForAnyValue:StringEquals": {
+                    "kms:ViaService": [
+                        "ec2.us-west-2.amazonaws.com",
+                        "rds.us-west-2.amazonaws.com"
+                    ]
+                }
+            }
+        }
+        ```
+
+1. As a Cloud Security Engineer, you perform a security audit of AWS services that your company is using. You have found that for CMKs in KMS, the key policies are too open, allowing almost all services or users to use them. What condition can be added to the key policy to ensure that the grant should only be created by integrated AWS services rather than the user himself?
+    * ViaService is not relevant here as that is to limit the use of a CMK to requests from specified AWS services. KeyOrigin is not relevant as that is used to control access to the CreateKey action, values can be AWS_KMS, AWS_CLOUDHSM, and external. GranteePrincipal is also not relevant here as that is used to restrict who can create grants based on the ARN. The condition in the policy should be:
+        ```JSON
+        "Condition": {
+            "Bool": {
+                "kms:GrantIsForAWSResource": true"
+            }
+        }
+        ```
+
+1. Your team is developing a web application and EC2 instances are used. To be compliant with security requirements, EBS volumes need to be encrypted with a CMK. A new CMK was already created by you. You also enabled automatic key rotation for this key through the AWS console to avoid manually rotating the key. Which benefits can this configuration bring?
+    * Key rotation only changes the KMS key's key material, which is the cryptographic material used in encryption operations. It has no effect on the data. It does not rotate the data keys that the KMS key generated or re-encrypt any data protected by the KMS key, and so will not mitigate the effect of a compromised data key. Rotation of a CMK will occur yearly automatically and result in an increase in cost by $1/month. The ARN of the key will not change after the automatic rotation.
+
+1. A company wants to have a secure way of generating, storing, and managing cryptographic keys, but they want to have exclusive access to the management of the keys. Which of the following can be used for this purpose?
+    * KMS cannot be used as the management of the keys will be within AWS. S3 Server Side encryption is not applicable as it does not generate or manage cryptographic keys. CloudHSM allows you to securely generate, store, and manage cryptographic keys.
+
+1. You have an EC2 Instance in a private subnet that needs to access the KMS service privately within the AWS network. Which of the following methods can help to fulfil this requirement, keeping security in perspective?
+    * An Internet Gateway should not be used because if it is a private subnet the intention is that it cannot access the internet. An AWS VPN is not relevant as that is for connecting on-premises environments to AWS. VPC Peering is also not relevant as that is used for communication between several VPCs and would not help in this scenario. A VPC endpoint should be used to establish communication between your VPC and AWS KMS.
