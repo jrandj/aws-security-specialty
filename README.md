@@ -165,7 +165,7 @@
 
 1.  Choose appropriate AWS and/or third-party edge services such as WAF, CloudFront and Route 53 to protect against DDoS or filter application-level attacks.
 
-    * The attack surface can be minimised by restricting the number of entry points. A bastion host should be used with specific white listed IP addresses for onward connections to web servers, database servers etc.
+    * The attack surface can be minimised by restricting the number of entry points. A bastion host should be used with specific whitelisted IP addresses for onward connections to web servers, database servers etc.
 
     * The infrastructure can be setup to scale as needed.
     
@@ -589,9 +589,18 @@
 1. You have a website that is sitting behind AWS CloudFront. You need to protect the website against threats such as SQL injection and Cross-site scripting attacks. Which services can help in such a scenario?
     * AWS Config is not relevant here as it is used to check configuration changes on your AWS account. AWS Inspector is not relevant here as it can be used to scan EC2 Instances for vulnerabilities but not protect against the threats in this question. AWS Trusted Advisor is also not relevant here as that is to improve the security on your AWS account. AWS WAF allows you to create rules that can help to protect against common web exploits.
 
+1. You have a 2-tier application hosted in AWS. It consists of a web server and database server (SQL Server) hosted on separate EC2 instances. You are devising the security groups for these EC2 Instances. The Web tier needs to be accessed by users across the internet. You have created a web security group (wg-123) and a database security group (db-345). Which combination of the following security group rules will allow the application to be secure and functional?
+    * In wg-123 allow access from ports 80 and 443 for HTTP and HTTPS traffic for all users from the internet. In db-345 allow port 1443 traffic from wg-123.
+
+1. A company wants to have an Intrusion detection system available for their VPC in AWS. They want to have complete control over the system. What should they implement?
+    * A custom solution from the AWS Marketplace should be used. AWS does not provide an intrusion detection system natively.
+
 ### Logging and Monitoring
-Your company has an EC2 Instance that is hosted in an AWS VPC. There is a requirement to ensure that log files from the EC2 Instance are stored in a secure manner. The access should be limited to the log files. How can this be accomplished? Choose 2 answers from the options given below. Each answer forms part of the solution.
+1. Your company has an EC2 Instance that is hosted in an AWS VPC. There is a requirement to ensure that log files from the EC2 Instance are stored in a secure manner. The access should be limited to the log files. How can this be accomplished? Choose 2 answers from the options given below. Each answer forms part of the solution.
     * CloudTrail is not relevant here as it is for recording API activities. The log files should be streamed to a separate Cloudwatch Log group and an IAM policy should be created to give access to the Cloudwatch Log group.
+
+1. A company has managed many AWS resources. The IT audit department has requested to get a list of resources in the AWS account. How can this be achieved efficiently?
+    * AWS Config can be used to get a list of all resources. Methods such as using a bash or PowerShell script are less efficient.
 
 ### Identity and Access Management
 
@@ -615,6 +624,57 @@ Your company has an EC2 Instance that is hosted in an AWS VPC. There is a requir
         }
     }
     ```
+
+1. A Lambda function reads metadata from an S3 object and stores the metadata in a DynamoDB table. The function is triggered whenever an object is stored within the S3 bucket. How should the Lambda function be given access to the DynamoDB table?
+    * An IAM service role with permissions to write to the DynamoDB table should be created, and the role should be associated with the Lambda function.
+
+1. Your company has defined privileged users for their AWS Account. These users are administrators for key resources defined in the company. There is now a mandate to enhance the security authentication for these users. How can this be accomplished?
+    * MFA should be enabled for these users.
+
+1. An application running on EC2 instances must use a username and password to access a database. The developer has stored these secrets in the SSM Parameter Store with type SecureString using the customer managed KMS CMK. Which combination of configuration steps will allow the application to access the secrets via the API? Select 2 answers from the options below.
+    * The EC2 instance role needs permission to read the SSM parameter. The kms:Decrypt permission needs to be in the EC2 instance role so that the EC2 instances can use the KMS key. A sample policy that would be required is shown below:
+    ```JSON
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "ssm:GetParameter*"
+                ],
+                "Resource": "arn:aws:ssm:us-west-2:111122223333:parameter/ITParameters/*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "kms:Decrypt"
+                ],
+                "Resource": "arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+            }
+        ]
+    }
+    ```
+
+1. You are creating a policy to allow users to have the ability to access objects in a bucket called appbucket. When you try to apply the policy, you get the error "Action does not apply to any resource(s) in statement". What should be done to rectify the error?
+    ```JSON
+    {
+        "ID": "Policy1502987489630",
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "Stmt1502987487640",
+                "Action": [
+                    "s3:GetObject",
+                    "s3:GetObjectVersion"
+                ],
+                "Effect": "Allow",
+                "Resource": "arn:aws:s3:::appbucket",
+                "Principal": "*"
+            }
+        ]
+    }
+    ```
+    * The Resource tag should be `arn:aws:s3:::appbucket/*`. 
 
 ### Data Protection
 
@@ -651,3 +711,24 @@ Your company has an EC2 Instance that is hosted in an AWS VPC. There is a requir
 
 1. You have an EC2 Instance in a private subnet that needs to access the KMS service privately within the AWS network. Which of the following methods can help to fulfil this requirement, keeping security in perspective?
     * An Internet Gateway should not be used because if it is a private subnet the intention is that it cannot access the internet. An AWS VPN is not relevant as that is for connecting on-premises environments to AWS. VPC Peering is also not relevant as that is used for communication between several VPCs and would not help in this scenario. A VPC endpoint should be used to establish communication between your VPC and AWS KMS.
+
+1. You are working as an AWS administrator of your company. As part of code deployment, you have provisioned EC2 instances with EBS volumes being encrypted using customer-managed CMK. The automatic key rotation is enabled. When will the KMS key be rotated automatically?
+    * The customer-managed CMK gets rotated automatically every 365 days (only if it is enabled, which it is).
+
+1. The cloud monitoring team is using AWS Config to perform security checks. One Config rule is to check if S3 buckets are encrypted using KMS. After the rule was executed, several S3 buckets were found to be non-compliant because they were not encrypted. To fix the non-compliance of these buckets, you have enabled the Default Encryption to be KMS using AWS Managed Key aws/s3. Your manager asked you how to manage the key rotation for this key. How should you answer this question?
+    * For AWS managed keys, the key is automatically rotated every 3 years, and this cannot be changed.
+
+1. You have a cron job that will run on the EC2 instance. The job calls a bash script that will encrypt a file whose size is about 2kB. You prefer that the encryption is performed through a CMK in MKS. So, you have created a CMK for this task. The script uses AWS CLI to do the encryption. How do you encrypt the file using the CMK in the bash script?
+    * Use the command `aws kms encrypt` to encrypt the file. The encrypted KMS key is provided with the command as an argument. Envelope encryption refers to the practice of encrypting plaintext data with a data key, and then encrypting the data key under another key. This is used with CMKs. The `GenerateDataKey` and `GenerateDataKeyPair` operations return a plaintext data key and an encrypted copy of that data key.
+
+1. As a DevOps engineer, you need to maintain Jenkins pipelines. Recently, you have created a new pipeline for a migration project. In one stage, you encrypted a file with the below command:
+    ```bash
+    aws kms encrypt \
+        --key-id 1234abcd-fa85-46b5-56ef-123456789ab \
+        --plaintext fileb://ExamplePlaintextFile \
+        --output text \
+        --query CiphertextBlob | base64 \
+        --decode > ExampleEncrypted File
+    ```
+A CMK was used in the encryption operation. Then in another stage, the encrypted file needs to be decrypted with `aws kms decrypt`. What is true regarding the decryption command?
+    * The key information does not need to be added to the command (assuming it was encrypted under a symmetric KMS key).
