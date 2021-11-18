@@ -326,27 +326,85 @@
 
 1. Analyze a given scenario to determine an appropriate key management solution.
 
+    * AWS Key Managemnet Service (KMS) is a service for managing encrytion keys that is used for both client side (optional) and server-side encryption with AWS. KMS only manages Customer Master Keys (CMKs) and it uses Hardware Security Modules (HSMs) to store the keys.
+
+    * KMS supports symmetric and asymmetric keys. A symmetric key never leaves KMS unencrypted, so to use it you must call AWS KMS. For an asymmetric key pair, the private key never leaves KMS unencrypted, but the public key can be downloaded and used outside of KMS. A symmetric key is recommended for most use cases as it is fast and efficient. An asymmetric key pair is required if you need users outside of AWS to encrypt data, as they can use the public key to encrypt. The public key of an asymmetric key pair can be used to sign messages and verify signatures.
+
+    * KMS only manages CMKs, it does not manage data keys. A CMK never leaves the region that it was created and can only encrypt a maximum of 4kB of data. Data Keys can be used for larger object encryption.
+
+    * Many data keys can be generated from a CMK. These are not stored or managed in KMS. The plaintext data key is used to encrypt the data and is then deleted. This process is shown below:
+        <p align="center">
+        <img src="/res/keys.JPG">
+        </p>
+
+    * To decrypt, first call the KMS API with the encrypted data key to return the plaintext data key. The plaintext data key can be used to decrypt the encrypted data.
+
 1. Given a set of data protection requirements, evaluate key usage and recommend required changes.
 
+    * Knowing how a KMS key was used in the past might help you decide whether you will need it in the future. All AWS KMS API activity is recorded in AWS CloudTrail log files. If you have created a CloudTrail trail in the region where your KMS key is located, you can examine your CloudTrail log files to view a history of all AWS KMS API activity for a particular KMS key.
+
 1. Determine and control the blast radius of a key compromise event and design a solution to contain the same.
+
+    * It is recommended to define classification levels and have at least one CMK per level. For example, you could define a CMK for data classified as “Confidential,” and so on. This ensures that authorized users only have permissions for the key material that they require to complete their job.
+
+    * Creating KMS keys within each account that requires the ability to encrypt and decrypt sensitive data works best for most customers, but another option is to share the CMKs from a few centralized accounts. Maintaining the CMKs in the same account as the majority of the infrastructure using them helps users’ provision and run AWS services that use those keys
 
 ### Troubleshoot key management.
 
 1. Break down the difference between a KMS key grant and IAM policy.
 
-    * The Key Policy is a resource based policy attached to the CMK, it defines key users and key administrators and trusted external accounts.
-
-    * The IAM Policy is assigned to a User, Group, or Role, and defines the allows actions e.g. kms:ListKeys.
+    * When authorising access to a KMS key, AWS KMS evaluates the following:
+        * The key policy that is attached to the key. The key policy is always defined in the AWS account and Region that owns the KMS key. The Key Policy is a resource based policy attached to the CMK, it defines key users and key administrators and trusted external accounts.
+        * All IAM policies that are attached to the IAM user or role making the request. IAM policies that govern a principal's use of a KMS key are always defined in the principal's AWS account. The IAM Policy is assigned to a User, Group, or Role, and defines the allows actions e.g. kms:ListKeys.
+        * All grants that apply to the KMS key. Grants are advanced mechanisms for specifying permissions that you or an AWS service integrated with AWS KMS can use to specify how and when a KMS key can be used. Grants are attached to a KMS key, and each grant contains the principal who receives permission to use the KMS key and a list of operations that are allowed. Grants are an alternative to the key policy, and are useful for specific use cases.
+        * Other types of policies that might apply to the request to use the KMS key, such as AWS Organizations service control policies and VPC endpoint policies. These policies are optional and allow all actions by default, but you can use them to restrict permissions otherwise given to principals.
 
 1. Deduce the precedence given different conflicting policies for a given key.
 
+    * AWS KMS evaluates the above policy mechanisms together to to determine whether access to the KMS key is allowed or denied. This is illustrated below:
+        <p align="center">
+        <img src="/res/key_authorisation.JPG">
+        </p>
+
+    * The authorisation part determines whether you are permitted to use a KMS key based on its key policy, IAM policies, grants, and other applicable policies. The trust part determines whether you should trust a KMS key that you are permitted to use. In general, you trust the resources in your AWS account. But you can also feel confident about using KMS keys in a different AWS account if a grant or IAM policy in your account allows you to use the KMS key.
+
 1. Determine when and how to revoke permissions for a user or service in the event of a compromise.
+
+    * In the event of a compromise all root and IAM user access keys should be rotated. Once the key is rotated, disable the original keys and update your applications to use the new keys. If there are no issues then you can delete the original keys.
+
+    * If access is permitted with a long session duration time (such as 12 hours), their temporary credentials do not expire as quickly. You can immediately revoke all permissions to the role's credentals issuesd before a certain point in time if needed.
 
 ### Design and implement a data encryption solution for data at rest and data in transit.
 
 1. Given a set of data protection requirements, evaluate the security of the data at rest in a workload and recommend required changes.
 
+    * AWS KMS integrates seamlessly with many AWS services to make it easier for you to encrypt all your data at rest. For example, in Amazon S3 you can set default encryption on a bucket so that all new objects are automatically encrypted. Additionally, Amazon EC2 and Amazon S3 support the enforcement of encryption by setting default encryption. You can use AWS Managed Config Rules to check automatically that you are using encryption, for example, for EBS volumes, RDS instances, and S3 buckets.
+
+    * AWS recommends following secure key management, enforcing encryption at rest, automating data at rest protection, enforcing access control, and keeping people away from data. Specific best practices include:
+        * Enforce encryption at rest for Amazon S3.
+        * Use AWS Secrets Manager to manage secrets.
+        * Configure default encryption for new EBS volumes.
+        * Configure encrypted AMIs. Copying an existing AMI with encryption enabled will automatically encrypt root volumes and snapshots.
+        * Configure Amazon RDS encryption.
+        * Configure encryption additional AWS services as used.
+        * Separate data based on different classification levels. Use different AWS accounts for data classification levels managed by AWS Organizations.
+        * Review the level of access granted in AWS KMS policies.
+        * Review S3 bucket and object permissions. Do not have publicly readable or writeable buckets, unless necessary. Consider AWS Config to detect non-compliant buckets, and Amazon CloudFront to service content from Amazon S3.
+        * Enable Amazon S3 versioning and object lock.
+        * Review Amazon EBS and AMI sharing permissions. Sharing permissions can allow images and volumes to be shared to AWS accounts external to your workload.
+        * Implement mechanisms to keep people away from data. Avoid use of bastion hosts or directly accessing EC2 instances.
+
 1. Verify policy on a key such that it can only be used by specific AWS services.
+
+    * Unlike IAM policies, which are global, key policies are Regional. Each key policy is effective only in the Region that hosts the KMS key. The components of the key policy are:
+        * **Sid (Optional):** The Sid is a statement identifier, an arbitrary string you can use to identify the statement.
+        * **Effect (Required):** The effect specifies whether to allow or deny the permissions in the policy statement. The Effect must be Allow or Deny. If you don't explicitly allow access to a KMS key, access is implicitly denied. You can also explicitly deny access to a KMS key. You might do this to make sure that a user cannot access it, even when a different policy allows access.
+        * **Principal (Required):** The principal is the identity that gets the permissions specified in the policy statement. You can specify AWS accounts (root), IAM users, IAM roles, and some AWS services as principals in a key policy. IAM groups are not valid principals.
+        * **Action (Required):** Actions specify the API operations to allow or deny. For example, the kms:Encrypt action corresponds to the AWS KMS Encrypt operation. You can list more than one action in a policy statement. For more information, see Permissions reference.
+        * **Resource (Required):** In a key policy, the value of the Resource element is "*", which means "this KMS key." The asterisk ("*") identifies the KMS key to which the key policy is attached.
+        * **Condition (Optional):** Conditions specify requirements that must be met for a key policy to take effect. With conditions, AWS can evaluate the context of an API request to determine whether or not the policy statement applies.
+
+When the principal is another AWS account or its principals, the permissions are effective only when the account is enabled in the Region with the KMS key and key policy.
 
 1. Distinguish the compliance state of data through tag-based data classifications and automate remediation.
 
@@ -530,9 +588,9 @@
     * You can copy AMIs from one region to another and make those copies encrypted, but you must use the keys in the destination region to do the encryption. You cannot copy KMS keys from one region to another.
 
     * You can view public keys in EC2 by going to `/home/ec2-users/.ssh/authorized_keys`. You can also view the public key using the E2 instance metadata. For example:
-    ```shell
-    curl http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key/
-    ```
+        ```shell
+        curl http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key/
+        ```
 
     * Multiple public keys can be attached to an EC2 instance. You can add roles to existing E2 instances.
 
@@ -698,7 +756,7 @@
         ```JSON
         "Condition": {
             "Bool": {
-                "kms:GrantIsForAWSResource": true"
+                "kms:GrantIsForAWSResource": "true"
             }
         }
         ```
