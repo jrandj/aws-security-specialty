@@ -326,7 +326,7 @@
 
 1. Analyze a given scenario to determine an appropriate key management solution.
 
-    * AWS Key Managemnet Service (KMS) is a service for managing encrytion keys that is used for both client side (optional) and server-side encryption with AWS. KMS only manages Customer Master Keys (CMKs) and it uses Hardware Security Modules (HSMs) to store the keys.
+    * AWS Key Management Service (KMS) is a service for managing encryption keys that is used for both client side (optional) and server-side encryption with AWS. KMS only manages Customer Master Keys (CMKs) and it uses Hardware Security Modules (HSMs) to store the keys.
 
     * KMS supports symmetric and asymmetric keys. A symmetric key never leaves KMS unencrypted, so to use it you must call AWS KMS. For an asymmetric key pair, the private key never leaves KMS unencrypted, but the public key can be downloaded and used outside of KMS. A symmetric key is recommended for most use cases as it is fast and efficient. An asymmetric key pair is required if you need users outside of AWS to encrypt data, as they can use the public key to encrypt. The public key of an asymmetric key pair can be used to sign messages and verify signatures.
 
@@ -347,21 +347,21 @@
 
     * It is recommended to define classification levels and have at least one CMK per level. For example, you could define a CMK for data classified as “Confidential,” and so on. This ensures that authorized users only have permissions for the key material that they require to complete their job.
 
-    * Creating KMS keys within each account that requires the ability to encrypt and decrypt sensitive data works best for most customers, but another option is to share the CMKs from a few centralized accounts. Maintaining the CMKs in the same account as the majority of the infrastructure using them helps users’ provision and run AWS services that use those keys
+    * Creating KMS keys within each account that requires the ability to encrypt and decrypt sensitive data works best for most customers, but another option is to share the CMKs from a few centralized accounts. Maintaining the CMKs in the same account as most of the infrastructure using them helps users’ provision and run AWS services that use those keys
 
 ### Troubleshoot key management.
 
 1. Break down the difference between a KMS key grant and IAM policy.
 
     * When authorising access to a KMS key, AWS KMS evaluates the following:
-        * The key policy that is attached to the key. The key policy is always defined in the AWS account and Region that owns the KMS key. The Key Policy is a resource based policy attached to the CMK, it defines key users and key administrators and trusted external accounts.
+        * The key policy that is attached to the key. The key policy is always defined in the AWS account and Region that owns the KMS key. The Key Policy is a resource-based policy attached to the CMK, it defines key users and key administrators and trusted external accounts.
         * All IAM policies that are attached to the IAM user or role making the request. IAM policies that govern a principal's use of a KMS key are always defined in the principal's AWS account. The IAM Policy is assigned to a User, Group, or Role, and defines the allows actions e.g. kms:ListKeys.
-        * All grants that apply to the KMS key. Grants are advanced mechanisms for specifying permissions that you or an AWS service integrated with AWS KMS can use to specify how and when a KMS key can be used. Grants are attached to a KMS key, and each grant contains the principal who receives permission to use the KMS key and a list of operations that are allowed. Grants are an alternative to the key policy, and are useful for specific use cases.
+        * All grants that apply to the KMS key. Grants are advanced mechanisms for specifying permissions that you or an AWS service integrated with AWS KMS can use to specify how and when a KMS key can be used. Grants are attached to a KMS key, and each grant contains the principal who receives permission to use the KMS key and a list of operations that are allowed. Grants are an alternative to the key policy and are useful for specific use cases.
         * Other types of policies that might apply to the request to use the KMS key, such as AWS Organizations service control policies and VPC endpoint policies. These policies are optional and allow all actions by default, but you can use them to restrict permissions otherwise given to principals.
 
 1. Deduce the precedence given different conflicting policies for a given key.
 
-    * AWS KMS evaluates the above policy mechanisms together to to determine whether access to the KMS key is allowed or denied. This is illustrated below:
+    * AWS KMS evaluates the above policy mechanisms together to determine whether access to the KMS key is allowed or denied. This is illustrated below:
         <p align="center">
         <img src="/res/key_authorisation.JPG">
         </p>
@@ -372,7 +372,7 @@
 
     * In the event of a compromise all root and IAM user access keys should be rotated. Once the key is rotated, disable the original keys and update your applications to use the new keys. If there are no issues then you can delete the original keys.
 
-    * If access is permitted with a long session duration time (such as 12 hours), their temporary credentials do not expire as quickly. You can immediately revoke all permissions to the role's credentals issuesd before a certain point in time if needed.
+    * If access is permitted with a long session duration time (such as 12 hours), their temporary credentials do not expire as quickly. You can immediately revoke all permissions to the role's credentials issued before a certain point in time if needed.
 
 ### Design and implement a data encryption solution for data at rest and data in transit.
 
@@ -408,7 +408,19 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. Distinguish the compliance state of data through tag-based data classifications and automate remediation.
 
+    * Tags can be used on AWS resources based on a data classification framework to implement compliance with a data governance program. Tagging in this context can be used for automation such as enabling and validating data encryption, retention, and archiving.
+
 1. Evaluate a number of transport encryption techniques and select the appropriate method (i.e., TLS, IPsec, client-side KMS encryption).
+
+    * AWS recommends following secure key and certificate management, enforcing encryption in transit, automating detection of unintended data access, and authenticating network communications: Specific best practices include:
+        * Implementing secure  protocols such as TLS or IPSec (relevent protcols depend on the services you are using).
+        * Using HTTPS with Amazon CloudFront.
+        * Using a VPN for external connectivity. Consider using an IPsec VPN for point-to-point or network-to-network connections.
+        * Enabling a HTTPS listener for securing connections to load balancers.
+        * Configuring HTTPS encryption on instances.
+        * Configuring TLS to encrypt connections to database instances and clusters.
+        * Using a tool or detection mechanism to automatically detect attempts to move data outside of defined boundaries.
+        * Consider using Amazon Macie to monitor data access activity for anomalies.
 
 ## Appendix
 
@@ -636,6 +648,28 @@ When the principal is another AWS account or its principals, the permissions are
 
 ## Practise Questions
 
+### Incident Response
+
+1. A security team is creating a response plan when an employee executes unauthorised actions on AWS infrastructure. They want to include steps to determine if the employee's IAM permissions changes as part of the incident. What steps should the team document in the plan?
+    * AWS Config can be used to examine the employee's IAM permissions before the incident and compare them to the employee's current IAM permissions. AWS Macie is not applicable as it used for data security and data privacy. Amazon GuardDuty is not applicable as it is a threat detection service. AWS Trusted Advisor is not relevant as it helps optimise your AWS infrastructure.
+
+### Logging and Monitoring
+
+1. Your company has an EC2 Instance that is hosted in an AWS VPC. There is a requirement to ensure that log files from the EC2 Instance are stored in a secure manner. The access should be limited to the log files. How can this be accomplished? Choose 2 answers from the options given below. Each answer forms part of the solution.
+    * CloudTrail is not relevant here as it is for recording API activities. The log files should be streamed to a separate CloudWatch Log group and an IAM policy should be created to give access to the CloudWatch Log group.
+
+1. A company has managed many AWS resources. The IT audit department has requested to get a list of resources in the AWS account. How can this be achieved efficiently?
+    * AWS Config can be used to get a list of all resources. Methods such as using a bash or PowerShell script are less efficient.
+
+1. A company uses CloudTrail to log all AWS API activity for all regions in all of its accounts. The CISO has asked that additional steps be taken to protect the integrity of the log files. What combination of steps will protect the log files from intentional or unintentional alteration?
+    * An S3 bucket should be created in a dedicated log account and other accounts should have write only access to this account. CloudTrail log file integrity validation should be enabled.
+
+1. You have enabled CloudTrail logs for your company’s AWS account. In addition, the IT Security department has mentioned that the logs need to be encrypted. How can this be achieved?
+    * By default all AWS CloudTrail event log files are encrypted using Amazon S3 Server-Side Encryption (SSE).
+
+1. Which of the following is NOT a best practice for carrying out a security audit?
+    * Audits should be conducted more frequently than yearly. Audits should be done on a periodic basis, if there are changes in your organisation, if you have stopped using one or more AWS services, if you've added or removed software in your accounts, and if you ever suspect unauthorised access.
+
 ### Infrastructure Security
 
 1. A company hosts a popular web application that connects to an Amazon RDS MySQL DB instance running in a private VPC subnet created with default Network ACL settings. The IT Security department has a suspicion that a DoS attack is coming from a suspecting IP. How can you protect the subnets from this attack?
@@ -653,12 +687,8 @@ When the principal is another AWS account or its principals, the permissions are
 1. A company wants to have an Intrusion detection system available for their VPC in AWS. They want to have complete control over the system. What should they implement?
     * A custom solution from the AWS Marketplace should be used. AWS does not provide an intrusion detection system natively.
 
-### Logging and Monitoring
-1. Your company has an EC2 Instance that is hosted in an AWS VPC. There is a requirement to ensure that log files from the EC2 Instance are stored in a secure manner. The access should be limited to the log files. How can this be accomplished? Choose 2 answers from the options given below. Each answer forms part of the solution.
-    * CloudTrail is not relevant here as it is for recording API activities. The log files should be streamed to a separate Cloudwatch Log group and an IAM policy should be created to give access to the Cloudwatch Log group.
-
-1. A company has managed many AWS resources. The IT audit department has requested to get a list of resources in the AWS account. How can this be achieved efficiently?
-    * AWS Config can be used to get a list of all resources. Methods such as using a bash or PowerShell script are less efficient.
+1. A security team must present a daily briefing to the CISO that includes a report of which of the company's thousands of EC2 instances and on-premises servers are missing the latest security patches. All instances/servers must be brought into compliance within 24 hours so that they do not show up on the next day's report. How can the security team fulfill these requirements?
+    * Systems Manager Patch Manager can be used to generate the report of out of compliance instances and servers, and to install the missing patches. Deploy the latest AMIs is not correct as it will affect the applications running on these systems.
 
 ### Identity and Access Management
 
@@ -732,7 +762,39 @@ When the principal is another AWS account or its principals, the permissions are
         ]
     }
     ```
-    * The Resource tag should be `arn:aws:s3:::appbucket/*`. 
+    * The Resource tag should be `arn:aws:s3:::appbucket/*`.
+
+1. Your company is performing a security audit of your AWS environment. The security specialist asked you to provide a document that contained the status of all IAM users in the AWS account. The document should include information such as when users were created, when passwords were used or changed, whether MFA was enabled, etc. What is the best way to provide this documentation?
+    * A credential report can be download through the AWS Management Console every 4 hours. AWS Config cannot provide the documentation required. The IAM CLI will only provide limited information in a JSON file.
+
+1. The security team in your company will start a new security audit for all AWS accounts, and your manager asked you to present him with a document stating the IAM usage status in your AWS account. You have downloaded a recent credential report in IAM and replied to your manager. However, which information does NOT exist in the report?
+    * IAM role information and SAML IAM identity provider information is not shown in the credential report.
+
+1. In your AWS account A, there is an S3 bucket that contains artifacts that need to be fetched by an IAM user in another AWS account B. The S3 bucket has the below bucket policy:
+    ```JSON
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::AccountB:user/AccountBUserName"
+            },
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:PutObjectAcl"
+            ],
+            "Resource": [
+                "arn:aws:s3:::AccountABucketName/*"
+            ]
+        }
+    }
+    ```    
+However, the IAM user in account B still cannot get objects in the S3 bucket. Which one may cause the failure?
+    * The IAM user in account B may not have IAM permissions to get an object in the particular S3 bucket. 
+
+1. You have maintained an AWS account A containing an S3 bucket that another AWS account B needs to upload files to. In the S3 bucket policy, s3:PutObject is allowed for the IAM user in account B. And the IAM user in account B can use `aws s3api put-object` to upload objects to the S3 bucket successfully. However, it has been found that users in AWS account A cannot open the new uploaded objects. How should you fix this issue?
+    * The problem is that once account B has uploaded objects to the bucket in account A, the objects are still owned by account B, and account A does not have access to it. The option `--acl bucket-owner-full-control` should be added to the command `aws s3api put-object` to give permissions to the bucket owner for the objects. 
 
 ### Data Protection
 
@@ -790,3 +852,15 @@ When the principal is another AWS account or its principals, the permissions are
     ```
 A CMK was used in the encryption operation. Then in another stage, the encrypted file needs to be decrypted with `aws kms decrypt`. What is true regarding the decryption command?
     * The key information does not need to be added to the command (assuming it was encrypted under a symmetric KMS key).
+
+1. In your organisation, the security team requires that the key material of CMKs should be generated and maintained in your own infrastructure. Therefore you have created key material in local servers and got it imported. Then the CMKs are used for encryption/decryption with various AWS services. Which configurations or operations can you perform on these CMKs?
+    * Key rotation is not an option for CMKs with imported key material. The key material also cannot be exported outside of KMS, and a different key material cannot be imported into the same CMK. Key deletion can be done after a waiting period of 7 to 30 days, and key material can be manually deleted.
+
+1. You are working in a financial company as a DevOps engineer. Your organisation is CMK in KMS for several AWS services. For the CMK, the key material was imported as the key material needs to be maintained on-premises instead of AWS. According to the company rule, the key material must be rotated every year. How should you rotate the CMK?
+    * There is no automatic rotation of key material and you cannot reimport different key material. You also should not delete the old CMK and create a new one, as KMS needs to decrypt data that the original CMK encrypted or it would be lost. You can create a new CMK with new key material and then change the key alias using the AWS CLI.
+
+1. You have a Jenkins server deployed in EC2. One Jenkins pipeline is used to build artifacts. It needs to fetch some source files from an S3 bucket which is encrypted with a CUMK in KMS. The pipeline was working fine. However, it suddenly stopped working early this week. You have found that the Jenkins task failed to decrypt the S3 data using the CMK. What may be the cause of the failure?
+    * It is likely that the key policy of the CMK was recently modified with a deny for the IAM role that the Jenkins EC2 instance is using.
+
+1. As a DevOps engineer, you are helping the team to build up AWS services for a new project. Applications are deployed in two EC2 instances EC2A and EC2B. Both instances need to encrypt dozens of files using a CMK in KMS. The CMK has a key policy allowing both roles to access the key. EC2RoleB is the role used by EC2B and has an explicit deny. Which instances can use the CMK?
+    * EC2A can use the CMK for encryption, EC2B cannot.
