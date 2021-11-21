@@ -370,7 +370,7 @@
 
 1. Determine when and how to revoke permissions for a user or service in the event of a compromise.
 
-    * In the event of a compromise all root and IAM user access keys should be rotated. Once the key is rotated, disable the original keys and update your applications to use the new keys. If there are no issues then you can delete the original keys.
+    * In the event of a compromise all root and IAM user access keys should be rotated. Once the key is rotated, disable the original keys, and update your applications to use the new keys. If there are no issues then you can delete the original keys.
 
     * If access is permitted with a long session duration time (such as 12 hours), their temporary credentials do not expire as quickly. You can immediately revoke all permissions to the role's credentials issued before a certain point in time if needed.
 
@@ -402,7 +402,7 @@
         * **Principal (Required):** The principal is the identity that gets the permissions specified in the policy statement. You can specify AWS accounts (root), IAM users, IAM roles, and some AWS services as principals in a key policy. IAM groups are not valid principals.
         * **Action (Required):** Actions specify the API operations to allow or deny. For example, the kms:Encrypt action corresponds to the AWS KMS Encrypt operation. You can list more than one action in a policy statement. For more information, see Permissions reference.
         * **Resource (Required):** In a key policy, the value of the Resource element is "*", which means "this KMS key." The asterisk ("*") identifies the KMS key to which the key policy is attached.
-        * **Condition (Optional):** Conditions specify requirements that must be met for a key policy to take effect. With conditions, AWS can evaluate the context of an API request to determine whether or not the policy statement applies.
+        * **Condition (Optional):** Conditions specify requirements that must be met for a key policy to take effect. With conditions, AWS can evaluate the context of an API request to determine whether the policy statement applies.
 
 When the principal is another AWS account or its principals, the permissions are effective only when the account is enabled in the Region with the KMS key and key policy.
 
@@ -413,7 +413,7 @@ When the principal is another AWS account or its principals, the permissions are
 1. Evaluate a number of transport encryption techniques and select the appropriate method (i.e., TLS, IPsec, client-side KMS encryption).
 
     * AWS recommends following secure key and certificate management, enforcing encryption in transit, automating detection of unintended data access, and authenticating network communications: Specific best practices include:
-        * Implementing secure  protocols such as TLS or IPSec (relevent protcols depend on the services you are using).
+        * Implementing secure  protocols such as TLS or IPSec (relevant protocols depend on the services you are using).
         * Using HTTPS with Amazon CloudFront.
         * Using a VPN for external connectivity. Consider using an IPsec VPN for point-to-point or network-to-network connections.
         * Enabling a HTTPS listener for securing connections to load balancers.
@@ -492,20 +492,42 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. AWS Security Hub
 
-    * Security Hub provides a single place to manage and aggregate the findings and alerts from key security service. It integrates with a lot of AWS security services. Automated ongoing security auditing and built-in checks for PCI-DSS and CIS are provided.
+    * AWS Security Hub provides a single place to manage and aggregate the findings and alerts from key security service. It integrates with a lot of AWS security services. Automated ongoing security auditing and built-in checks for PCI-DSS and CIS are provided.
 
 1. AWS Shield
 
-    * Shield is a managed DDoS protection service for ELB, CloudFront and Route 53 that safeguards applications running on AWS. Primarily protects against layer 3 and layer 4 attacks.
+    * AWS Shield is a managed DDoS protection service for ELB, CloudFront and Route 53 that safeguards applications running on AWS. Primarily protects against layer 3 and layer 4 attacks.
  
     * The advanced option costs $3000 per month and gives you an incident response team and in-depth reporting. You won't pay if you are the victim of an attack.
 
 1. Amazon VPC
-    * VPC endpoints
 
-    * Network ACLs
+    * Amazon VPC is a foundational AWS service. Other AWS services, such as EC2, cannot be accessed without an underlying VPC network. A VPC behaves like a traditional TCP/IP network that can be expanded and scaled as needed. Typical data centre components (routers, switches, VLANS etc.) do not explicitly exist, but have been abstract and re-engineered into cloud software.
 
-    * Security groups
+    * A VPC endpoint enables connections between a VPC and supported services, without requiring that you use an internet gateway, NAT device, VPN connection, or AWS Direct Connect connection. Therefore, your VPC is not exposed to the public internet.
+
+    * A Network Access Control List (NACL) is an optional layer of security for your VPC that acts as a firewall for controlling traffic in and out of one or more subnets. The NACL might have rules similar to your security groups to add an additional layer of security to your VPC. The following are basic NACL concepts:
+        * Your VPC automatically comes with a modifiable default network ACL. By default, it allows all inbound and outbound IPv4 traffic and, if applicable, IPv6 traffic.
+        * You can create a custom network ACL and associate it with a subnet. By default, each custom network ACL denies all inbound and outbound traffic until you add rules.
+        * Each subnet in your VPC must be associated with a network ACL. If you don't explicitly associate a subnet with a network ACL, the subnet is automatically associated with the default network ACL.
+        * You can associate a network ACL with multiple subnets. However, a subnet can be associated with only one network ACL at a time. When you associate a network ACL with a subnet, the previous association is removed.
+        * A network ACL contains a numbered list of rules. We evaluate the rules in order, starting with the lowest numbered rule, to determine whether traffic is allowed in or out of any subnet associated with the network ACL. The highest number that you can use for a rule is 32766. We recommend that you start by creating rules in increments (for example, increments of 10 or 100) so that you can insert new rules where you need to later on.
+        * A network ACL has separate inbound and outbound rules, and each rule can either allow or deny traffic.
+        * Network ACLs are stateless, which means that responses to allowed inbound traffic are subject to the rules for outbound traffic (and vice versa).
+        * There are quotas (limits) for the number of network ACLs per VPC, and the number of rules per network ACL. 
+
+    * A security group acts as a virtual firewall for your instance to control inbound and outbound traffic. When you launch an instance in a VPC, you can assign up to five security groups to the instance. Security groups act at the instance level, not the subnet level. Therefore, each instance in a subnet in your VPC can be assigned to a different set of security groups. The following are basic security group concepts:
+        * You can specify allow rules, but not deny rules.
+        * You can specify separate rules for inbound and outbound traffic.
+        * Security group rules enable you to filter traffic based on protocols and port numbers.
+        * Security groups are stateful — if you send a request from your instance, the response traffic for that request can flow in regardless of inbound security group rules. Responses to allowed inbound traffic can flow out, regardless of outbound rules.
+        * When you first create a security group, it has no inbound rules. Therefore, no inbound traffic originating from another host to your instance is allowed until you add inbound rules to the security group.
+        * By default, a security group includes an outbound rule that allows all outbound traffic. You can remove the rule and add outbound rules that allow specific outbound traffic only. If your security group has no outbound rules, no outbound traffic originating from your instance is allowed.
+        * There are quotas on the number of security groups that you can create per VPC, the number of rules that you can add to each security group, and the number of security groups that you can associate with a network interface.
+        * Instances associated with a security group can't talk to each other unless you add rules allowing the traffic (exception: the default security group has these rules by default).
+        * Security groups are associated with network interfaces. After you launch an instance, you can change the security groups that are associated with the instance, which changes the security groups associated with the primary network interface (eth0). You can also specify or change the security groups associated with any other network interface. By default, when you create a network interface, it's associated with the default security group for the VPC, unless you specify a different security group.
+        * When you create a security group, you must provide it with a name and a description. There are limits to the length (255 characters) and allowed characters. Security group names must be unique within the VPC.
+        * A security group can only be used in the VPC that you specify when you create the security group.
 
 1. AWS WAF
 
@@ -526,7 +548,7 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. AWS Certificate Manager (ACM)
 
-    * ACM lets you provision, manage, and deploy public and private certificates for use with AWS services. Supported services include:
+    * AWS ACM lets you provision, manage, and deploy public and private certificates for use with AWS services. Supported services include:
         * ELB
         * CloudFront
         * Elastic Beanstalk
@@ -536,7 +558,7 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. AWS CloudHSM
 
-    * CloudHSM helps you meet corporate, contractual, and regulatory compliance requirements for data security by using dedicated Hardware Security Module (HSM) appliances within the AWS cloud. CloudHSM is provided in a single tenancy.
+    * AWS CloudHSM helps you meet corporate, contractual, and regulatory compliance requirements for data security by using dedicated Hardware Security Module (HSM) appliances within the AWS cloud. CloudHSM is provided in a single tenancy.
 
     * There are 4 type of CloudHSM users:
         * **Precrypto Officer (PRECO):** A temporary user with a default user name and password. They can only change their password (to become the Primary Crypto Officer) and perform read-only operations on the HSM.
@@ -546,9 +568,11 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. AWS Directory Service
 
+    * AWS Directory Service provides multiple ways to set up and run Microsoft Active Directory with other AWS services such as Amazon EC2, Amazon RDS for SQL Server, FSx for Windows File Server, and AWS Single Sign-On.
+
 1. Amazon GuardDuty
 
-    * GuardDuty is a threat detection service which uses ML to continuously monitor for malicious behaviour, particularly around EC2 instances. This includes unusual API calls or calls from a known malicious IP, attempts to disable CloudTrail logging, port scanning etc.
+    * GuardDuty is a threat detection service which uses machine learning to continuously monitor for malicious behaviour, particularly around EC2 instances. This includes unusual API calls or calls from a known malicious IP, attempts to disable CloudTrail logging, port scanning etc.
 
     * Alerts appear in the GuardDuty console and EventBridge. Automated responses can be setup using EventBridge and Lambda.
 
@@ -556,9 +580,11 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. AWS Identity and Access Management (IAM)
 
+    * AWS Identity and Access Management (IAM) provides fine-grained access control across all of AWS. With IAM, you can specify who can access which services and resources, and under which conditions. With IAM policies, you manage permissions to your workforce and systems to ensure least-privilege permissions.
+
 1. Amazon Inspector
 
-    * Inspector is an automated security assessment service that helps improve the security and compliance of applications deployed on AWS. Inspector automatically assesses applications for vulnerabilities or deviations from best practices. After performing an assessment, Inspector produces a detailed list of security findings prioritised by level of severity. These findings can be reviewed directly or as part of detailed assessment reports which are available via the Inspector console or API.
+    * Amazon Inspector is an automated security assessment service that helps improve the security and compliance of applications deployed on AWS. Inspector automatically assesses applications for vulnerabilities or deviations from best practices. After performing an assessment, Inspector produces a detailed list of security findings prioritised by level of severity. These findings can be reviewed directly or as part of detailed assessment reports which are available via the Inspector console or API.
 
     * Inspector supports the following rules packages:
         * Common vulnerabilities and exposures
@@ -570,7 +596,7 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. AWS Key Management Service (AWS KMS)
 
-    * KMS is a managed service that makes it easy for you to create and control the encryption keys used to encrypt your data and uses Hardware Security Modules (HSMs) to protect the security of your keys.
+    * AWS KMS is a managed service that makes it easy for you to create and control the encryption keys used to encrypt your data and uses Hardware Security Modules (HSMs) to protect the security of your keys.
 
     * The Customer Master Key (CMK) includes the alias, creation date, description, key state, and key material (either customer provided, or AWS provided). It can never be exported.
 
@@ -630,9 +656,11 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. Amazon Macie
 
-    * Macie uses Machine Learning and Natural Language Processing to discover, classify, and protect sensitive data stored in S3. It provides dashboards, reporting, and alerts. Data is classified by content type, theme, file extension, and regular expression.
+    * Amazon Macie uses Machine Learning and Natural Language Processing to discover, classify, and protect sensitive data stored in S3. It provides dashboards, reporting, and alerts. Data is classified by content type, theme, file extension, and regular expression.
 
 1. AWS Single Sign-On
+
+    * AWS Single Sign-On (AWS SSO) is a cloud service that allows you to grant your users access to AWS resources, such as Amazon EC2 instances, across multiple AWS accounts. By default, AWS SSO now provides a directory that you can use to create users, organize them in groups, and set permissions across those groups.
 
 ### Out-of-scope Services and Features
 
@@ -653,6 +681,9 @@ When the principal is another AWS account or its principals, the permissions are
 1. A security team is creating a response plan when an employee executes unauthorised actions on AWS infrastructure. They want to include steps to determine if the employee's IAM permissions changes as part of the incident. What steps should the team document in the plan?
     * AWS Config can be used to examine the employee's IAM permissions before the incident and compare them to the employee's current IAM permissions. AWS Macie is not applicable as it used for data security and data privacy. Amazon GuardDuty is not applicable as it is a threat detection service. AWS Trusted Advisor is not relevant as it helps optimise your AWS infrastructure.
 
+1. A company hosts a critical web application on the AWS Cloud. This is a key revenue-generating application for the company. The IT Security team is worried about potential DDoS attacks against the website (this might affect the AWS services like Amazon CloudFront, Amazon Route 53, and AWS Global Accelerator). The senior management has also specified that immediate action needs to be taken in case of a potential DDoS attack. What should be done in this regard?
+    * Consider using the AWS Shield Advanced Service.
+
 ### Logging and Monitoring
 
 1. Your company has an EC2 Instance that is hosted in an AWS VPC. There is a requirement to ensure that log files from the EC2 Instance are stored in a secure manner. The access should be limited to the log files. How can this be accomplished? Choose 2 answers from the options given below. Each answer forms part of the solution.
@@ -661,7 +692,7 @@ When the principal is another AWS account or its principals, the permissions are
 1. A company has managed many AWS resources. The IT audit department has requested to get a list of resources in the AWS account. How can this be achieved efficiently?
     * AWS Config can be used to get a list of all resources. Methods such as using a bash or PowerShell script are less efficient.
 
-1. A company uses CloudTrail to log all AWS API activity for all regions in all of its accounts. The CISO has asked that additional steps be taken to protect the integrity of the log files. What combination of steps will protect the log files from intentional or unintentional alteration?
+1. A company uses CloudTrail to log all AWS API activity for all regions in all its accounts. The CISO has asked that additional steps be taken to protect the integrity of the log files. What combination of steps will protect the log files from intentional or unintentional alteration?
     * An S3 bucket should be created in a dedicated log account and other accounts should have write only access to this account. CloudTrail log file integrity validation should be enabled.
 
 1. You have enabled CloudTrail logs for your company’s AWS account. In addition, the IT Security department has mentioned that the logs need to be encrypted. How can this be achieved?
@@ -669,6 +700,9 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. Which of the following is NOT a best practice for carrying out a security audit?
     * Audits should be conducted more frequently than yearly. Audits should be done on a periodic basis, if there are changes in your organisation, if you have stopped using one or more AWS services, if you've added or removed software in your accounts, and if you ever suspect unauthorised access.
+
+1. A company has a legacy application that outputs all logs to a local text file. Logs from all applications running on AWS must be continually monitored for security-related messages. What can be done to allow the company to deploy the legacy application on Amazon EC2 and still meet the monitoring requirement?
+    * The logs can be sent to CloudWatch logs. You can then specify metrics to search the logs for any specific values and create alarms based on these metrics.
 
 ### Infrastructure Security
 
@@ -689,6 +723,12 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. A security team must present a daily briefing to the CISO that includes a report of which of the company's thousands of EC2 instances and on-premises servers are missing the latest security patches. All instances/servers must be brought into compliance within 24 hours so that they do not show up on the next day's report. How can the security team fulfill these requirements?
     * Systems Manager Patch Manager can be used to generate the report of out of compliance instances and servers, and to install the missing patches. Deploy the latest AMIs is not correct as it will affect the applications running on these systems.
+
+1. Your department oversees developing an Ecommerce website where customers can browse and purchase products online. The application is developed in the AWS platform. A wide range of AWS services is used, including EC2, Lambda, CloudFormation, etc. Recently, the internal security auditors asked you to provide a document to state that the related AWS services meet the Payment Card Industry (PCI) compliance. How should you provide the document?
+    * A PCI compliance document can be downloaded from AWS Artifact.
+
+1. You just joined a big IT company as an AWS security specialist. Your first assignment is to prepare for an external security audit next month. You need to understand how your company uses AWS services and whether they can meet security compliance. You know that AWS Artifact can help you provide security compliance evidence to the auditor. Which specific areas can AWS Artifact help you?
+    * AWS Artifact can provide a Service Organisation Control (SOC) compliance report and AWS ISO certifications for the AWS infrastructure and services that the company has used.
 
 ### Identity and Access Management
 
@@ -791,10 +831,19 @@ When the principal is another AWS account or its principals, the permissions are
     }
     ```    
 However, the IAM user in account B still cannot get objects in the S3 bucket. Which one may cause the failure?
-    * The IAM user in account B may not have IAM permissions to get an object in the particular S3 bucket. 
+    * The IAM user in account B may not have IAM permissions to get an object in the S3 bucket. 
 
 1. You have maintained an AWS account A containing an S3 bucket that another AWS account B needs to upload files to. In the S3 bucket policy, s3:PutObject is allowed for the IAM user in account B. And the IAM user in account B can use `aws s3api put-object` to upload objects to the S3 bucket successfully. However, it has been found that users in AWS account A cannot open the new uploaded objects. How should you fix this issue?
-    * The problem is that once account B has uploaded objects to the bucket in account A, the objects are still owned by account B, and account A does not have access to it. The option `--acl bucket-owner-full-control` should be added to the command `aws s3api put-object` to give permissions to the bucket owner for the objects. 
+    * The problem is that once account B has uploaded objects to the bucket in account A, the objects are still owned by account B, and account A does not have access to it. The option `--acl bucket-owner-full-control` should be added to the command `aws s3api put-object` to give permissions to the bucket owner for the objects.
+
+1. Which of the following is used as a secure way to log into an EC2 Linux Instance?
+    * SSH key pairs are used to login to EC2 instance. IAM credentials are not relevant as they are of the AWS console. AWS Access Keys are not relevant as they are used to log into the AWS console and services using the command line.
+
+1. Your company owns many AWS accounts managed by AWS Organizations. To meet security compliance, the CloudTrail should always be enabled in all AWS accounts. However, during the last couple of weeks, it was noticed that IAM users in certain AWS accounts disabled the CloudTrail feature. You need to add a restriction rule to prevent such actions. What is the best way to achieve that?
+    * A Service Control Policy (SCP) can be configured to deny the CloudTrail StopLogging action and add the policy to the relevant OUs in the organisation. Configuring policies at the user level would be an inefficient method in this scenario.
+
+1. You are working in the cloud security team in a big company. To meet security compliance, you are in charge of applying AWS Config rules to AWS accounts in other organizational units (OUs). However, it has been found that the Config rules may be deleted by IAM users accidentally in these AWS accounts. You need to prevent such actions from happening again. How should you implement this?
+    *  An SCP should be implemented that denies the DeleteConfigRule action. The new SCP should be applied to organisational units in the AWS Organization. Permission boundaries are not relevent in SCP.
 
 ### Data Protection
 
@@ -853,11 +902,11 @@ However, the IAM user in account B still cannot get objects in the S3 bucket. Wh
 A CMK was used in the encryption operation. Then in another stage, the encrypted file needs to be decrypted with `aws kms decrypt`. What is true regarding the decryption command?
     * The key information does not need to be added to the command (assuming it was encrypted under a symmetric KMS key).
 
-1. In your organisation, the security team requires that the key material of CMKs should be generated and maintained in your own infrastructure. Therefore you have created key material in local servers and got it imported. Then the CMKs are used for encryption/decryption with various AWS services. Which configurations or operations can you perform on these CMKs?
+1. In your organisation, the security team requires that the key material of CMKs should be generated and maintained in your own infrastructure. Therefore, you have created key material in local servers and got it imported. Then the CMKs are used for encryption/decryption with various AWS services. Which configurations or operations can you perform on these CMKs?
     * Key rotation is not an option for CMKs with imported key material. The key material also cannot be exported outside of KMS, and a different key material cannot be imported into the same CMK. Key deletion can be done after a waiting period of 7 to 30 days, and key material can be manually deleted.
 
 1. You are working in a financial company as a DevOps engineer. Your organisation is CMK in KMS for several AWS services. For the CMK, the key material was imported as the key material needs to be maintained on-premises instead of AWS. According to the company rule, the key material must be rotated every year. How should you rotate the CMK?
-    * There is no automatic rotation of key material and you cannot reimport different key material. You also should not delete the old CMK and create a new one, as KMS needs to decrypt data that the original CMK encrypted or it would be lost. You can create a new CMK with new key material and then change the key alias using the AWS CLI.
+    * There is no automatic rotation of key material and you cannot reimport different key material. You also should not delete the old CMK and create a new one, as KMS needs to decrypt data that the original CMK encrypted, or it would be lost. You can create a new CMK with new key material and then change the key alias using the AWS CLI.
 
 1. You have a Jenkins server deployed in EC2. One Jenkins pipeline is used to build artifacts. It needs to fetch some source files from an S3 bucket which is encrypted with a CUMK in KMS. The pipeline was working fine. However, it suddenly stopped working early this week. You have found that the Jenkins task failed to decrypt the S3 data using the CMK. What may be the cause of the failure?
     * It is likely that the key policy of the CMK was recently modified with a deny for the IAM role that the Jenkins EC2 instance is using.
