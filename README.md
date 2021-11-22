@@ -268,17 +268,43 @@
 
 1. Given a description of a workload, analyze the access control configuration for AWS services and make recommendations that reduce risk.
 
+    * IAM Access Analyzer helps you identify the resources in your organization and accounts, such as Amazon S3 buckets or IAM roles, shared with an external entity. For each instance of a resource shared outside of your account, Access Analyzer generates a finding. Findings include information about the access and the external principal granted to it.
+
+    * Access Analyzer analyzes only policies applied to resources in the same AWS Region where it's enabled. To monitor all resources in your AWS environment, you must create an analyzer to enable Access Analyzer in each Region where you're using supported AWS resources.
+
 1. Given a description how an organization manages their AWS accounts, verify security of their root user.
+
+    * The root user is the first and only identity that exists when you create an AWS account. You login by using the email address you signed up for that account with and the password you set. The root user has a password to access the console, and optionally access keys (access key IDs and secret access keys) for accessing the APIs. The AWS account root user has full access to everything in your account, and it can even close the account.
+
+    * The following best practises are recommended for the root account:
+        * Remove access keys (delete or deactivate). Access keys cannot have MFA devices linked to them, so if you were to leave them accidentally somewhere public then anyone can immediately use them.
+        * A virtual or hardware (hardware is preferred) MFA device should be added to your root user to provide an additional layer of authentication. Note that if someone attempts to use the recovery process to gain access to the root account the security of the email address and phone number associated with the account becomes important.
+        * Don't use the root user. Only a few tasks require using the root user. These tasks include closing your AWS account, viewing certain tax invoices, restoring IAM user permissions, changing or cancelling your AWS Support plan, registering as a seller in the Reserved Instance Marketplace, configuring an Amazon S3 bucket to enable MFA Delete, editing or deleting an Amazon S3 bucket policy that includes an invalid VPC ID, or to signing up for GovCloud.
+        * Use either individual IAM users or a centralised identity provider (such as using IAM federation and AWS SSO) instead of root.
+        * Configure AWS account alternate contacts.
+        * Setup a CloudFormation SNS topic and CloudWatch event to send a notification based on root user logins.
 
     * If the root user has left, several tasks are required. A new root user password with a strong password policy should be created. The previous MFA should be deleted and recreated. Any root user Access Key ID and Secret Access Key should be deleted. Other user accounts should be checked and deleted if not legitimate.
 
 1. Given your organization’s compliance requirements, determine when to apply user policies and resource policies.
 
+    * A policy is an object in AWS that, when associated with an identity or resource, defines their permissions. When you create a permissions policy to restrict access to a resource, you can choose an identity-based policy or a resource-based policy.
+
+    * Identity-based policies are attached to an IAM user, group, or role. These policies let you specify what that identity can do (its permissions).
+
+    * Resource-based policies are attached to a resource. For example, you can attach resource-based policies to Amazon S3 buckets, Amazon SQS queues, VPC endpoints, and AWS Key Management Service encryption keys.
+
+    * For a request to which only permissions policies apply, AWS first checks all policies for a Deny. If one exists, then the request is denied. Then AWS checks for each Allow. If **at least one policy** statement allows the action in the request, the request is allowed. It doesn't matter whether the Allow is in the identity-based policy or the resource-based policy.
+
+    * This logic applies **only when** the request is made within a single AWS account. For requests made from one account to another, the requester in Account A must have an identity-based policy that allows them to make a request to the resource in Account B. Also, the resource-based policy in Account B must allow the requester in Account A to access the resource. There **must be policies in both accounts that allow** the operation, otherwise the request fails. 
+
 1. Within an organization’s policy, determine when to federate a directory services to IAM.
 
     * The AWS Security Toke Service (STS) provides a SAML token after authenticating against an LDAP directory (such as AD). Once we have the token, any attempt to access an AWS resource will go via IAM first to check the token.
- 
+
 1. Design a scalable authorization model that includes users, groups, roles, and policies.
+
+    * A policy is an object in AWS that, when associated with an identity or resource, defines their permissions. When you create a permissions policy to restrict access to a resource, you can choose an identity-based policy or a resource-based policy.
 
 1. Identify and restrict individual users of data and AWS resources.
 
@@ -506,7 +532,7 @@ When the principal is another AWS account or its principals, the permissions are
 
     * A VPC endpoint enables connections between a VPC and supported services, without requiring that you use an internet gateway, NAT device, VPN connection, or AWS Direct Connect connection. Therefore, your VPC is not exposed to the public internet.
 
-    * A Network Access Control List (NACL) is an optional layer of security for your VPC that acts as a firewall for controlling traffic in and out of one or more subnets. The NACL might have rules similar to your security groups to add an additional layer of security to your VPC. The following are basic NACL concepts:
+    * A Network Access Control List (NACL) is an optional layer of security for your VPC that acts as a firewall for controlling traffic in and out of one or more subnets. The NACL might have rules like your security groups to add an additional layer of security to your VPC. The following are basic NACL concepts:
         * Your VPC automatically comes with a modifiable default network ACL. By default, it allows all inbound and outbound IPv4 traffic and, if applicable, IPv6 traffic.
         * You can create a custom network ACL and associate it with a subnet. By default, each custom network ACL denies all inbound and outbound traffic until you add rules.
         * Each subnet in your VPC must be associated with a network ACL. If you don't explicitly associate a subnet with a network ACL, the subnet is automatically associated with the default network ACL.
@@ -704,6 +730,12 @@ When the principal is another AWS account or its principals, the permissions are
 1. A company has a legacy application that outputs all logs to a local text file. Logs from all applications running on AWS must be continually monitored for security-related messages. What can be done to allow the company to deploy the legacy application on Amazon EC2 and still meet the monitoring requirement?
     * The logs can be sent to CloudWatch logs. You can then specify metrics to search the logs for any specific values and create alarms based on these metrics.
 
+1. As an AWS security specialist, you are working on applying AWS Config rules to all AWS accounts to ensure that AWS resources meet security requirements. One of the security checks is to inspect whether EC2 resources have appropriate Tags. If not, the rule will be non-compliant. There is an existing AWS Config rule called required-tags. However, it does not meet your needs. For example, you want the rule to check specific resources in certain availability zones. How should you implement the Config rule to perform custom checks?
+    * An AWS Lambda function can be used to perform custom checks. A custom AWS Config rule can be used to invoke the Lambda function.
+
+1. You are working in the IT security team in a big company. To perform security checks in AWS services, you have written dozens of custom AWS Config rules. One of them is to check if the S3 bucket policy contains certain explicit denies. This Config rule is supposed to be applied for all S3 buckets. Your manager has asked you how to trigger the custom Config rule. Which answers are correct?
+    * The rule can be automatically triggered whenever there is a change for an S3 bucket. It can also be triggered periodically every 1, 3, 6, 12, or 24 hours. The rule could also be triggered manually.
+
 ### Infrastructure Security
 
 1. A company hosts a popular web application that connects to an Amazon RDS MySQL DB instance running in a private VPC subnet created with default Network ACL settings. The IT Security department has a suspicion that a DoS attack is coming from a suspecting IP. How can you protect the subnets from this attack?
@@ -729,6 +761,12 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. You just joined a big IT company as an AWS security specialist. Your first assignment is to prepare for an external security audit next month. You need to understand how your company uses AWS services and whether they can meet security compliance. You know that AWS Artifact can help you provide security compliance evidence to the auditor. Which specific areas can AWS Artifact help you?
     * AWS Artifact can provide a Service Organisation Control (SOC) compliance report and AWS ISO certifications for the AWS infrastructure and services that the company has used.
+
+1. An application running on EC2 instances in the public subnet in a VPC must call an external web service via HTTPS. Which of the below options would minimise the exposure of the instances?
+    * The outbound rules on both the NACL and security group need to allow outbound traffic. The inbound traffic should be allowed on ephemeral ports for the OS on the instances to allow a connection to be established on any desired or available port.
+
+1. A company is deploying a new web application on AWS. Based on their other web applications, they anticipate being the target of frequent DDoS attacks. Which steps can the company take to protect its applications?
+    * An AWS Application Load Balancer and Auto Scaling group can be used to absorb malicious traffic. CloudFront and AWS WAF can prevent malicious traffic from reaching the application.
 
 ### Identity and Access Management
 
@@ -842,8 +880,14 @@ However, the IAM user in account B still cannot get objects in the S3 bucket. Wh
 1. Your company owns many AWS accounts managed by AWS Organizations. To meet security compliance, the CloudTrail should always be enabled in all AWS accounts. However, during the last couple of weeks, it was noticed that IAM users in certain AWS accounts disabled the CloudTrail feature. You need to add a restriction rule to prevent such actions. What is the best way to achieve that?
     * A Service Control Policy (SCP) can be configured to deny the CloudTrail StopLogging action and add the policy to the relevant OUs in the organisation. Configuring policies at the user level would be an inefficient method in this scenario.
 
-1. You are working in the cloud security team in a big company. To meet security compliance, you are in charge of applying AWS Config rules to AWS accounts in other organizational units (OUs). However, it has been found that the Config rules may be deleted by IAM users accidentally in these AWS accounts. You need to prevent such actions from happening again. How should you implement this?
-    *  An SCP should be implemented that denies the DeleteConfigRule action. The new SCP should be applied to organisational units in the AWS Organization. Permission boundaries are not relevent in SCP.
+1. You are working in the cloud security team in a big company. To meet security compliance, you oversee applying AWS Config rules to AWS accounts in other organizational units (OUs). However, it has been found that the Config rules may be deleted by IAM users accidentally in these AWS accounts. You need to prevent such actions from happening again. How should you implement this?
+    * An SCP should be implemented that denies the DeleteConfigRule action. The new SCP should be applied to organisational units in the AWS Organization. Permission boundaries are not relevent in SCP.
+
+1. Every application in a company's portfolio has a separate AWS account for development and production. The security team wants to prevent the root user and all IAM users in the production accounts from accessing a specific set of unneeded services. How can they control this functionality?
+    * An SCP that denies access to the services can be created. If all production accounts are in the same OU, the SCP can be applied to that OU.
+
+1. You're developing a mobile application utilising third-party social network IdP. What pieces of information below are required to configure a social IdP correctly?
+    * 
 
 ### Data Protection
 
