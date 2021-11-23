@@ -79,9 +79,9 @@
 
 1. Analyze architecture and identify monitoring requirements and sources for monitoring statistics.
 
-    * AWS CloudWatch is a monitoring service for AWS cloud resources and the applications you run on AWS.
+    * AWS CloudWatch is a monitoring service for AWS cloud resources and the applications you run on AWS. CloudWatch can provide real time metrics, alarms, and notifications.
 
-    * CloudWatch can provide real time metrics, alarms, and notifications. CloudWatch Logs are pushed from some AWS services and are stored internally indefinitely. EventBridge can provide a near real-time stream of system events.
+    * CloudWatch Logs are pushed from some AWS services and are stored internally indefinitely. EventBridge can provide a near real-time stream of system events.
 
 1. Analyze architecture to determine which AWS services can be used to automate monitoring and alerting.
 
@@ -107,9 +107,7 @@
 
 1.  Review audit trails of system and user activity.
 
-    * CloudTrail logs calls to the AWS APIs for most services. It does not log events such as SSH or RDP access to an EC2 instance in AWS.
-
-    * Logged data is metadata around API calls. For example, the identity of the API caller, the time, the source IP, the request parameters, and the response.
+    * CloudTrail logs calls to the AWS APIs for most services. It does not log events such as SSH or RDP access to an EC2 instance in AWS. Logged data is metadata around API calls. For example, the identity of the API caller, the time, the source IP, the request parameters, and the response.
 
     * Event logs are sent to an S3 bucket every 5 minutes with up to a 15-minute delay. Notifications can be configured based on the log contents. The retention of the log files is managed in S3. Logging can be aggregated across regions and across accounts.
 
@@ -300,11 +298,28 @@
 
 1. Within an organization’s policy, determine when to federate a directory services to IAM.
 
-    * The AWS Security Toke Service (STS) provides a SAML token after authenticating against an LDAP directory (such as AD). Once we have the token, any attempt to access an AWS resource will go via IAM first to check the token.
+    * Identity federation is a system of trust between two parties for the purpose of authenticating users and conveying information needed to authorize their access to resources. In this system, an identity provider (IdP) is responsible for user authentication, and a service provider (SP), such as a service or an application, controls access to resources. By administrative agreement and configuration, the SP trusts the IdP to authenticate users and relies on the information provided by the IdP about them. After authenticating a user, the IdP sends the SP a message, called an assertion, containing the user's sign-in name and other attributes that the SP needs to establish a session with the user and to determine the scope of resource access that the SP should grant. Federation is a common approach to building access control systems which manage users centrally within a central IdP and govern their access to multiple applications and services acting as SPs.
+
+    * You can use AWS SSO for identities in the AWS SSO’s user directory, your existing corporate directory, or external IdP. With AWS SSO, you can assign permissions based on the group membership in your IdP’s directory, and then control the access for your users by simply modifying users and groups in the IdP.
+
+    * You can enable federated access to AWS accounts using AWS Identity and Access Management (IAM). The flexibility of the AWS IAM allows you to enable a separate SAML 2.0 or an Open ID Connect (OIDC) IdP for each AWS account and use federated user attributes for access control.
+
+    * You can add federation support to your customer-facing web and mobile applications using Amazon Cognito. It helps you add user sign-up, sign-in, and access control to your mobile and web apps quickly and easily. Amazon Cognito scales to millions of users and supports sign-in with social identity providers, such as Apple, Facebook, Google, and Amazon, and enterprise identity providers via SAML 2.0.
+
+    * Within the context of federation, the AWS Security Toke Service (STS) provides a SAML token after authenticating against an LDAP directory (such as AD). Once we have the token, any attempt to access an AWS resource will go via IAM first to check the token.
 
 1. Design a scalable authorization model that includes users, groups, roles, and policies.
 
-    * A policy is an object in AWS that, when associated with an identity or resource, defines their permissions. When you create a permissions policy to restrict access to a resource, you can choose an identity-based policy or a resource-based policy.
+    * You can combine Attribute-Based Access Control (ABAC) using AWS IAM with a standard Active Directory Federation Services (AD FS) connected to Microsoft Active Directory. With ABAC in conjunction with Amazon S3 policies, you can authorize users to read objects based on one or more tags that are applied to S3 objects and to the IAM role session of your users based on attributes in Active Directory.
+
+    * The benefits of ABAC in this solution are that you need to provision fewer IAM roles and that your S3 objects can have different prefixes without the need to explicitly add all those prefixes to your IAM permissions policies like you would with RBAC.
+
+    * Once configured, the authentication flow would be:
+        * User authenticates to your IdP — AD FS in this case.
+        * The IdP queries the identity store — Active Directory in this case — to retrieve the tag values for the authenticated user.
+        * The identity store supplies the tag values to AWS — together with other information — in a SAML token.
+        * IAM checks the trust policy to determine if the IdP is allowed to federate the user into the specified role.
+        * Users can access the data directly or through another supported service using the credentials and in accordance with the permissions granted.
 
 1. Identify and restrict individual users of data and AWS resources.
 
@@ -326,6 +341,10 @@
     * A pre-signed URL can be used to temporarily grant access an object. They are typically created via the SDK but can also be done using the CLI. The default length of time is 1 hour but it can be changed with the *--expires-in* argument followed by the number of seconds.
 
 1. Review policies to establish that users/systems are restricted from performing functions beyond their responsibility and enforce proper separation of duties.
+
+    * Separation of duties is a design principle where more than one person’s approval is required to conclude a critical task, and it is an important part of the AWS Well-Architected Framework.
+
+    * As an example to show what is possible, an operator may require an approval for a shell session to an EC2 instance. An approval from AWS Systems Manager Change Manager is required and triggers an Automation runbook. This runbook adds a tag to the operator's IAM principal that allows it to start a shell in the specified targets and sends an SNS notification to the approver. By default, the operator needs to start the session within 10 mintues (although the period is configurable). After 10 minutes the tag is removed.
 
 ### Troubleshoot an authorization and authentication system to access AWS resources.
 
@@ -468,19 +487,33 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. TLS
 
+    * Transport Layer Security, or TLS, is a widely adopted security protocol designed to facilitate privacy and data security for communications over the Internet. A primary use case of TLS is encrypting the communication between web applications and servers, such as web browsers loading a website. TLS can also be used to encrypt other communications such as email, messaging, and voice over IP (VoIP).
+
 1. Certificate management
+
+    * Certificate Management, or more specifically, X.509 certificate management, is the activity of monitoring, facilitating, and executing every certificate process necessary for uninterrupted network operations.
 
     * SSL certificates renew automatically, provided you purchased the domain name from Route53 and it's not for a private hosted zone. You can use Amazon SSL certificates with load balances and CloudFront, but you cannot export the certificates.
 
-1. Infrastructure as code (IaC)
+1. Infrastructure as Code (IaC)
+
+    * IaC is the management of infrastructure (networks, virtual machines, load balancers, and connection topology) in a descriptive model, using the same versioning as DevOps team uses for source code.
 
 ### AWS Services and Features
 
 1. AWS Audit Manager
 
+    * AWS Audit Manager helps you continuously audit your AWS usage to simplify how you assess risk and compliance with regulations and industry standards. Audit Manager automates evidence collection to reduce the “all hands on deck” manual effort that often happens for audits and enable you to scale your audit capability in the cloud as your business grows. With Audit Manager, it is easy to assess if your policies, procedures, and activities – also known as controls – are operating effectively. When it is time for an audit, AWS Audit Manager helps you manage stakeholder reviews of your controls and enables you to build audit-ready reports with much less manual effort.
+
 1. AWS CloudTrail
 
+    * CloudTrail logs calls to the AWS APIs for most services. It does not log events such as SSH or RDP access to an EC2 instance in AWS. Logged data is metadata around API calls. For example, the identity of the API caller, the time, the source IP, the request parameters, and the response.
+
 1. Amazon CloudWatch
+
+    * Amazon CloudWatch is a monitoring service for AWS cloud resources and the applications you run on AWS. CloudWatch can provide real time metrics, alarms, and notifications.
+
+    * CloudWatch Logs are pushed from some AWS services and are stored internally indefinitely. EventBridge can provide a near real-time stream of system events.
 
 1. AWS Config
 
@@ -510,7 +543,15 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. Amazon Detective
 
+    * Amazon Detective makes it easy to analyze, investigate, and quickly identify the root cause of potential security issues or suspicious activities. Amazon Detective automatically collects log data from your AWS resources and uses machine learning, statistical analysis, and graph theory to build a linked set of data that enables you to easily conduct faster and more efficient security investigations.
+
+    * AWS security services like Amazon GuardDuty, Amazon Macie, and AWS Security Hub as well as partner security products can be used to identify potential security issues, or findings. These services are helpful in alerting you when something is wrong and pointing out where to go to fix it. But sometimes there might be a security finding where you need to dig a lot deeper and analyze more information to isolate the root cause and act. Determining the root cause of security findings can be a complex process that often involves collecting and combining logs from many separate data sources, using extract, transform, and load (ETL) tools or custom scripting to organize the data, and then security analysts having to analyze the data and conduct lengthy investigations.
+
+    * Amazon Detective simplifies this process by enabling your security teams to easily investigate and quickly get to the root cause of a finding. Amazon Detective can analyze trillions of events from multiple data sources such as Virtual Private Cloud (VPC) Flow Logs, AWS CloudTrail, and Amazon GuardDuty, and automatically creates a unified, interactive view of your resources, users, and the interactions between them over time. With this unified view, you can visualize all the details and context in one place to identify the underlying reasons for the findings, drill down into relevant historical activities, and quickly determine the root cause.
+
 1. AWS Firewall Manager
+
+    * AWS Firewall Manager is a security management service which allows you to centrally configure and manage firewall rules across your accounts and applications in AWS Organizations. As new applications are created, Firewall Manager makes it easy to bring new applications and resources into compliance by enforcing a common set of security rules. Now you have a single service to build firewall rules, create security policies, and enforce them in a consistent, hierarchical manner across your entire infrastructure, from a central administrator account.
 
 1. AWS Network Firewall
 
@@ -557,7 +598,7 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. AWS WAF
 
-    * Web Application Firewall (WAF) lets you monitor the HTTP and HTTPS requests that are forwarded to Amazon CloudFront or an application load balancer. It does not integrate with services like EC2 directly. You can configure conditions such as what IP addresses are allowed to make this request or what query string parameters need to be passed for the request to be allowed.
+    * AWS Web Application Firewall (WAF) lets you monitor the HTTP and HTTPS requests that are forwarded to Amazon CloudFront or an application load balancer. It does not integrate with services like EC2 directly. You can configure conditions such as what IP addresses are allowed to make this request or what query string parameters need to be passed for the request to be allowed.
 
     * As a basic level WAF allows 3 different behaviours:
         * Allow all requests except the ones that you specify.
@@ -887,7 +928,7 @@ However, the IAM user in account B still cannot get objects in the S3 bucket. Wh
     * An SCP that denies access to the services can be created. If all production accounts are in the same OU, the SCP can be applied to that OU.
 
 1. You're developing a mobile application utilising third-party social network IdP. What pieces of information below are required to configure a social IdP correctly?
-    * 
+    * The App Client ID, App Client Secret, and List of scopes are required for the social IdP. SAML assertions, OIDC tokens and claims are not relevant to setup the social IdP.
 
 ### Data Protection
 
@@ -957,3 +998,6 @@ A CMK was used in the encryption operation. Then in another stage, the encrypted
 
 1. As a DevOps engineer, you are helping the team to build up AWS services for a new project. Applications are deployed in two EC2 instances EC2A and EC2B. Both instances need to encrypt dozens of files using a CMK in KMS. The CMK has a key policy allowing both roles to access the key. EC2RoleB is the role used by EC2B and has an explicit deny. Which instances can use the CMK?
     * EC2A can use the CMK for encryption, EC2B cannot.
+
+1. You want to launch an EC2 Instance with your own key pair in AWS. After you generate the key pair through OpenSSL, how would you configure the key pair in EC2?
+    * In the AWS Console, use "import key pair" to import the public key to the EC2 service.
