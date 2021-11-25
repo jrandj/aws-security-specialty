@@ -145,6 +145,8 @@
 
 1.  Based on the security policy requirements, determine the correct log level, type, and sources.
 
+    * You can choose from OFF, ALL, ERROR, or FATAL. No event types log when set to OFF and all event types do when set to ALL. For ERROR and FATAL, see the following table.
+
 ## Infrastructure Security
 
 ### Design edge security on AWS.
@@ -306,6 +308,24 @@
 
     * You can add federation support to your customer-facing web and mobile applications using Amazon Cognito. It helps you add user sign-up, sign-in, and access control to your mobile and web apps quickly and easily. Amazon Cognito scales to millions of users and supports sign-in with social identity providers, such as Apple, Facebook, Google, and Amazon, and enterprise identity providers via SAML 2.0.
 
+    * After creating an Amazon Cognito user pool, in API Gateway, you must then create a COGNITO_USER_POOLS authoriser that uses the pool. The steps required are:
+        * Create a new API, or select an existing API in API Gateway.
+        * From the main navigation pane, choose **Authorizers** under the specified API.
+        * Under Authorizers, choose Create New Authorizer.
+        * Configure the new authorizer to use the user pool. This requires selecting an authorizer name in **Name**, selecting the **Cognito** option, choosing a region under **Cognito User Pool**, selecting an available user pool from that region, selecting a **Token source** (type Authoriszation as the header name to pass the identity or access token that's returned by Amazon Cognito), and finally creating the authorizer using **Create**.
+
+    * Once the authoriser is created the authoriser can be used on methods. The steps required are:
+        * Choose (or create) a method on your API.
+        * Choose **Method Request**.
+        * Under **Settings**, choose the pencil icon next to **Authorization**.
+        * Choose one of the available **Amazon Cognito user pool authorizers** from the drop-down list.
+        * If using an identity token, leave the **OAuth Scopes** option unspecified. If needed choose **Integration Request** to add the `context.authorizer.claims` expressions in a body-mapping template to pass the specified identity claims property from the user pool to the backend.
+        * If using an access token, type one or more full names of scope into **OAuth Scopes** that has been configured when the Amazon Cognito user pool was created.
+
+    * With the COGNITO_USER_POOLS authorizer, if the OAuth Scopes option isn't specified, API Gateway treats the supplied token as an identity token and verifies the claimed identity against the one from the user pool. Otherwise, API Gateway treats the supplied token as an access token and verifies the access scopes that are claimed in the token against the authorization scopes declared on the method.
+
+    * Instead of using the API Gateway console, you can also enable an Amazon Cognito user pool on a method by specifying an OpenAPI definition file and importing the API definition into API Gateway.
+
     * Within the context of federation, the AWS Security Toke Service (STS) provides a SAML token after authenticating against an LDAP directory (such as AD). Once we have the token, any attempt to access an AWS resource will go via IAM first to check the token.
 
 1. Design a scalable authorization model that includes users, groups, roles, and policies.
@@ -344,20 +364,59 @@
 
     * Separation of duties is a design principle where more than one person’s approval is required to conclude a critical task, and it is an important part of the AWS Well-Architected Framework.
 
-    * As an example to show what is possible, an operator may require an approval for a shell session to an EC2 instance. An approval from AWS Systems Manager Change Manager is required and triggers an Automation runbook. This runbook adds a tag to the operator's IAM principal that allows it to start a shell in the specified targets and sends an SNS notification to the approver. By default, the operator needs to start the session within 10 mintues (although the period is configurable). After 10 minutes the tag is removed.
+    * As an example to show what is possible, an operator may require an approval for a shell session to an EC2 instance. An approval from AWS Systems Manager Change Manager is required and triggers an Automation runbook. This runbook adds a tag to the operator's IAM principal that allows it to start a shell in the specified targets and sends an SNS notification to the approver. By default, the operator needs to start the session within 10 minutes (although the period is configurable). After 10 minutes the tag is removed.
 
 ### Troubleshoot an authorization and authentication system to access AWS resources.
 
 1. Investigate a user’s inability to access S3 bucket contents.
 
+    * The following should be confirmed:
+        * That the bucket policy is applied to the bucket as a permission.
+        * That no overriding deny is occuring for the IAM policy.    
+        * That the policy allows access to all objects in the bucket by using the wildcard (e.g. `bucketname/*`).
+        * That if the files have been uploaded by another AWS account then the account owner has provided a grant for your account to access the objects.
+        * That KMS permissions are available if the bucket is encrypted.
+
 1. Investigate a user’s inability to switch roles to a different account.
 
-    * For cross account access to S3:
-        * The IAM policy in the external account needs to allow the user to call STS:AssumeRole.
-        * The IAM policy in the trusting account needs to allow the action.
+    * To use the AssumeRole API call with multiple accounts or cross-accounts, you must have a trust policy to grant permission to assume roles. As an example, user Bob_Account is required to assume a role Alice in Account_Alice.
 
-    * For cross account access to KMS:
-        * The Key Policy must allow access to the external account as well as the IAM policy in the local account.
+    * The IAM policy for Bob_Account:
+        ```JSON
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "PermissionToAssumeAlice",
+                    "Effect": "Allow",
+                    "Action": "sts:AssumeRole",
+                    "Resource": "arn:aws:iam::Account_Alice:role/Alice"
+                }
+            ]
+        }
+    ```
+
+    * The IAM policy for Alice_Account:
+        ```JSON
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "AWS": "arn:aws:iam::ACCOUNT_Bob:user/Bob"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+    ```
+
+    * A similar concept applies for a Key Policy if requesting cross account access to KMS.
+
+    * Note that if Account_Bob is part of an AWS Organizations, there might be a service control policy (SCP) restricting AssumeRole access with Account_Bob or Account_Alice. 
+
+    * Note that if you're using role chaining (when you use a role to assume a second role), you might be using IAM credentials from a previous session.
 
 1. Investigate an Amazon EC2 instance’s inability to access a given AWS resource.
 
@@ -473,17 +532,27 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. AWS CLI
 
+    * The AWS Command Line Interface (CLI) is a unified tool to manage your AWS services. With just one tool to download and configure, you can control multiple AWS services from the command line and automate them through scripts.
+
 1. AWS SDK
+
+    * The AWS SDK is a collection of tools to easily develop applications on AWS in the programming language of your choice.
 
 1. AWS Management Console
 
+    * The AWS Management Console is a browser-based GUI for Amazon Web Services (AWS). Through the console, a customer can manage their cloud computing, cloud storage and other resources running on the Amazon Web Services infrastructure.
+
 1. Network analysis tools (packet capture and flow captures)
+
+    * VPC Traffic Mirroring is an AWS feature used to copy network traffic from the elastic network interface of an EC2 instance to a target for analysis. This makes a variety of network-based monitoring and analytics solutions possible on AWS. By capturing the raw packet data required for content inspection, VPC Traffic Mirroring enables agentless methods for acquiring network traffic from/to Amazon Elastic Compute Cloud (EC2) instances. 
 
 1. SSH/RDP
 
     * Session Manager is the AWS recommended approach for establishing interactive sessions with EC2. It can be used via the browser, CLI, or SDK. It provides TLS encryption without the need for any bastion hosts or ports. Logging is also provided for CloudTrail, CloudWatch, and S3.
 
 1. Signature Version 4
+
+    * Signature Version 4 (SigV4) is the process to add authentication information to AWS API requests sent by HTTP. For security, most requests to AWS must be signed with an access key. The access key consists of an access key ID and secret access key, which are commonly referred to as your security credentials.
 
 1. TLS
 
@@ -503,7 +572,7 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. AWS Audit Manager
 
-    * AWS Audit Manager helps you continuously audit your AWS usage to simplify how you assess risk and compliance with regulations and industry standards. Audit Manager automates evidence collection to reduce the “all hands on deck” manual effort that often happens for audits and enable you to scale your audit capability in the cloud as your business grows. With Audit Manager, it is easy to assess if your policies, procedures, and activities – also known as controls – are operating effectively. When it is time for an audit, AWS Audit Manager helps you manage stakeholder reviews of your controls and enables you to build audit-ready reports with much less manual effort.
+    * AWS Audit Manager helps you continuously audit your AWS usage to simplify how you assess risk and compliance with regulations and industry standards. Audit Manager automates evidence collection to reduce the “all hands-on deck” manual effort that often happens for audits and enable you to scale your audit capability in the cloud as your business grows. With Audit Manager, it is easy to assess if your policies, procedures, and activities – also known as controls – are operating effectively. When it is time for an audit, AWS Audit Manager helps you manage stakeholder reviews of your controls and enables you to build audit-ready reports with much less manual effort.
 
 1. AWS CloudTrail
 
@@ -777,6 +846,18 @@ When the principal is another AWS account or its principals, the permissions are
 1. You are working in the IT security team in a big company. To perform security checks in AWS services, you have written dozens of custom AWS Config rules. One of them is to check if the S3 bucket policy contains certain explicit denies. This Config rule is supposed to be applied for all S3 buckets. Your manager has asked you how to trigger the custom Config rule. Which answers are correct?
     * The rule can be automatically triggered whenever there is a change for an S3 bucket. It can also be triggered periodically every 1, 3, 6, 12, or 24 hours. The rule could also be triggered manually.
 
+1. Your company makes use of S3 buckets for storing data. There is a company policy that all services should have logging enabled. How can you ensure that logging is always enabled to create S3 buckets in the AWS Account?
+    * AWS Config Rules can be used to check whether logging is enabled for buckets.
+
+1. A security engineer must ensure that all infrastructure launched in the company AWS account be monitored for deviation from compliance rules. All EC2 instances must be launched from one of a specified list of AMIs with all attached EBS volumes being encrypted. The non-compliant infrastructure should be terminated. What steps should the engineer choose?
+    * Compliance can be monitored with AWS Config Rules triggered by configuration changes. A Lambda function from the CloudWatch event rule for AWS Config "Compliance Rules Notification Change" to terminate the non-compliant infrastructure.
+
+1. You are responsible for deploying a critical application onto AWS. Part of the requirements for this application is to ensure that the controls set for this application meet the PCI DSS. Which of the following services can be used to check if AWS is certified as a PCI DSS Service Provider?
+    * AWS Artifact can provide the compliance documents.
+
+1. Company policy requires that all EC2 servers are not exposed to common vulnerabilities and exposures (CVEs). The security team would like to regularly check all servers to ensure compliance with this requirement by using a scheduled CloudWatch event to trigger a review of the current infrastructure. What process will check compliance of the company's EC2 instances?
+    * Run an Amazon Inspector assessment using the common vulnerabilities and exposures rules package against every EC2 instance.
+
 ### Infrastructure Security
 
 1. A company hosts a popular web application that connects to an Amazon RDS MySQL DB instance running in a private VPC subnet created with default Network ACL settings. The IT Security department has a suspicion that a DoS attack is coming from a suspecting IP. How can you protect the subnets from this attack?
@@ -808,6 +889,9 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. A company is deploying a new web application on AWS. Based on their other web applications, they anticipate being the target of frequent DDoS attacks. Which steps can the company take to protect its applications?
     * An AWS Application Load Balancer and Auto Scaling group can be used to absorb malicious traffic. CloudFront and AWS WAF can prevent malicious traffic from reaching the application.
+
+1. Your current setup in AWS consists of the following architecture. 2 public subnets, one subnet which has the EC2 web servers accessed by users across the internet and the other subnet for the EC2 database server. The application uses the HTTPs protocol. Which of the following changes to the architecture would add a better security boundary to the resources hosted in your setup?
+    * The database server should be moved to a private subnet. Only port 443 should be allowed in for the webserver EC2 instances.
 
 ### Identity and Access Management
 
@@ -894,19 +978,21 @@ When the principal is another AWS account or its principals, the permissions are
     {
         "Version": "2012-10-17",
         "Statement": [
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::AccountB:user/AccountBUserName"
-            },
-            "Action": [
-                "s3:GetObject",
-                "s3:PutObject",
-                "s3:PutObjectAcl"
-            ],
-            "Resource": [
-                "arn:aws:s3:::AccountABucketName/*"
-            ]
-        }
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": "arn:aws:iam::AccountB:user/AccountBUserName"
+                },
+                "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:PutObjectAcl"
+                ],
+                "Resource": [
+                    "arn:aws:s3:::AccountABucketName/*"
+                ]
+            }
+        ]
     }
     ```    
 However, the IAM user in account B still cannot get objects in the S3 bucket. Which one may cause the failure?
@@ -922,13 +1008,45 @@ However, the IAM user in account B still cannot get objects in the S3 bucket. Wh
     * A Service Control Policy (SCP) can be configured to deny the CloudTrail StopLogging action and add the policy to the relevant OUs in the organisation. Configuring policies at the user level would be an inefficient method in this scenario.
 
 1. You are working in the cloud security team in a big company. To meet security compliance, you oversee applying AWS Config rules to AWS accounts in other organizational units (OUs). However, it has been found that the Config rules may be deleted by IAM users accidentally in these AWS accounts. You need to prevent such actions from happening again. How should you implement this?
-    * An SCP should be implemented that denies the DeleteConfigRule action. The new SCP should be applied to organisational units in the AWS Organization. Permission boundaries are not relevent in SCP.
+    * An SCP should be implemented that denies the DeleteConfigRule action. The new SCP should be applied to organisational units in the AWS Organization. Permission boundaries are not relevant in SCP.
 
 1. Every application in a company's portfolio has a separate AWS account for development and production. The security team wants to prevent the root user and all IAM users in the production accounts from accessing a specific set of unneeded services. How can they control this functionality?
     * An SCP that denies access to the services can be created. If all production accounts are in the same OU, the SCP can be applied to that OU.
 
 1. You're developing a mobile application utilising third-party social network IdP. What pieces of information below are required to configure a social IdP correctly?
     * The App Client ID, App Client Secret, and List of scopes are required for the social IdP. SAML assertions, OIDC tokens and claims are not relevant to setup the social IdP.
+
+1. You are building a large-scale confidential documentation webserver on AWS, and all of the documentation for it will be stored on S3. One of the requirements is that it cannot be publicly accessible from S3 directly. You will need to use CloudFront to accomplish this. Which of the methods listed below would satisfy the requirements as outlined?
+    * An Origin Access Identity (OAI) for CloudFront needs to be created and granted access to the objects in your S3 bucket.
+
+1. A company has external vendors that must deliver files to the company. These vendors have cross-account permission to upload objects to one of the company's S3 buckets. Which step is required by the vendor to allow company users to access the files?
+    * The key here is that the objects uploaded are not owned by the bucket owner. The object owner must first grant permissions via an ACL. A grant to the object's ACL should be added giving full permissions to the bucket owner. The bucket owner can then delegate these permissions via a bucket policy.
+
+1. You have a paid service providing custom digital art that is hosted on AWS using S3. To promote your service, you wish to provide a limited sample of artwork to unauthenticated guest users for free. Which combination of steps will enable guest users to view your free subset of artwork?
+    * An IAM role with appropriate S3 access permissions must be assigned, and unauthenticated identities in Amazon Cognito Identity Pools must be enabled.
+
+1. You've built a tiered application with backend services hosted on AWS and user front end built as an Android native mobile application. You wish to expand your user pool and have decided to build an iOS native application. What is the recommended approach to ensure your user's data is synchronised across various user devices?
+    * AWS AppSync enables subscriptions to synchronise data across devices.
+
+1. Your application backend services are hosted on AWS and provide several REST API methods managed via AWS API Gateway. You've decided to start using AWS Cognito for your application's user management. What combination of steps is required to properly authorise a call to one of the REST API methods using an access token?
+    * A COGNITO_USER_POOLS authoriser must be created. A single-space separated list of OAuth Scopes on the API method must be configured.
+
+1. Your company CSO has directed you to enhance the security of a critical application by implementing a CAPTCHA as part of the user sign-in process. What is the most efficient method to implement this capability?
+    * An Auth Challenge Lambda Trigger should be created. AWS Lambda functions can be created and then triggered during user pool operations such as user sign-up, confirmation, and authentication.
+
+1. You are a security admin for an organisational unit named "DataAnalyticsTeam". You wish to streamline some of the security processes and delegate some security tasks to the development team. To this end, you wish to enable the development team to create roles and policies that can be attached to the various AWS services they are using. However, the services that they create should be able to access S3 buckets restricted to only the "us-west-1" region. The development team members have the "DeveloperRole" IAM role assigned to them. What combination of steps will accomplish this task?
+    * The correct solution is to use permission boundaries. Firstly, create an IAM policy to allow access to S3 buckets in the desired region. Then create an IAM policy that will allow the creation of roles with a permission boundary. This will enable developers to create new roles and policies that have restrictions. Finally, attach the IAM policy to the developer's team role. The use of SCP and OU is not applicable in this scenario because limiting access to a specific region via SCP will also affect other members of the OU and not just the development team.
+
+1. A company wishes to enable SSO so that its employees can log in to the AWS management console using their corporate directory identity. Which of the following step is required as part of the process?
+    * Creating an IAM role that establishes a trust relationship between IAM and the corporate directory IdP is a necessary step.
+
+1. A web application runs in a VPC on EC2 instances behind an ELB Application Load Balancer. The application stores data in an RDS MySQL DB instance. A Linux bastion host is used to apply schema updates to the database (administrators connect to the host via SSH from a corporate workstation). The following security groups are applied to the infrastructure:
+    * **sgLB:** Associated iwth the ELB.
+    * **sgWeb:** Associated with the EC2 instances.
+    * **sgDB:** Associated with the database.
+    * **sgBastion:** Associated with the bastion host.
+What security group configuration will allow the application to be secure and functional?
+    * On sgLB allow ports 80 and 443 from 0.0.0.0/0 (all internet traffic). On sgWeb allow ports 80 and 443 from sgLB (accessed only from ELB). On sgDB allow port 3306 from sgWeb and sgBastion (accessed by application and bastion). On sgBastion allow port 22 from the corporate IP address range.
 
 ### Data Protection
 
@@ -1001,3 +1119,12 @@ A CMK was used in the encryption operation. Then in another stage, the encrypted
 
 1. You want to launch an EC2 Instance with your own key pair in AWS. After you generate the key pair through OpenSSL, how would you configure the key pair in EC2?
     * In the AWS Console, use "import key pair" to import the public key to the EC2 service.
+
+1. You have a set of Keys defined using the AWS KSM service. You want to stop using a couple of keys but are not sure of which services are currently using the keys. Which of the following would be a safe option to stop using the keys from further usage?
+    * The keys can be disabled to identify which services use the key.
+
+1. A company has several CMK, some of which have imported key material. What could be done by the security team for the key rotation?
+    * Automatic rotation is not possible for CMKs that have imported key material. New key material cannot be imported to an existing CMK, and deleting an existing CMK will not automatically create one. New key material should be imported for a new CMK and the key alias of the old CMK should be pointed to the new CMK. The key can then be rotated manually through the CLI or AWS console. 
+
+1. A company continuously generates sensitive records that it stores in an S3 bucket. All objects in the bucket are encrypted using SSE-KMS using one of the company's CMKs. Company compliance policies require that no more than one month of data be encrypted using the same encryption key. What solution will meet the company's requirement?
+    * Do not delete the old key. Rotating the key material is not possible. Trigger a Lambda function with a monthly CloudWatch event that creates a new CMK and updates the S3 bucket to use the new CMK.
