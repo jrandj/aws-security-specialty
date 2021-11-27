@@ -53,6 +53,24 @@
 
 1. Determine if list omits services, processes, or procedures which facilitate Incident Response.
 
+    * AWS offers many services that can be of assistance in an IRP. These include:
+        * **AWS Shield:** Provides a managed service offering DDoS protection to applications running in AWS. AWS Shield Standard is free and AWS Shield Advanced costs additional.
+        * AWS WAF: Widely used with AWS Shield as it helps protect your layer 7 application-level traffic. AWS WAF Classic allows the creation of basic rules, and AWS WAF which offers more features.
+        * **AWS Firewall Manager:** Provides a way to simplify administration and maintenance tasks for AWS WAF, AWS Shield, and Amazon VPC security groups across multiple accounts and resources. Requires AWS account as an owner or member of an AWS organization, an IAM entity that can perform as an administrator role to activate it, and it AWS Config must be configured.
+        * **AWS Config:** Tracks and records changes to AWS resources.
+
+    * AWS logging services include::
+        * **AWS CloudTrail:** The most commonly used and effective tool for security events. It logs commands issued through AWS services.
+        * **Amazon CloudWatch Logs:** Monitors, stores, and provides access to logs from EC2 instances, Route 53, and other AWS resources.
+
+    * AWS services for log analysis include:
+        * **Amazon Athena:** Query your log files in S3 using standard SQL queries.
+        * **Amazon EMR:** Processes large amounts of data quickly using open-source tools like Apache Spark and Apache Hive.
+        * **Amazon Kinesis:** Allows you to easily collect, process, and analyse real-time data. This permits you to read your log data as it comes in to alert quickly on new information and gather timely insights.
+
+    * AWS services for visualisation of your environment include:
+        * **Amazon GuardDuty:** 
+
     * The AWS Security Incident Response Guide contains additional details on this topic.
 
 1. Recommend services, processes, procedures to remediate gaps.
