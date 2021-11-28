@@ -156,7 +156,7 @@
 
     * The format of VPC flow logs is shown below:
         <p align="center">
-        <img src="/res/vpc_flow_logs.JPG">
+        <img src="/res/vpc_flow_log.JPG">
         </p>
 
     * Note that VPC flow logs excludes certain traffic such as DNS (unless you use your own DNS server), Windows license traffic, instance metadata traffic, DHCP traffic, and traffic to the reserved IP address for the default VPC router.
@@ -471,7 +471,7 @@
                 }
             ]
         }
-    ```
+    	```
 
     * The IAM policy for Alice_Account:
         ```JSON
@@ -487,7 +487,7 @@
                 }
             ]
         }
-    ```
+    	```
 
     * A similar concept applies for a Key Policy if requesting cross account access to KMS.
 
