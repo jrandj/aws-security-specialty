@@ -14,9 +14,7 @@
 
 1. Given an AWS Abuse report about an EC2 instance, securely isolate the instance as part of a forensic investigation.
 
-    * The AWS Trust & Safety Team may send an abuse report to the security contact on your account. The notice should be reviewed to see what content or activity was reported. Logs that implicate abuse are included along with the abuse report.
-
-    * You need to reply to the report to explain how you're preventing the abusing activity from recurring. You can also reply to obtain more information.
+    * The AWS Trust & Safety Team may send an abuse report to the security contact on your account. The notice should be reviewed to see what content or activity was reported. Logs that implicate abuse are included along with the abuse report. You will need to reply to the report to explain how you are preventing the abusing activity from recurring. You can also reply to obtain more information.
 
     * The following steps are recommended if notified of a potential security anomaly on an EC2 instance:
         * Capture  the  metadata  from  the  Amazon  EC2  instance,  before  you  make  any  changes  to  your environment.
@@ -29,7 +27,7 @@
 
 1. Analyze logs relevant to a reported instance to verify a breach, and collect relevant data.
 
-    * Before logs can be analysed your workloads must be configured to log. This includes application logs, resource logs, and AWS service logs. AWS CloudTrail, Amazon CloudWatch Logs, Amazon GuardDuty, and AWS Security Hub should all be enabled.
+    * Logs come in many forms, such as CloudTrail, CloudWatch Logs, VPC flow logs, Windows events, Linux syslog logs, and other application or software specific logs. They contain information about activity occurring within your account such as logs of API actions and infrastructure events.
 
     * All logs should be collected centrally, and automatically analysed to detect anomalies and indicators of unauthorised activity.
 
@@ -59,7 +57,7 @@
         * **AWS Firewall Manager:** Provides a way to simplify administration and maintenance tasks for AWS WAF, AWS Shield, and Amazon VPC security groups across multiple accounts and resources. Requires AWS account as an owner or member of an AWS organization, an IAM entity that can perform as an administrator role to activate it, and it AWS Config must be configured.
         * **AWS Config:** Tracks and records changes to AWS resources.
 
-    * AWS logging services include::
+    * AWS logging services include:
         * **AWS CloudTrail:** The most commonly used and effective tool for security events. It logs commands issued through AWS services.
         * **Amazon CloudWatch Logs:** Monitors, stores, and provides access to logs from EC2 instances, Route 53, and other AWS resources.
 
@@ -69,27 +67,36 @@
         * **Amazon Kinesis:** Allows you to easily collect, process, and analyse real-time data. This permits you to read your log data as it comes in to alert quickly on new information and gather timely insights.
 
     * AWS services for visualisation of your environment include:
-        * **Amazon GuardDuty:** 
-
-    * The AWS Security Incident Response Guide contains additional details on this topic.
+        * **Amazon GuardDuty:** A threat detection service that will continuously monitor your accounts and resources for malicious activity and unauthorised behaviour by utilising machine learning, anomaly detection, and integrated threat intelligence. A good tool to give you a quick dashboad glance of any findings based on AWS CloudTrail Logs, Amazon VPC flow logs, and DNS logs.
+        * **AWS Security Hub:** AWS Security Hub is considered a single pane-of-glass service and will give you a comprehensive view of high-priority security alerts, configuration, and compliance status across all of your AWS accounts. It can aggregate, organise, and prioritize security alerts and findings from services such as Amazon GuardDuty, Amazon Macie, Amazon Inspector, AWS IAM, AWS Firewall Manager, and even services offered by the  AWS Partner Solutions. AWS Security Hub integrates with Amazon Detective to allow for further investigation into events and compliance alerts.
+        * **Amazon Detective:** Amazon Detective allows you to easily analyse, investigate, and identify the RCA of a potential security event or suspicious activity. Detective collects log data from your AWS resources and, like GuardDuty, utilizes machine learning, statistical analysis, and graph theory to build a set of data for event investigations.
+        * **Amazon Macie:** Amazon Macie is a service AWS offers that takes advantage of machine learning to discover and classify sensitive data in AWS. Macie can discover personally identifiable information (PII) or intellectual property. It provides you with a dashboard and alerts to give visibility into whether this data is being accessed or moved.
 
 1. Recommend services, processes, procedures to remediate gaps.
 
-    * The AWS Security Incident Response Guide contains additional details on this topic.
+    * The most common preventative actions for incidents are around securing AWS access keys, utilising MFA devices, and properly configuring Amazon EC2 security groups. The ones not everyone knows about are utilizing perfect forward secrecy with AWS ALBs, AWS API Gateway throttling and caching abilities, and using AWS Systems Manager to perform operational and security operations on AWS resources.
 
 ### Evaluate the configuration of automated alerting, and execute possible remediation of security-related incidents and emerging issues.
 
 1. Automate evaluation of conformance with rules for new/changed/removed resources.
 
-    * A custom AWS Config rule can be created. The rule can be set to trigger based on configuration changes, such as whether a resource is created, changed, or deleted. For example, the rule can require that EC2 volumes are encrypted.
+    * AWS Config rules help you evaluate the configuration settings of your AWS resources.  AWS Config rules enforce specific compliance checks and controls across your resources. AWS Config rules can include:
+        * **Encrypted-volumes:** Check if any EBS volumes that are attached to an EC2 instance are encrypted.
+        * **Rootaccount-mfa-enabled:** Checks whether the root account of your AWS account requires multifactor authentication for console sign-in.
+        * **Iam-password-policy:** Checks whether the account password policy for IAM users meets the specified requirements.
+        * **rds-instance-public-access-check:** Checks whether the Amazon Relational Database Service instances are not publicly accessible.
+
+    * While AWS Config managed rules are very helpful for a variety of compliance needs, you are given the flexibility to create your own custom rules and add them to AWS Config.  You associate each custom rule with an AWS Lambda function, which contains the logic that evaluates whether your AWS resources comply with the rule. When you associate this function with your rule, the rule invokes the function either in response to configuration changes or periodically. The function then evaluates whether your resources comply with your rule and sends its evaluation results to AWS Config. The Lambda function could also take actions to remediate the problem and make your resource compliant.
+
+    * A conformance pack is a collection of AWS Config rules and remediation actions that can be easily deployed as a single entity in an account and a region or across an organization in AWS Organizations.
 
 1. Apply rule-based alerts for common infrastructure misconfigurations.
 
     * An AWS Lambda function can provide an alert based on an AWS Config rule.
 
-1. Review previous security incidents and recommend improvements to existing systems.
+1. Review previous security incidents and recommend improvements to existing systems.\
 
-    * The AWS Security Incident Response Guide contains additional details on this topic.
+    * The most common preventative actions for incidents are around securing AWS access keys, utilising MFA devices, and properly configuring Amazon EC2 security groups. The ones not everyone knows about are utilizing perfect forward secrecy with AWS ALBs, AWS API Gateway throttling and caching abilities, and using AWS Systems Manager to perform operational and security operations on AWS resources.
 
 ## Logging and Monitoring
 
@@ -97,23 +104,33 @@
 
 1. Analyze architecture and identify monitoring requirements and sources for monitoring statistics.
 
-    * AWS CloudWatch is a monitoring service for AWS cloud resources and the applications you run on AWS. CloudWatch can provide real time metrics, alarms, and notifications.
+    * AWS CloudWatch is a highly scalable, region-specific monitoring service for AWS cloud resources and the applications you run on AWS. CloudWatch can provide real time metrics, alarms, and notifications. The broad spectrum of features supported by CloudWatch is shown below:
+        <p align="center">
+        <img src="/res/cloudwatch.JPG">
+        </p>
 
-    * CloudWatch Logs are pushed from some AWS services and are stored internally indefinitely. EventBridge can provide a near real-time stream of system events.
+     * Most AWS resources you create automatically publish metric data into CloudWatch, so you retrieve statistics based on these metrics. You can also publish your own custom metrics and retrieve statistics on these metrics as well. Note that EC2 does not provide a memory utilisation metric by default.
 
 1. Analyze architecture to determine which AWS services can be used to automate monitoring and alerting.
 
     * AWS provides additional instance status data than the state (pending, running, stopping etc.) of an instance. This data can troubleshoot network connectivity, system power, software, and hardware issues on the host. These checks can be viewed in the console or using the CLI.
 
-    * A CloudWatch alarm can be created from the Status Checks tab of the instance. The action can be set to send a notification to AWS SNS.
+    * It is not sufficient to just have monitoring in place. You should have the ability to act on the alerts generated due to monitoring. This is done using CloudWatch alarms and AWS EventBridge (previously called CloudWatch Events). For notification purposes, CloudWatch provides integration with Amazon SNS, which gives you the ability to send notifications over e-mail, Short Message Service (SMS), a message to an SQS queue, etc.
 
-    * AWS EventBridge (previously called CloudWatch Events) can automate AWS services and respond automatically to system events.
+    * The integration between CloudWatch and other AWS services and resources is shown below:
+        <p align="center">
+        <img src="/res/cloudwatch_integration.JPG">
+        </p>
 
 1.  Analyze the requirements for custom application monitoring, and determine how this could be achieved.
 
+    * The PutMetricData API can be used to publish data points for particular metrics. If the metric does not exist, CloudWatch creates the metric. A custom application can consume this API to provide application monitoring.
+
+    * By using the CloudWatch Logs agent, you can publish your operating system, application, and custom log files to Amazon CloudWatch Logs, where they will be stored in durable fashion for as long as you would like. You can also configure the CloudWatch agent to monitor the incoming log entries for any desired symbols or messages and to present the results as CloudWatch metrics. 
+
 1.  Set up automated tools/scripts to perform regular audits.
 
-    * CloudWatch can be used to create notifications. A metric filter is created, and then an alarm is defined including the notification action that needs to occur.
+    * This is done using CloudWatch alarms and AWS EventBridge (previously called CloudWatch Events). For notification purposes, CloudWatch provides integration with Amazon SNS, which gives you the ability to send notifications over e-mail, Short Message Service (SMS), a message to an SQS queue, etc.
 
 ### Troubleshoot security monitoring and alerting.
 
@@ -137,13 +154,55 @@
 
     * Auditors are given access to CloudTrail logs through the AWSCloudTrailReadOnlyAccess IAM Policy.
 
+    * The format of VPC flow logs is shown below:
+        <p align="center">
+        <img src="/res/vpc_flow_logs.JPG">
+        </p>
+
+    * Note that VPC flow logs excludes certain traffic such as DNS (unless you use your own DNS server), Windows license traffic, instance metadata traffic, DHCP traffic, and traffic to the reserved IP address for the default VPC router.
+
 ### Design and implement a logging solution.
 
 1.  Analyze architecture and identify logging requirements and sources for log ingestion.
 
+    * Log sources include:
+        * **Account Level:** These log sources capture platform-wide activity. These should always be enabled. Examples include AWS CloudTrail and AWS Config.
+        * **AWS Service Logs:** These represent log data that is generated by resources or the AWS service owning the resource. Decision on enablement is based on business need, regulatory requirement, or your internal company security policy. In general, these logs can be linked to an application or workload. Examples include ELB access logs, Amazon S3 access logs, and Amazon CloudFront access logs.
+        * **Host-based Logs:** These refer to log sources that are not generated by AWS and commonly are generated from with-in a specific resource, such as an EC2 instance. Examples include syslog, service logs, event logs, application logs such as NGINX, Apache, or IIS logs.
+
 1. Analyze requirements and implement durable and secure log storage according to AWS best practices.
 
+    * AWS CloudTrail logs are delivered to an S3 bucket. As AWS customers often use many AWS accounts for running their workloads, best practice is to create and use an AWS account as a log archive account. All other AWS accounts will have AWS CloudTrail enabled and deliver log files to an S3 bucket in this log archive account. This provides several benefits:
+        * By logging to a dedicated and centralized Amazon S3 bucket, you can enforce strict security controls, access, and segregation of duties.
+        * You can capture logs from ephemeral AWS accounts, which are created and deleted repeatedly.
+        * You can control access to log files. While AWS CloudTrail from other accounts delivers all the logs to the S3 bucket in the log archive account, by default, no principal (IAM user/role, etc.) in the accounts themselves have access to the log files in the log archive account. Access to log files can be enabled explicitly using IAM roles and IAM access policies by letting principals from other accounts call the AssumeRole API to assume a role, which can provide read-only access to the logs
+
+    * By default, the log files delivered by AWS CloudTrail to your bucket are encrypted by Amazon server-side encryption with Amazon S3–managed encryption keys (SSE-S3). AWS CloudTrail also lets you use server-side encryption with AWS KMS (SSE-KMS) managed keys. To use this option, you first must create a CMK within the AWS KMS. Using SSE-KMS has several advantages:
+        * You are in complete control of the customer master keys you create within AWS KMS. You can choose to rotate these CMKs at any point, which is considered a best practice.
+        * You can control who can use the key for encrypting and decrypting AWS CloudTrail’s log files.
+        * You can use a single CMK to encrypt and decrypt log files for multiple accounts across all regions.
+        * You have enhanced security. A user must have S3 read permissions for the bucket that contains the log files, and the user must also have a policy or role applied that allows decrypt permissions by the CMK policy.
+
+    * You should also ensure that you implement least privilege access to the S3 buckets that store the CloudTrail log files. This is done by reviewing the bucket policy and enabling MFA on any delete operation performed on an object within this bucket.
+
+    * CloudTrail log file integrity validation is enabled by default.
+
 1.  Analyze architecture to determine which AWS services can be used to automate log ingestion and analysis.
+
+    * AWS logging services include:
+        * **AWS CloudTrail:** The most commonly used and effective tool for security events. It logs commands issued through AWS services.
+        * **Amazon CloudWatch Logs:** Monitors, stores, and provides access to logs from EC2 instances, Route 53, and other AWS resources.
+
+    * AWS services for log analysis include:
+        * **Amazon Athena:** Query your log files in S3 using standard SQL queries.
+        * **Amazon EMR:** Processes large amounts of data quickly using open-source tools like Apache Spark and Apache Hive.
+        * **Amazon Kinesis:** Allows you to easily collect, process, and analyse real-time data. This permits you to read your log data as it comes in to alert quickly on new information and gather timely insights.
+
+    * AWS services for visualisation of your environment include:
+        * **Amazon GuardDuty:** A threat detection service that will continuously monitor your accounts and resources for malicious activity and unauthorised behaviour by utilising machine learning, anomaly detection, and integrated threat intelligence. A good tool to give you a quick dashboad glance of any findings based on AWS CloudTrail Logs, Amazon VPC flow logs, and DNS logs.
+        * **AWS Security Hub:** AWS Security Hub is considered a single pane-of-glass service and will give you a comprehensive view of high-priority security alerts, configuration, and compliance status across all of your AWS accounts. It can aggregate, organise, and prioritize security alerts and findings from services such as Amazon GuardDuty, Amazon Macie, Amazon Inspector, AWS IAM, AWS Firewall Manager, and even services offered by the  AWS Partner Solutions. AWS Security Hub integrates with Amazon Detective to allow for further investigation into events and compliance alerts.
+        * **Amazon Detective:** Amazon Detective allows you to easily analyze, investigate, and identify the RCA of a potential security event or suspicious activity. Detective collects log data from your AWS resources and, like GuardDuty, utilizes machine learning, statistical analysis, and graph theory to build a set of data for event investigations.
+        * **Amazon Macie:** Amazon Macie is a service AWS offers that takes advantage of machine learning to discover and classify sensitive data in AWS. Macie can discover personally identifiable information (PII) or intellectual property. It provides you with a dashboard and alerts to give visibility into whether this data is being accessed or moved.
 
 ### Troubleshoot logging solutions.
 
@@ -221,9 +280,9 @@
 
 1.  Determine the use case for enabling VPC Flow Logs.
 
-    * VPC Flow Logs is a feature that enables you to capture information about the IP traffic going to and from network interfaces in your VPC. Flow log data is stored using Amazon CloudWatch Logs. After you've created a flow log, you can view and retrieve its data in Amazon CloudWatch Logs.
+    * VPC Flow Logs is a feature that enables you to capture information about the IP traffic going to and from network interfaces in your VPC. Flow log data is stored using Amazon CloudWatch Logs. After you have created a flow log, you can view and retrieve its data in Amazon CloudWatch Logs.
 
-    * You cannot enable flow logs for VPCs that are peered with your VPC unless the peer VPC is in your account. You cannot tag a flow log. Once you've created a flow log, you cannot change its configuration.
+    * You cannot enable flow logs for VPCs that are peered with your VPC unless the peer VPC is in your account. You cannot tag a flow log. Once you have created a flow log, you cannot change its configuration.
 
     * Not all IP traffic is monitored. For example, instances contacting the Amazon DNS server (if you used your own DNS server that would be logged), DHCP traffic etc.
 
@@ -231,7 +290,7 @@
 
     * A VPC is a logical datacentre in AWS. It consists of IGWs, Route Tables, Network Access Control Lists, Subnets, and Security Groups. 1 Subnet corresponds to 1 Availability Zone.
 
-    * A NAT instance enables instances in a private subnet to initiate outbound IPv4 traffic to the internet or other AWS services, but prevent the instances from receiving inbound traffic initiated on the internet.
+    * A NAT instance enables instances in a private subnet to initiate outbound IPv4 traffic to the internet or other AWS services but prevent the instances from receiving inbound traffic initiated on the internet.
 
     * When creating a NAT instance, you must disable the Source/Destination Check on the instance. NAT instances must be in a public subnet, and there must be a route out of the private subnet to the NAT instance. The amount of traffic that a NAT instance can support depends on the instance size. NAT instances also sit behind a security group.
 
@@ -241,7 +300,7 @@
 
     * An Internet Gateway allows instances with public IPs to access the internet. A NAT Gateway (or NAT instance) allows instances with no public IPs to access the internet.
 
-    * Remember that a Security Group is the firewall of EC2 Instances, and a NACL is the firewall of the VPC Subnets. An example architecture is shown below to illustrate this:
+    * Remember that a Security Group is the firewall of EC2 instances, and a NACL is the firewall of the VPC Subnets. An example architecture is shown below to illustrate this:
         <p align="center">
         <img src="/res/network.JPG">
         </p>
@@ -258,7 +317,7 @@
 
     * A VPC automatically comes with a default NACL, and by default it allows all inbound and outbound traffic. You can create custom NACLs. By default, each custom NACL denies all inbound and outbound traffic until you add rules.
 
-    * Each subnet in your VPC must be associated with a NACL. If you don't explicitly associate a subnet with a NACL, the subnet is automatically associated with the default NACL.
+    * Each subnet in your VPC must be associated with a NACL. If you do not explicitly associate a subnet with a NACL, the subnet is automatically associated with the default NACL.
 
     * You can associate a NACL with multiple subnets. However, a subnet can be associated with only one NACL at a time. When you associate a NACL with a subnet, the previous association is removed.
 
@@ -274,7 +333,7 @@
 
 1. Recommend methods for host hardening and monitoring.
 
-    * Dedicated instances and dedicated hosts have dedicated hardware. Dedicated instances are charged y the instance, and dedicate hosts are charged by the host. If you have specific regulatory requirements or licensing conditions, choose dedicated hosts. Dedicated instances may share the same hardware with other AWS instances from the same account that are not dedicated.
+    * Dedicated instances and dedicated hosts have dedicated hardware. Dedicated instances are charged by the instance, and dedicate hosts are charged by the host. If you have specific regulatory requirements or licensing conditions, choose dedicated hosts. Dedicated instances may share the same hardware with other AWS instances from the same account that are not dedicated.
 
     * EC2 runs on a mixture of Nitro and Xen hypervisors. Eventually all EC2 will be based on Nitro. Both hypervisors can have guest operating systems running either as Paravirtualisation (PV) or using Hardware Virtual Machine (HVM).
 
@@ -288,7 +347,7 @@
 
     * IAM Access Analyzer helps you identify the resources in your organization and accounts, such as Amazon S3 buckets or IAM roles, shared with an external entity. For each instance of a resource shared outside of your account, Access Analyzer generates a finding. Findings include information about the access and the external principal granted to it.
 
-    * Access Analyzer analyzes only policies applied to resources in the same AWS Region where it's enabled. To monitor all resources in your AWS environment, you must create an analyzer to enable Access Analyzer in each Region where you're using supported AWS resources.
+    * Access Analyzer analyzes only policies applied to resources in the same AWS Region where it is enabled. To monitor all resources in your AWS environment, you must create an analyzer to enable Access Analyzer in each Region where you are using supported AWS resources.
 
 1. Given a description how an organization manages their AWS accounts, verify security of their root user.
 
@@ -312,7 +371,7 @@
 
     * Resource-based policies are attached to a resource. For example, you can attach resource-based policies to Amazon S3 buckets, Amazon SQS queues, VPC endpoints, and AWS Key Management Service encryption keys.
 
-    * For a request to which only permissions policies apply, AWS first checks all policies for a Deny. If one exists, then the request is denied. Then AWS checks for each Allow. If **at least one policy** statement allows the action in the request, the request is allowed. It doesn't matter whether the Allow is in the identity-based policy or the resource-based policy.
+    * For a request to which only permissions policies apply, AWS first checks all policies for a Deny. If one exists, then the request is denied. Then AWS checks for each Allow. If **at least one policy** statement allows the action in the request, the request is allowed. It does not matter whether the Allow is in the identity-based policy or the resource-based policy.
 
     * This logic applies **only when** the request is made within a single AWS account. For requests made from one account to another, the requester in Account A must have an identity-based policy that allows them to make a request to the resource in Account B. Also, the resource-based policy in Account B must allow the requester in Account A to access the resource. There **must be policies in both accounts that allow** the operation, otherwise the request fails. 
 
@@ -327,10 +386,10 @@
     * You can add federation support to your customer-facing web and mobile applications using Amazon Cognito. It helps you add user sign-up, sign-in, and access control to your mobile and web apps quickly and easily. Amazon Cognito scales to millions of users and supports sign-in with social identity providers, such as Apple, Facebook, Google, and Amazon, and enterprise identity providers via SAML 2.0.
 
     * After creating an Amazon Cognito user pool, in API Gateway, you must then create a COGNITO_USER_POOLS authoriser that uses the pool. The steps required are:
-        * Create a new API, or select an existing API in API Gateway.
+        * Create a new API or select an existing API in API Gateway.
         * From the main navigation pane, choose **Authorizers** under the specified API.
         * Under Authorizers, choose Create New Authorizer.
-        * Configure the new authorizer to use the user pool. This requires selecting an authorizer name in **Name**, selecting the **Cognito** option, choosing a region under **Cognito User Pool**, selecting an available user pool from that region, selecting a **Token source** (type Authoriszation as the header name to pass the identity or access token that's returned by Amazon Cognito), and finally creating the authorizer using **Create**.
+        * Configure the new authorizer to use the user pool. This requires selecting an authorizer name in **Name**, selecting the **Cognito** option, choosing a region under **Cognito User Pool**, selecting an available user pool from that region, selecting a **Token source** (type Authorization as the header name to pass the identity or access token that's returned by Amazon Cognito), and finally creating the authorizer using **Create**.
 
     * Once the authoriser is created the authoriser can be used on methods. The steps required are:
         * Choose (or create) a method on your API.
@@ -390,7 +449,7 @@
 
     * The following should be confirmed:
         * That the bucket policy is applied to the bucket as a permission.
-        * That no overriding deny is occuring for the IAM policy.    
+        * That no overriding deny is occurring for the IAM policy.
         * That the policy allows access to all objects in the bucket by using the wildcard (e.g. `bucketname/*`).
         * That if the files have been uploaded by another AWS account then the account owner has provided a grant for your account to access the objects.
         * That KMS permissions are available if the bucket is encrypted.
@@ -434,7 +493,7 @@
 
     * Note that if Account_Bob is part of an AWS Organizations, there might be a service control policy (SCP) restricting AssumeRole access with Account_Bob or Account_Alice. 
 
-    * Note that if you're using role chaining (when you use a role to assume a second role), you might be using IAM credentials from a previous session.
+    * Note that if you are using role chaining (when you use a role to assume a second role), you might be using IAM credentials from a previous session.
 
 1. Investigate an Amazon EC2 instance’s inability to access a given AWS resource.
 
@@ -520,7 +579,7 @@
 
     * Unlike IAM policies, which are global, key policies are Regional. Each key policy is effective only in the Region that hosts the KMS key. The components of the key policy are:
         * **Sid (Optional):** The Sid is a statement identifier, an arbitrary string you can use to identify the statement.
-        * **Effect (Required):** The effect specifies whether to allow or deny the permissions in the policy statement. The Effect must be Allow or Deny. If you don't explicitly allow access to a KMS key, access is implicitly denied. You can also explicitly deny access to a KMS key. You might do this to make sure that a user cannot access it, even when a different policy allows access.
+        * **Effect (Required):** The effect specifies whether to allow or deny the permissions in the policy statement. The Effect must be Allow or Deny. If you do not explicitly allow access to a KMS key, access is implicitly denied. You can also explicitly deny access to a KMS key. You might do this to make sure that a user cannot access it, even when a different policy allows access.
         * **Principal (Required):** The principal is the identity that gets the permissions specified in the policy statement. You can specify AWS accounts (root), IAM users, IAM roles, and some AWS services as principals in a key policy. IAM groups are not valid principals.
         * **Action (Required):** Actions specify the API operations to allow or deny. For example, the kms:Encrypt action corresponds to the AWS KMS Encrypt operation. You can list more than one action in a policy statement. For more information, see Permissions reference.
         * **Resource (Required):** In a key policy, the value of the Resource element is "*", which means "this KMS key." The asterisk ("*") identifies the KMS key to which the key policy is attached.
@@ -580,7 +639,7 @@ When the principal is another AWS account or its principals, the permissions are
 
     * Certificate Management, or more specifically, X.509 certificate management, is the activity of monitoring, facilitating, and executing every certificate process necessary for uninterrupted network operations.
 
-    * SSL certificates renew automatically, provided you purchased the domain name from Route53 and it's not for a private hosted zone. You can use Amazon SSL certificates with load balances and CloudFront, but you cannot export the certificates.
+    * SSL certificates renew automatically, provided you purchased the domain name from Route53 and it is not for a private hosted zone. You can use Amazon SSL certificates with load balances and CloudFront, but you cannot export the certificates.
 
 1. Infrastructure as Code (IaC)
 
@@ -840,7 +899,7 @@ When the principal is another AWS account or its principals, the permissions are
 
 ### Logging and Monitoring
 
-1. Your company has an EC2 Instance that is hosted in an AWS VPC. There is a requirement to ensure that log files from the EC2 Instance are stored in a secure manner. The access should be limited to the log files. How can this be accomplished? Choose 2 answers from the options given below. Each answer forms part of the solution.
+1. Your company has an EC2 instance that is hosted in an AWS VPC. There is a requirement to ensure that log files from the EC2 instance are stored in a secure manner. The access should be limited to the log files. How can this be accomplished? Choose 2 answers from the options given below. Each answer forms part of the solution.
     * CloudTrail is not relevant here as it is for recording API activities. The log files should be streamed to a separate CloudWatch Log group and an IAM policy should be created to give access to the CloudWatch Log group.
 
 1. A company has managed many AWS resources. The IT audit department has requested to get a list of resources in the AWS account. How can this be achieved efficiently?
@@ -853,7 +912,7 @@ When the principal is another AWS account or its principals, the permissions are
     * By default all AWS CloudTrail event log files are encrypted using Amazon S3 Server-Side Encryption (SSE).
 
 1. Which of the following is NOT a best practice for carrying out a security audit?
-    * Audits should be conducted more frequently than yearly. Audits should be done on a periodic basis, if there are changes in your organisation, if you have stopped using one or more AWS services, if you've added or removed software in your accounts, and if you ever suspect unauthorised access.
+    * Audits should be conducted more frequently than yearly. Audits should be done on a periodic basis, if there are changes in your organisation, if you have stopped using one or more AWS services, if you have added or removed software in your accounts, and if you ever suspect unauthorised access.
 
 1. A company has a legacy application that outputs all logs to a local text file. Logs from all applications running on AWS must be continually monitored for security-related messages. What can be done to allow the company to deploy the legacy application on Amazon EC2 and still meet the monitoring requirement?
     * The logs can be sent to CloudWatch logs. You can then specify metrics to search the logs for any specific values and create alarms based on these metrics.
@@ -879,15 +938,15 @@ When the principal is another AWS account or its principals, the permissions are
 ### Infrastructure Security
 
 1. A company hosts a popular web application that connects to an Amazon RDS MySQL DB instance running in a private VPC subnet created with default Network ACL settings. The IT Security department has a suspicion that a DoS attack is coming from a suspecting IP. How can you protect the subnets from this attack?
-    * Change the inbound NACL to deny access from the suspecting IP. The NACL is responsible for controlling traffic in and out of a subnet. Security Groups work on the Instance level and not the Subnet level, and you cannot configure a Security Group to deny access.
+    * Change the inbound NACL to deny access from the suspecting IP. The NACL is responsible for controlling traffic in and out of a subnet. Security Groups work on the instance level and not the Subnet level, and you cannot configure a Security Group to deny access.
 
 1. A company is hosting a website that must be accessible to users for HTTPS traffic. Also, port 22 should be open for administrative purposes. The administrator's workstation has static IP addresses of 203.0.113.1/32. Which of the following security group configurations is the MOST secure but still functional to support these requirements?
     * Port 443 from 0.0.0.0/0 (all addresses) should be open. Port 22 from 203.0.113.1/32 (the administrative workstation only) should be open.
 
 1. You have a website that is sitting behind AWS CloudFront. You need to protect the website against threats such as SQL injection and Cross-site scripting attacks. Which services can help in such a scenario?
-    * AWS Config is not relevant here as it is used to check configuration changes on your AWS account. AWS Inspector is not relevant here as it can be used to scan EC2 Instances for vulnerabilities but not protect against the threats in this question. AWS Trusted Advisor is also not relevant here as that is to improve the security on your AWS account. AWS WAF allows you to create rules that can help to protect against common web exploits.
+    * AWS Config is not relevant here as it is used to check configuration changes on your AWS account. AWS Inspector is not relevant here as it can be used to scan EC2 instances for vulnerabilities but not protect against the threats in this question. AWS Trusted Advisor is also not relevant here as that is to improve the security on your AWS account. AWS WAF allows you to create rules that can help to protect against common web exploits.
 
-1. You have a 2-tier application hosted in AWS. It consists of a web server and database server (SQL Server) hosted on separate EC2 instances. You are devising the security groups for these EC2 Instances. The Web tier needs to be accessed by users across the internet. You have created a web security group (wg-123) and a database security group (db-345). Which combination of the following security group rules will allow the application to be secure and functional?
+1. You have a 2-tier application hosted in AWS. It consists of a web server and database server (SQL Server) hosted on separate EC2 instances. You are devising the security groups for these EC2 instances. The Web tier needs to be accessed by users across the internet. You have created a web security group (wg-123) and a database security group (db-345). Which combination of the following security group rules will allow the application to be secure and functional?
     * In wg-123 allow access from ports 80 and 443 for HTTP and HTTPS traffic for all users from the internet. In db-345 allow port 1443 traffic from wg-123.
 
 1. A company wants to have an Intrusion detection system available for their VPC in AWS. They want to have complete control over the system. What should they implement?
@@ -1019,7 +1078,7 @@ However, the IAM user in account B still cannot get objects in the S3 bucket. Wh
 1. You have maintained an AWS account A containing an S3 bucket that another AWS account B needs to upload files to. In the S3 bucket policy, s3:PutObject is allowed for the IAM user in account B. And the IAM user in account B can use `aws s3api put-object` to upload objects to the S3 bucket successfully. However, it has been found that users in AWS account A cannot open the new uploaded objects. How should you fix this issue?
     * The problem is that once account B has uploaded objects to the bucket in account A, the objects are still owned by account B, and account A does not have access to it. The option `--acl bucket-owner-full-control` should be added to the command `aws s3api put-object` to give permissions to the bucket owner for the objects.
 
-1. Which of the following is used as a secure way to log into an EC2 Linux Instance?
+1. Which of the following is used as a secure way to log into an EC2 Linux instance?
     * SSH key pairs are used to login to EC2 instance. IAM credentials are not relevant as they are of the AWS console. AWS Access Keys are not relevant as they are used to log into the AWS console and services using the command line.
 
 1. Your company owns many AWS accounts managed by AWS Organizations. To meet security compliance, the CloudTrail should always be enabled in all AWS accounts. However, during the last couple of weeks, it was noticed that IAM users in certain AWS accounts disabled the CloudTrail feature. You need to add a restriction rule to prevent such actions. What is the best way to achieve that?
@@ -1031,7 +1090,7 @@ However, the IAM user in account B still cannot get objects in the S3 bucket. Wh
 1. Every application in a company's portfolio has a separate AWS account for development and production. The security team wants to prevent the root user and all IAM users in the production accounts from accessing a specific set of unneeded services. How can they control this functionality?
     * An SCP that denies access to the services can be created. If all production accounts are in the same OU, the SCP can be applied to that OU.
 
-1. You're developing a mobile application utilising third-party social network IdP. What pieces of information below are required to configure a social IdP correctly?
+1. You are developing a mobile application utilising third-party social network IdP. What pieces of information below are required to configure a social IdP correctly?
     * The App Client ID, App Client Secret, and List of scopes are required for the social IdP. SAML assertions, OIDC tokens and claims are not relevant to setup the social IdP.
 
 1. You are building a large-scale confidential documentation webserver on AWS, and all of the documentation for it will be stored on S3. One of the requirements is that it cannot be publicly accessible from S3 directly. You will need to use CloudFront to accomplish this. Which of the methods listed below would satisfy the requirements as outlined?
@@ -1043,10 +1102,10 @@ However, the IAM user in account B still cannot get objects in the S3 bucket. Wh
 1. You have a paid service providing custom digital art that is hosted on AWS using S3. To promote your service, you wish to provide a limited sample of artwork to unauthenticated guest users for free. Which combination of steps will enable guest users to view your free subset of artwork?
     * An IAM role with appropriate S3 access permissions must be assigned, and unauthenticated identities in Amazon Cognito Identity Pools must be enabled.
 
-1. You've built a tiered application with backend services hosted on AWS and user front end built as an Android native mobile application. You wish to expand your user pool and have decided to build an iOS native application. What is the recommended approach to ensure your user's data is synchronised across various user devices?
+1. You have built a tiered application with backend services hosted on AWS and user front end built as an Android native mobile application. You wish to expand your user pool and have decided to build an iOS native application. What is the recommended approach to ensure your user's data is synchronised across various user devices?
     * AWS AppSync enables subscriptions to synchronise data across devices.
 
-1. Your application backend services are hosted on AWS and provide several REST API methods managed via AWS API Gateway. You've decided to start using AWS Cognito for your application's user management. What combination of steps is required to properly authorise a call to one of the REST API methods using an access token?
+1. Your application backend services are hosted on AWS and provide several REST API methods managed via AWS API Gateway. You have decided to start using AWS Cognito for your application's user management. What combination of steps is required to properly authorise a call to one of the REST API methods using an access token?
     * A COGNITO_USER_POOLS authoriser must be created. A single-space separated list of OAuth Scopes on the API method must be configured.
 
 1. Your company CSO has directed you to enhance the security of a critical application by implementing a CAPTCHA as part of the user sign-in process. What is the most efficient method to implement this capability?
@@ -1059,7 +1118,7 @@ However, the IAM user in account B still cannot get objects in the S3 bucket. Wh
     * Creating an IAM role that establishes a trust relationship between IAM and the corporate directory IdP is a necessary step.
 
 1. A web application runs in a VPC on EC2 instances behind an ELB Application Load Balancer. The application stores data in an RDS MySQL DB instance. A Linux bastion host is used to apply schema updates to the database (administrators connect to the host via SSH from a corporate workstation). The following security groups are applied to the infrastructure:
-    * **sgLB:** Associated iwth the ELB.
+    * **sgLB:** Associated with the ELB.
     * **sgWeb:** Associated with the EC2 instances.
     * **sgDB:** Associated with the database.
     * **sgBastion:** Associated with the bastion host.
@@ -1099,7 +1158,7 @@ What security group configuration will allow the application to be secure and fu
 1. A company wants to have a secure way of generating, storing, and managing cryptographic keys, but they want to have exclusive access to the management of the keys. Which of the following can be used for this purpose?
     * KMS cannot be used as the management of the keys will be within AWS. S3 Server Side encryption is not applicable as it does not generate or manage cryptographic keys. CloudHSM allows you to securely generate, store, and manage cryptographic keys.
 
-1. You have an EC2 Instance in a private subnet that needs to access the KMS service privately within the AWS network. Which of the following methods can help to fulfil this requirement, keeping security in perspective?
+1. You have an EC2 instance in a private subnet that needs to access the KMS service privately within the AWS network. Which of the following methods can help to fulfil this requirement, keeping security in perspective?
     * An Internet Gateway should not be used because if it is a private subnet the intention is that it cannot access the internet. An AWS VPN is not relevant as that is for connecting on-premises environments to AWS. VPC Peering is also not relevant as that is used for communication between several VPCs and would not help in this scenario. A VPC endpoint should be used to establish communication between your VPC and AWS KMS.
 
 1. You are working as an AWS administrator of your company. As part of code deployment, you have provisioned EC2 instances with EBS volumes being encrypted using customer-managed CMK. The automatic key rotation is enabled. When will the KMS key be rotated automatically?
@@ -1135,14 +1194,14 @@ A CMK was used in the encryption operation. Then in another stage, the encrypted
 1. As a DevOps engineer, you are helping the team to build up AWS services for a new project. Applications are deployed in two EC2 instances EC2A and EC2B. Both instances need to encrypt dozens of files using a CMK in KMS. The CMK has a key policy allowing both roles to access the key. EC2RoleB is the role used by EC2B and has an explicit deny. Which instances can use the CMK?
     * EC2A can use the CMK for encryption, EC2B cannot.
 
-1. You want to launch an EC2 Instance with your own key pair in AWS. After you generate the key pair through OpenSSL, how would you configure the key pair in EC2?
+1. You want to launch an EC2 instance with your own key pair in AWS. After you generate the key pair through OpenSSL, how would you configure the key pair in EC2?
     * In the AWS Console, use "import key pair" to import the public key to the EC2 service.
 
 1. You have a set of Keys defined using the AWS KSM service. You want to stop using a couple of keys but are not sure of which services are currently using the keys. Which of the following would be a safe option to stop using the keys from further usage?
     * The keys can be disabled to identify which services use the key.
 
 1. A company has several CMK, some of which have imported key material. What could be done by the security team for the key rotation?
-    * Automatic rotation is not possible for CMKs that have imported key material. New key material cannot be imported to an existing CMK, and deleting an existing CMK will not automatically create one. New key material should be imported for a new CMK and the key alias of the old CMK should be pointed to the new CMK. The key can then be rotated manually through the CLI or AWS console. 
+    * Automatic rotation is not possible for CMKs that have imported key material. New key material cannot be imported to an existing CMK and deleting an existing CMK will not automatically create one. New key material should be imported for a new CMK and the key alias of the old CMK should be pointed to the new CMK. The key can then be rotated manually through the CLI or AWS console. 
 
 1. A company continuously generates sensitive records that it stores in an S3 bucket. All objects in the bucket are encrypted using SSE-KMS using one of the company's CMKs. Company compliance policies require that no more than one month of data be encrypted using the same encryption key. What solution will meet the company's requirement?
     * Do not delete the old key. Rotating the key material is not possible. Trigger a Lambda function with a monthly CloudWatch event that creates a new CMK and updates the S3 bucket to use the new CMK.
