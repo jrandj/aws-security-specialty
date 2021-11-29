@@ -471,7 +471,7 @@
                 }
             ]
         }
-    	```
+        ```
 
     * The IAM policy for Alice_Account:
         ```JSON
@@ -487,7 +487,7 @@
                 }
             ]
         }
-    	```
+        ```
 
     * A similar concept applies for a Key Policy if requesting cross account access to KMS.
 
@@ -935,6 +935,18 @@ When the principal is another AWS account or its principals, the permissions are
 1. Company policy requires that all EC2 servers are not exposed to common vulnerabilities and exposures (CVEs). The security team would like to regularly check all servers to ensure compliance with this requirement by using a scheduled CloudWatch event to trigger a review of the current infrastructure. What process will check compliance of the company's EC2 instances?
     * Run an Amazon Inspector assessment using the common vulnerabilities and exposures rules package against every EC2 instance.
 
+1. You work as an administrator for a company. The company hosts a number of resources using AWS. There is an incident of suspicious API activity that occurred 11 days ago. The security admin has asked to get the API activity from that point in time. How can this be achieved?
+    * Search the AWS CloudTrail event history on the API events which occurred 11 days ago. Up to 90 days of event history can be viewed in this manner. Note that this answer assumes the customer has enabled the CloudTrail service and that a trail has been manually configured.
+
+1. You need to ensure that the CloudTrail logs which are being delivered to your AWS account are encrypted. How can this be achieved in the easiest way possible?
+    * By default the log files are encrypted by SSE-S3.
+
+1. As an AWS account administrator, you wish to perform an audit and create a report of all services that have not been used in the IAM role 'DevOps_Admin' in the past 6 months. Which AWS services would you use to accomplish this task?
+    * AWS IAM Access Advisor provides permission guardrails to help control which services your developers and applications can access. By analysing the last accessed information, you can determine the services not used by IAM users and roles.
+
+1. You are a compliance officer at a large life sciences company utilising numerous AWS accounts across multiple development teams. The AWS accounts are managed under an AWS Organisation. To ensure HIPAA compliance, you must ensure that the log file delivery of AWS CloudTrail is not suspended by any AWS account. What is the most efficient way to accomplish this task?
+    * An SCP should be created with a deny rule on action 'cloudtrail:StopLogging' and applied to the related OUs.
+
 ### Infrastructure Security
 
 1. A company hosts a popular web application that connects to an Amazon RDS MySQL DB instance running in a private VPC subnet created with default Network ACL settings. The IT Security department has a suspicion that a DoS attack is coming from a suspecting IP. How can you protect the subnets from this attack?
@@ -969,6 +981,24 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. Your current setup in AWS consists of the following architecture. 2 public subnets, one subnet which has the EC2 web servers accessed by users across the internet and the other subnet for the EC2 database server. The application uses the HTTPs protocol. Which of the following changes to the architecture would add a better security boundary to the resources hosted in your setup?
     * The database server should be moved to a private subnet. Only port 443 should be allowed in for the webserver EC2 instances.
+
+1. A company is planning to create private connections from on-premises AWS Infrastructure to the AWS Cloud. They need to have a solution that would give core benefits of traffic encryption and ensure latency is kept to a minimum. Which of the following would help fulfil this requirement?
+    * An AWS VPN can be used to create an IPSec connection between your VPC and your remote network. AWS Direct Connect can be used to create a dedicated private connection between your VPC and your remote network.
+
+1. You want to ensure that instance in a VPC does not use AWS DNS for routing DNS requests as you want to use your own managed DNS instance. How can this be achieved?
+    * You can create a new Dynamic Host Configuration Protocol (DHCP) options set and replace the existing one. Note that you cannot change an existing DHCP options set.
+
+1. A Windows machine in one VPC needs to join the AD domain in another VPC. VPC peering has been established but the domain join does not work. Which of the following steps would you check to ensure that the AD domain join can work as intended?
+    * In addition to setting up VPC peering and the route tables, the security group of the AD EC2 instance needs to have the right rule to allow incoming traffic.
+
+1. Your company manages thousands of EC2 instances. There is a mandate to ensure that all servers don't have any critical security flaws. What can be done to ensure this?
+    * AWS Inspector automatically assesses applications for vulnerabilities or deviations from best practices. AWS Systems Manager Agent (SSM) can be used to patch servers.
+
+1. You need to inspect the running processes on an EC2 instance that may have a security issue. Also, you need to ensure that the process does not interfere with the continuous running of the instance. How can you achieve this in the easiest way possible?
+    * The SSM Run command can execute a command on the EC2 instance that sends the list of running processes information to an S3 bucket. AWS CloudTrail, AWS CloudWatch, and AWS Config are not relevant here.
+
+1. You are trying to use the Systems Manager to patch a set of EC2 systems. Some of the systems are not getting covered in the patching process. Which of the following can be used to troubleshoot the issue?
+    * Check to see if the right role has been assigned to the EC2 instances and that the SSM agent is installed and running on the instance. You can use the EC2 Health API to determine the version of the SSM agent and the last time the instance sent a heartbeat value.
 
 ### Identity and Access Management
 
@@ -1125,6 +1155,38 @@ However, the IAM user in account B still cannot get objects in the S3 bucket. Wh
 What security group configuration will allow the application to be secure and functional?
     * On sgLB allow ports 80 and 443 from 0.0.0.0/0 (all internet traffic). On sgWeb allow ports 80 and 443 from sgLB (accessed only from ELB). On sgDB allow port 3306 from sgWeb and sgBastion (accessed by application and bastion). On sgBastion allow port 22 from the corporate IP address range.
 
+1. Your financial services organisation is using the AWS S3 service to store highly sensitive data. What is the correct IAM policy that must be applied to ensure that all objects uploaded to the S3 bucket are encrypted?
+    * The policy is shown below:
+        ```JSON
+        {
+            "Version": "2012-10-17",
+            "Id": "PutObjPolicy",
+            "Statement": [
+                {
+                    "Sid": "DenyUnEncryptedObjectUploads",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Action": "s3:PutObject",
+                    "Resource": "arn:aws:s3:::SensitiveDataBuket/*",
+                    "Condition": {
+                        "StringNotEquals": {
+                            "s3:x-amz-server-side-encryption": "AES256"
+                        }
+                    }
+                }
+            ]
+        }
+        ```
+
+1. You are trying to use the AWS Systems Manager run command on a set of Amazon Linux AMI instances. The run command is not working on a set of instances. What can you do to diagnose the issue?
+    * Confirm that the SSM agent is running on the target machine. The SSM agent stores logs in `/var/log/amazon/ssm/error.log` that can assist troubleshooting problems. Note that port 22 is not used by the SSM agent.
+
+1. You are working for a company and have been allocated to ensure that there is a federated authentication mechanism setup between AWS and their on-premises AD. Which of the following are important steps that need to be covered?
+    * Determining how you will create and delineate your AD groups and IAM roles in AWS is crucial. SAML assertions to the AWS environment and the respective IAM role access will be managed through regex matching between your on-premises AD group name to an AWS IAM role. One approach is to select a common group naming convention. For example, your AD groups could start with an 'AWS-' identifier, then the 12-digit AWS account number, and finally the matching role name within the AWS account. AWS also needs to be configured as the relying party in AD FS.
+
+1. Which technique can be used to integrate AWS IAM with an on-premises LDAP directory service for SSO access to the AWS console?
+    * You can use SAML to provide your users with federated SSO to the AWS Management Console or federated access to call AWS API operations.
+
 ### Data Protection
 
 1. In your organisation, a customer-managed key named TestCMK has been created for a new project. This key is supposed to be used only by related AWS services in this project including EC2 and RDS in region us-west-2. For security concerns, you need to make sure that no other services can encrypt or decrypt using this CMK. In the meantime, EC2 and RDS should use the key without issues. How should you implement this?
@@ -1205,3 +1267,12 @@ A CMK was used in the encryption operation. Then in another stage, the encrypted
 
 1. A company continuously generates sensitive records that it stores in an S3 bucket. All objects in the bucket are encrypted using SSE-KMS using one of the company's CMKs. Company compliance policies require that no more than one month of data be encrypted using the same encryption key. What solution will meet the company's requirement?
     * Do not delete the old key. Rotating the key material is not possible. Trigger a Lambda function with a monthly CloudWatch event that creates a new CMK and updates the S3 bucket to use the new CMK.
+
+1. You need to have a cloud security device that would allow generating encryption keys based on the FIPS 140-2 Cryptographic Module Validation Program. Which of the following can be used for this purpose?
+    * AWS KMS and AWS Cloud HSM can generate the required encryption keys.
+
+1. A company stores critical data in an S3 bucket. There is a requirement to ensure that an extra level of security is added to the S3 bucket. In addition, it should be ensured that objects are available in a secondary region if the primary one goes down. Which of the following can help fulfill these requirements?
+    * Bucket versioning and cross-region replication should be enabled. A condition should be added to the bucket policy to enable MFA using `aws:MultiFactorAuthAge`.
+
+1. You have an EBS volume attached to a running EC2 instance that uses KMS for encryption. Someone has deleted the CMK which was used for the EBS encryption. Which of the following options is needed so that the EC2 instance can still use the EBS volume?
+    * The deletion of the CMK has no immediate effect on the EC2 instance or the EBS volume because EC2 uses the plaintext data key (not the CMK) to encrypt the disk.
