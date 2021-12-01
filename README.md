@@ -897,6 +897,12 @@ When the principal is another AWS account or its principals, the permissions are
 1. A company hosts a critical web application on the AWS Cloud. This is a key revenue-generating application for the company. The IT Security team is worried about potential DDoS attacks against the website (this might affect the AWS services like Amazon CloudFront, Amazon Route 53, and AWS Global Accelerator). The senior management has also specified that immediate action needs to be taken in case of a potential DDoS attack. What should be done in this regard?
     * Consider using the AWS Shield Advanced Service.
 
+1. A company has developed an incident response plan 18 months ago. Regular implementations of the response plan are carried out. No changes have been made to the response plan since its creation. Which of the following is the right statement about the plan?
+    * The response plan does not cater to new services as the plan is not updated for 18 months.
+
+1. You are trying to connect to a running EC2 instance using SSH. However, you are receiving an "unprotected private key file" error. What is the possible root cause of this issue?
+    * Note that KMS does not manage public-key pairs for EC2 instances. It is likely that the private key file has the wrong file permissions and is not protected from read and write operations from other users. To fix the error run `chmod -400 .ssh/.pem`
+
 ### Logging and Monitoring
 
 1. Your company has an EC2 instance that is hosted in an AWS VPC. There is a requirement to ensure that log files from the EC2 instance are stored in a secure manner. The access should be limited to the log files. How can this be accomplished? Choose 2 answers from the options given below. Each answer forms part of the solution.
@@ -999,6 +1005,9 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. You are trying to use the Systems Manager to patch a set of EC2 systems. Some of the systems are not getting covered in the patching process. Which of the following can be used to troubleshoot the issue?
     * Check to see if the right role has been assigned to the EC2 instances and that the SSM agent is installed and running on the instance. You can use the EC2 Health API to determine the version of the SSM agent and the last time the instance sent a heartbeat value.
+
+1. Development teams in your organisation use S3 buckets to store the log files for various applications hosted in development environments in AWS. The developers want to keep the logs for one month for troubleshooting purposes and then remove the logs. What feature will enable this requirement?
+    * Lifecycle configuration on the S3 bucket enables you to specify the lifecycle management objects in a bucket, including logs. An expiration action can be used to specify when the objects expire.
 
 ### Identity and Access Management
 
@@ -1187,6 +1196,44 @@ What security group configuration will allow the application to be secure and fu
 1. Which technique can be used to integrate AWS IAM with an on-premises LDAP directory service for SSO access to the AWS console?
     * You can use SAML to provide your users with federated SSO to the AWS Management Console or federated access to call AWS API operations.
 
+1. You are building a system to distribute confidential training videos to employees. Using CloudFront, what method could be used to serve content stored in S3, but not publicly accessible from S3 directly?
+    * Create an Origin Access Identity (OAI) for CloudFront and grant access to the objects in your S3 bucket to that OAI. An OAI is a special CloudFront user who is assigned permission to read the objects in your bucket.
+
+1. In order to meet data residency compliance requirements for a large bank, you must ensure that all S3 buckets are created in the eu-west-2 region. You plan to use SCP to enforce this rule. Which SCP will accomplish this?
+    * Note that an explicit deny should be used so that another policy does not allow the creation of S3 buckets in this region. The SCP policy should be:
+        ```JSON
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "DataGovernancePolicy",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Action": [
+                        "s3:CreateBucket"
+                    ],
+                    "Resource": "arn:aws:s3:::*",
+                    "Condition": {
+                        "StringNotLike": {
+                            "s3:LocationConstraint": "eu-west-2"
+                        }
+                    }
+                }
+            ]
+        }
+        ```
+
+1. You are designing a data lake for the analysis of financial data. The system consists of a data ingestion component utilising AWS Kinesis and a storage component utilising AWS S3. The data in Kinesis is encrypted by a CMK managed using AWS KMS. What is the best way to ensure that the CMK is only used by teh AWS Kinesis service?
+    * The key policy should be updated to include the condition:
+        ```JSON
+        "StringEquals": {
+            "kms:ViaService": "kinesis_AWS_region.amazonaws.com"
+        }
+        ```
+
+1. You currently have an S3 bucket hosted in an AWS account. It holds information that needs to be accessed by a partner account. Which is the MOST secure way to allow the partner account to access the S3 bucket in your account?
+    * An IAM role should be created which can be assumed by the partner account, the ARN for the role should be provided to the partner account, and the partner should use an external id when making the request.
+
 ### Data Protection
 
 1. In your organisation, a customer-managed key named TestCMK has been created for a new project. This key is supposed to be used only by related AWS services in this project including EC2 and RDS in region us-west-2. For security concerns, you need to make sure that no other services can encrypt or decrypt using this CMK. In the meantime, EC2 and RDS should use the key without issues. How should you implement this?
@@ -1276,3 +1323,27 @@ A CMK was used in the encryption operation. Then in another stage, the encrypted
 
 1. You have an EBS volume attached to a running EC2 instance that uses KMS for encryption. Someone has deleted the CMK which was used for the EBS encryption. Which of the following options is needed so that the EC2 instance can still use the EBS volume?
     * The deletion of the CMK has no immediate effect on the EC2 instance or the EBS volume because EC2 uses the plaintext data key (not the CMK) to encrypt the disk.
+
+1. Your application currently uses customer keys which are generated via AMS KMS in the US east region. You now want to use the same set of keys from the EU-Central region. How can this be accomplished?
+    * AMS KMS supports multi-region keys, which are AWS KMS keys in different AWS regions that can be used interchangeably. Mult-region keys are not global, you create a multi-region primary key and then replicate it into regions that you select within an AWS partition, then you can manage the key in each region independently.
+
+1. Your company has created a set of keys using the AWS KMS service. They need to ensure that each key is only used for certain services. For example, they want one key to be used only by the S3 service. How can this be achieved?
+    * The `kms:ViaService` condition key limits the use of a CMK to requests from particular AWS services.
+
+1. You have a set of CMKs created using the AWS KMS service. These keys have been used for around 6 months. Recently there are some new KMS features, and the default key policy is updated to include certain new permissions. How would you update the key policies of the existing CMKs?
+    * The key policies of existing CMKs are not updated automatically. Follow the AWS console alert in KMS and upgrade the key policies.
+
+1. A company is using S3 to store data in the cloud, and they want to ensure that all the data in the bucket is encrypted. Which option meets this requirement with the least overhead?
+    * Server sid encryption is the easiest. Use SSE-E3 with a CMK to allow managing the key policy and its rotation.
+
+1. You are building a distributed HPC system that will process large multi-GB files. The sensitive nature of the data in these files requires them to be encrypted. What steps are the best approach to use AWS KMS to satisfy the encryption requirement?
+    * The Encrypt API can encrypt up to 4 kB of data, which is not large enough for this question. You will need to use the GenerateDataKeyWithoutPlaintext API to generate a data key, and then distribute the key to the components of the system. The Decrypt API can be used to decrypt the data key, and the plaintext key can be used to encrypt the data.
+
+1. A company is using a Redshift cluster as its data warehouse solution. There is a requirement from the internal IT security team to ensure that data gets encrypted at rest for the Redshift database. How can this be achieved?
+    * The Redshift cluster can be encrypted with either AWS KMS or HSM.
+
+1. You serve as a KMS Key Administrator for your company department. A KMS CMK with imported key material is about to expire. You need to use the same key material in the CMK and the application should use the same CMK. Which option should be used to rectify this situation?
+    * You should encrypt the same key material and reimport the key material to the same CMK.
+
+1. You serve as a KMS Key Administrator for your company department. You've created a new KMS CMK with imported key material. You're importing the key material into the KMS CMK. The import operation is failing. What are the possible causes of the problem?
+    * The key material must be a 256-bit symmetric key. The import token has a 24-hour expiration time and must be imported before 24 hours.
