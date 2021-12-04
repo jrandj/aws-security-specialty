@@ -94,7 +94,7 @@
 
     * An AWS Lambda function can provide an alert based on an AWS Config rule.
 
-1. Review previous security incidents and recommend improvements to existing systems.\
+1. Review previous security incidents and recommend improvements to existing systems.
 
     * The most common preventative actions for incidents are around securing AWS access keys, utilising MFA devices, and properly configuring Amazon EC2 security groups. The ones not everyone knows about are utilizing perfect forward secrecy with AWS ALBs, AWS API Gateway throttling and caching abilities, and using AWS Systems Manager to perform operational and security operations on AWS resources.
 
@@ -199,8 +199,8 @@
         * **Amazon Kinesis:** Allows you to easily collect, process, and analyse real-time data. This permits you to read your log data as it comes in to alert quickly on new information and gather timely insights.
 
     * AWS services for visualisation of your environment include:
-        * **Amazon GuardDuty:** A threat detection service that will continuously monitor your accounts and resources for malicious activity and unauthorised behaviour by utilising machine learning, anomaly detection, and integrated threat intelligence. A good tool to give you a quick dashboad glance of any findings based on AWS CloudTrail Logs, Amazon VPC flow logs, and DNS logs.
-        * **AWS Security Hub:** AWS Security Hub is considered a single pane-of-glass service and will give you a comprehensive view of high-priority security alerts, configuration, and compliance status across all of your AWS accounts. It can aggregate, organise, and prioritize security alerts and findings from services such as Amazon GuardDuty, Amazon Macie, Amazon Inspector, AWS IAM, AWS Firewall Manager, and even services offered by the  AWS Partner Solutions. AWS Security Hub integrates with Amazon Detective to allow for further investigation into events and compliance alerts.
+        * **Amazon GuardDuty:** A threat detection service that will continuously monitor your accounts and resources for malicious activity and unauthorised behaviour by utilising machine learning, anomaly detection, and integrated threat intelligence. A good tool to give you a quick dashboard glance of any findings based on AWS CloudTrail Logs, Amazon VPC flow logs, and DNS logs.
+        * **AWS Security Hub:** AWS Security Hub is considered a single pane-of-glass service and will give you a comprehensive view of high-priority security alerts, configuration, and compliance status across all of your AWS accounts. It can aggregate, organise, and prioritize security alerts and findings from services such as Amazon GuardDuty, Amazon Macie, Amazon Inspector, AWS IAM, AWS Firewall Manager, and even services offered by the AWS Partner Solutions. AWS Security Hub integrates with Amazon Detective to allow for further investigation into events and compliance alerts.
         * **Amazon Detective:** Amazon Detective allows you to easily analyze, investigate, and identify the RCA of a potential security event or suspicious activity. Detective collects log data from your AWS resources and, like GuardDuty, utilizes machine learning, statistical analysis, and graph theory to build a set of data for event investigations.
         * **Amazon Macie:** Amazon Macie is a service AWS offers that takes advantage of machine learning to discover and classify sensitive data in AWS. Macie can discover personally identifiable information (PII) or intellectual property. It provides you with a dashboard and alerts to give visibility into whether this data is being accessed or moved.
 
@@ -901,7 +901,39 @@ When the principal is another AWS account or its principals, the permissions are
     * The response plan does not cater to new services as the plan is not updated for 18 months.
 
 1. You are trying to connect to a running EC2 instance using SSH. However, you are receiving an "unprotected private key file" error. What is the possible root cause of this issue?
-    * Note that KMS does not manage public-key pairs for EC2 instances. It is likely that the private key file has the wrong file permissions and is not protected from read and write operations from other users. To fix the error run `chmod -400 .ssh/.pem`
+    * Note that KMS does not manage public-key pairs for EC2 instances. It is likely that the private key file has the wrong file permissions and is not protected from read and write operations from other users. To fix the error run `chmod -400 .ssh/.pem`.
+
+1. You have accidentally deleted the private key from an EBS-backed Amazon Linux EC2 instance. You want to regain access to your instance. What steps should you perform to resolve this issue?
+    * A new key pair must be generated. The root volume can then be attached to another instance, and the authorized_keys file on the mounted volume can be updated with the new public key.
+
+1. You have accidentally lost the administrator password for an EBS-backed Windows Server EC2 instance. The instance has the Systems Manager agent installed. You want to regain access to your instance. What is the easiest way to resolve the issue?
+    * The Systems Manager Run Command can be used to run the `AWSSupport-RunEC2RescueForWIndowsTool` command.
+
+1. You have requested that your development team do not provision any new EC2 instances over the next few weeks while you are completing a security audit of your development environment. Last weekend, many of the developers worked over time and most of them disregarded your request, which has invalidated a lot of the work you have completed so far. You have decided to take action to prevent this happening again and you have convinced the CTO to give you permission to automatically terminate any instances that the development team launches over the coming weeks. You want to accomplish this in the simplest way that will ensure any newly created EC2 instances are terminated as soon as possible to minimise the impact on your work. From the following choices, which two different approaches can be taken to address the situation?
+    * Use CloudTrail to detect when a user launches a new instance. Configure a CloudWatch events rule to trigger on AWS API calls from CloudTrail and invoke a Lambda function to terminate EC2 instances. You can also use an AWS Config customer managed rule to invoke a Lambda function that automatically terminates any new instances.
+
+1. Your CTO has asked you to monitor all S3 buckets in your account to ensure encryption aligns with company policy. You have also been asked to automatically remediate any violation by updating the S3 bucket properties and sending an SNS notification to the security team. Which of the following are valid configuration steps?
+    * Enable AWS Config to monitor Amazon S3 buckets for compliance violations.
+    * Create an IAM Role and Policy that grants a Lambda function permissions to read and modify the S3 bucket configuration settings and send alerts through SNS.
+    * Configure a CloudWatch Events rule that triggers the Lambda function when AWS Config detects an S3 bucket not using server-side encryption.
+    * Create a Lambda function which uses the IAM role to review the S3 bucket settings, correct them, and notify your team of out-of-compliance buckets.
+
+1. You have discovered that your AWS account may have been compromised. What steps should you carry out immediately to secure your account?
+    * Rotate all passwords and IAM access Keys.
+    * Delete any resources in your account that you did not create yourself.
+
+1. Your CTO has asked you to design an automated incident response system which needs to assess, audit, and evaluate deviations against desired configurations of your AWS resources, proactively remediating security weaknesses in your AWS account. Which of the following approaches meets the requirement?
+    * Use AWS Config rules to monitor for deviations against your desired configurations, send alerts to CloudWatch events and use Lambda to automatically remediate security weaknesses.
+
+1. One of your team has mistakenly leaked the access key and secret access key for their IAM User on GitHub. What should you do immediately to secure your account?
+    * Disable any other potentially unauthorized IAM user credentials.
+    * Disable and delete compromised AWS access keys.
+
+1. Your Network team informs you that your application servers located in a particular subnet are being targeted by malicious actors attempting to intercept packets in your network. The activity is coming from a specific range of IP addresses. Which of the following steps can you take to quickly block this malicious activity?
+    * Create a Network ACL to deny access to any traffic coming from this IP range.
+
+1. You have been asked to help develop a process for monitoring and alerting staff when malicious or unauthorized activity occurs. Your Chief Security Officer is asking for a threat detection service that uses machine learning to help monitor malicious activity and unauthorized behaviour to protect your AWS accounts, workloads, and data stored in S3. Which option best fits these requirements?
+    * Enable AWS GuardDuty to monitor for malicious and unauthorized behaviour. Configure a custom blocklist for the IPs which you have seen suspect activity in the past. Setup a Lambda function triggered from a CloudWatch event when anomalies are detected.
 
 ### Logging and Monitoring
 
@@ -941,7 +973,7 @@ When the principal is another AWS account or its principals, the permissions are
 1. Company policy requires that all EC2 servers are not exposed to common vulnerabilities and exposures (CVEs). The security team would like to regularly check all servers to ensure compliance with this requirement by using a scheduled CloudWatch event to trigger a review of the current infrastructure. What process will check compliance of the company's EC2 instances?
     * Run an Amazon Inspector assessment using the common vulnerabilities and exposures rules package against every EC2 instance.
 
-1. You work as an administrator for a company. The company hosts a number of resources using AWS. There is an incident of suspicious API activity that occurred 11 days ago. The security admin has asked to get the API activity from that point in time. How can this be achieved?
+1. You work as an administrator for a company. The company hosts several resources using AWS. There is an incident of suspicious API activity that occurred 11 days ago. The security admin has asked to get the API activity from that point in time. How can this be achieved?
     * Search the AWS CloudTrail event history on the API events which occurred 11 days ago. Up to 90 days of event history can be viewed in this manner. Note that this answer assumes the customer has enabled the CloudTrail service and that a trail has been manually configured.
 
 1. You need to ensure that the CloudTrail logs which are being delivered to your AWS account are encrypted. How can this be achieved in the easiest way possible?
@@ -952,6 +984,58 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. You are a compliance officer at a large life sciences company utilising numerous AWS accounts across multiple development teams. The AWS accounts are managed under an AWS Organisation. To ensure HIPAA compliance, you must ensure that the log file delivery of AWS CloudTrail is not suspended by any AWS account. What is the most efficient way to accomplish this task?
     * An SCP should be created with a deny rule on action 'cloudtrail:StopLogging' and applied to the related OUs.
+
+1. A company is planning to run a number of admin related scripts using the AWS Lambda services. There is a need to understand if there are any errors encountered when the script runs. How can this be accomplished most effectively?
+    * Reporting metrics for AWS Lambda are provided through Amazon CloudWatch. Lambda logs all requests handled by your function.
+
+1. You are responsible for the security profile of a number of mission critical applications at a large global telecommunications company. Your team lead asks you to propose a solution to trace all changes made to the AWS infrastructure. You must also prevent any evidence from tampering or deletion by malicious actors attempting to conceal unauthorized activities. Which of the following approaches do you propose?
+    * Only allow the Security Team permission to make changes in CloudTrail.
+    * Enable CloudTrail in all AWS regions and send logs to a dedicated S3 bucket. Grant read only access to the Security Team members who need to review the logs.
+
+1. You have multiple separate AWS accounts for each different project in your organization. You would like to enable CloudTrail logging for each of these accounts and consolidate all logs to the same S3 bucket. What are two possible approaches?
+    * Turn on CloudTrail in the account where the destination bucket will belong, configure the bucket policy to allow cross-account permission. Turn on CloudTrail in the other accounts, configure all accounts to log to the destination bucket.
+    * Use AWS CloudTrail and a user in a management account to create an organization trail that logs all events for all AWS accounts in that organization in the same Amazon S3 bucket.
+
+1. You are trying to debug a Lambda function which writes S3 metadata to a DynamoDB table. All logs from the function should be going to CloudWatch Logs however the function never seems to be sending any logs. What could be the problem?
+    * Your function does not have permission to write to CloudWatch. The function execution role needs to permission to write to CloudWatch.
+
+1. You are supporting a number of EC2 instances located in a private subnet of your organization's VPC. The instances need to access resources that are stored in S3. After creating a VPC endpoint, the instances are still unable to access the buckets. Which of the following should do to fix this problem?
+    * You need to ensure that a route is present in your route table which routes all requests to S3 via your endpoint. Note that it is not possible to configure a route that routes all request to S3 via Amazon PrivateLink.
+
+1. You have developed a number of Lambda functions to run automated housekeeping tasks in your environment, however you suspect that some of these functions are failing to launch or not completing properly as a lot of the tasks have failed to run. Which of the following tools can you use to investigate this?
+    * Check for errors in CloudWatch. Lambda logs errors to CloudWatch Metrics. The Errors metric measures the number of failed invocations Monitoring Lambda Functions.
+
+1. You are trying to debug your Lambda function, however you noticed that data events for Lambda and S3 are not available in Amazon CloudWatch Events. What could be the reason for this?
+    * Data events are not logged by default. To record CloudTrail data events, you must explicitly add the supported resources or resource types for which you want to collect activity to a trail.
+    * Your Lambda function and S3 resources haven't been added to a CloudTrail trail. Data events provide visibility into the resource operations performed on or within a resource. Data events are not logged by default when you create a trail. To record CloudTrail data events, you must explicitly add the supported resources or resource types for which you want to collect activity to a trail.
+    * Note that you do not need to enable data events in Lambda and S3. They are added to the trail.
+
+1. Your CTO has asked you to monitor all S3 bucket ACLs and policies for violations which allow public read or public write access. You have also been asked to automatically remediate the violation and send a notification reporting the finding to the Security Team. Which of the following services can you use to do this?
+    * Use AWS Config to monitor for policy violations, use CloudWatch Events to trigger a Lambda function to update S3 bucket policies and ACLs and send an SNS notification to the Security Team.
+
+1. Your customer is currently logging all CloudTrail data and management events into a single S3 bucket. Due to a recent security incident, the customer now wants to log management events in a different S3 bucket but continue to use the existing bucket to log only data events. The current trail is using default encryption. From the AWS CloudTrail console, which of the below options is correct?
+    * Edit the existing trail configuration and set the management events option to None. Then create a new trail that logs only management events but to a different S3 bucket with an appropriate bucket policy to capture the logs. Since a trail configuration can only reference a single S3 bucket, a new trail must be created. CloudTrail trail configurations do not inherit from other trails and editing a trail configuration is not against best practices.
+
+1. You are working on a strictly confidential project and your Chief Information Security Officer has mandated that you must make sure that none of the EC2 instances, which are being used for your project, have a public IP address. You have been told that you are responsible for enforcing this and project funding will be withdrawn if the team does not comply. How can you enforce this?
+    * Use CloudWatch Events to trigger a Lambda function to remove any public IP addresses.
+    * Use IAM policies to deny your administrators the ability to add a public IP address.
+    * Use AWS Config to monitor for compliance.
+
+1. You are running your web application on a number of EC2 instances behind an Application Load Balancer. You have configured the application to send error logs and security logs to CloudWatch logs. Persistent data generated by the application is stored in DynamoDB and website images and static content is stored in S3. Over the weekend the application crashed a number of times, causing a serious system outage. The application support team managed to get the system back online, but on Monday morning when they tried to access the logs to analyze what went wrong, they discover that no logs exist for this application. What might be the problem?
+    * The Instance role does not have permission to write to CloudWatch Logs.
+    * The CloudWatch Logs agent is not installed.
+    * The CloudWatch Logs agent is not running.
+
+1. Your team suspects that one of your instances has been compromised and is attempting to communicate with a command and control server. Which services can you use to investigate this?
+    * Amazon Inspector. You can use Amazon Inspector to assess your assessment targets (collections of AWS resources) for potential security issues and vulnerabilities. Amazon Inspector compares the behaviour and the security configuration of the assessment targets to selected security rules packages.
+    * VPC Flow Logs.
+    * GuardDuty. GuardDuty continuously analyzes VPC Flow Logs and DNS requests and responses to identify malicious, unauthorized, or unexpected behaviour in your AWS accounts and workloads.
+
+1. You have multiple separate AWS accounts for each department in your company. You have enabled CloudTrail logging for each of these accounts and configured each one to send logs to the same S3 bucket. However some of your accounts have not been sending any logs. What do you think the problem is?
+    * The accounts do not have permission to write to the S3 bucket.
+
+1. To further enhance security and provide DNS related information for security audits, management has requested that you enable Route 53 DNS Query Logging. For which of the following configurations can DNS Query Logging be enabled?
+    * DNS Query Logging can be enabled when using a public hosted zone and using Route 53 name servers.
 
 ### Infrastructure Security
 
@@ -1008,6 +1092,55 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. Development teams in your organisation use S3 buckets to store the log files for various applications hosted in development environments in AWS. The developers want to keep the logs for one month for troubleshooting purposes and then remove the logs. What feature will enable this requirement?
     * Lifecycle configuration on the S3 bucket enables you to specify the lifecycle management objects in a bucket, including logs. An expiration action can be used to specify when the objects expire.
+
+1. You have a set of applications, databases, and web servers hosted in AWS. The web servers are placed behind an ELB. There are separate security groups for the application, database, and web servers. The security groups have been defined accordingly. There is an issue with the communication between the application and database servers. In order to troubleshoot the issue between just the application and database server, what is the ideal set of minimal steps you would take?
+    * As communication is usually from the application to the database, check the outbound rules for the application security group and the inbound rules for the database security group.
+
+1. You have a highly sensitive application which you would like to protect from being overwhelmed by malicious traffic. You are running your own proprietary web application firewall which performs packet inspection and filtering on two EC2 instances behind an application load balancer. Once the traffic is deemed safe, it is sent to your application servers. However a recent DDoS attack managed to overwhelm your infrastructure, causing legitimate requests to hang. How can you configure your infrastructure to be more scalable and resilient to this kind of attack?
+    * Run the proprietary firewall software on an autoscaling group of EC2 instances behind an internet facing elastic load balancer. Place another load balancer in front of your application servers.
+
+1. Your web application is running on an auto-scaling group of EC2 instances behind an Elastic Load Balancer. You are receiving reports of multiple malicious requests which are attempting to perform a SQL injection attack. The requests are coming from a group of IP addresses in the same range. Which of the following could you do to block these requests to prevent them from impacting your application?
+    * Use AWS WAF to block SQL injection attacks from this IP address range. AWS WAF is a web application firewall that helps protect web applications from attacks by allowing you to configure rules that allow, block, or monitor web requests based on conditions that you define. These conditions include IP addresses, HTTP headers, HTTP body, URI strings, SQL injection and cross-site scripting. GuardDuty is a Threat Detection service and cannot be used to block traffic. Inspector assesses applications for exposure, vulnerabilities, and deviations from best practices, it cannot be used to block traffic.
+    * Use a NACL to block traffic from this IP range.
+
+1. You are designing an e-commerce application which will run on a number of EC2 instances behind an Application Load Balancer, storing product and customer data in DynamoDB and product images in S3. In your previous role at another company, your systems were frequently targeted by SQL injection and cross-site scripting attacks. Which of the following can be used to protect against this type of attack?
+    * AWS WAF.
+
+1. You are helping an IT organization meet some security audit requirements imposed on them by a prospective customer. The customer wants to ensure their vendors uphold the same security practices as they do before they can become authorized vendors. The organization's assets consist of around 50 EC2 instances all within a single private VPC. The VPC is only accessible via an OpenVPN connection to an OpenVPN server hosted on an EC2 instance in the VPC. The customer's audit requirements disallow any direct exposure to the public internet. Additionally, prospective vendors must demonstrate that they have a proactive method in place to ensure OS-level vulnerabilities are remediated as soon as possible. Which of the following AWS services will fulfill this requirement?
+    * Employ Amazon Inspector to periodically assess applications for vulnerabilities or deviations from best practices. AWS Inspector will proactively monitor instances using a database of known vulnerabilities and suggest patches.
+
+1. You are troubleshooting a CloudFront setup for a client. The client has an Apache web server that is configured for both HTTP and HTTPS. It has a valid TLS certificate acquired from LetsEncrypt.org. They have also configured the Apache server to redirect HTTP to HTTPS to ensure a safe connection. In front of that web server, they have created a CloudFront distribution with the web server as the origin. The distribution is set for GET and HEAD HTTP methods using an Origin Protocol Policy of HTTP only. When a web browser tries to connect to the CloudFront URL, the browser just spins and never reaches the web server. However, when a web browser points to the web server itself, we get the page properly. Which of the following if done by themselves would most likely fix the problem?
+    * Change the CloudFront distribution origin protocol policy to use only HTTPS or remove the redirection policy on the origin server and allow it to accept HTTP. With CloudFront only configured for HTTP Only, we have a loop when the web server redirects HTTP to HTTPS. We can either enable HTTPS on CloudFront or disable the redirection policy on the Apache server.
+
+1. Your Head of Security has asked you to recommend a solution to protect your website against DDoS attacks, SQL injection and cross-site scripting attacks. Which of the following services do you recommend?
+    * Use AWS Shield to protect against DDoS attacks.
+    * Use AWS WAF to protect against DDoS attacks.
+    * Use AWS WAF to protect against SQL injection.
+    * Use AWS WAF to protect against cross-site scripting.
+
+1. Your manager has developed a penetration test plan that targets many of the services contained within the company's AWS infrastructure. The penetration test plan is implemented in two stages. The first stage targets AWS services that do not need prior AWS approval while the second stage targets services that do require prior AWS approval. Your manager requests that you review his test plan and identify any issues or inconsistencies. From the following services, select those services that do not need prior AWS approval.
+    * Permitted services are EC2 instances, NAT Gateways, ELBs, RDS, CloudFront, Aurora, API Gateways, AWS Lambda and Lambda Edge functions, LightSail resources, and Elastic Beanstalk environments.
+
+1. Which of the following services can AWS WAF be deployed with?
+    * Application Load Balancer.
+    * CloudFront.
+
+1. You are working as a Security Architect at a large retail bank, designing a new secure website which will enable customers to apply for a personal loan online. You would like to protect your application from attacks such as SQL injection and cross-site scripting. Which of the following AWS services would you consider using when planning this website?
+    * Application Load Balancer. WAF is closely integrated with CloudFront and Application Load Balancer.
+    * AWS WAF.
+    * CloudFront.
+
+1. AWS provides a number of security related managed services to help protect your infrastructure and applications running in the cloud. Which of the following can be used to protect against SQL injection and cross-site scripting attacks?
+    * AWS WAF.
+
+1. You have been asked to design a solution to perform deep packet inspection, which of the following can you use?
+    * AWS Network Firewall. You can filter network traffic at the perimeter of your VPC using AWS Network Firewall. Network Firewall is a stateful, managed, network firewall and intrusion detection and prevention service. Rule groups in AWS Network Firewall provide detailed criteria for packet inspection and specify what to do when a packet matches the criteria. When Network Firewall finds a match between the criteria and a packet, the packet matches the rule group.
+
+1. You are working for a charity which is working to monitor global climate change. You have created a VPC which has a private subnet and a public subnet with a NAT Gateway. You have been asked to provision a number of EC2 instances which will run an application which needs to download publicly available climate statistics from a government website. Which of the following options is the most secure way to configure this?
+    * Launch the EC2 instances in the private subnet, route internet-bound traffic to the NAT Gateway in the public subnet to access the government website.
+
+1. You have been asked to design an IPS/IDS solution to protect your AWS infrastructure from possible incidents, violations and threats. Which of the following do you recommend?
+    * Search for a third-party solution in the AWS Marketplace digital catalogue. AWS acknowledge that they do not provide IPS/IDS. Instead they suggest that third-party software can be used to provide additional functionality such as deep packet inspection, IPS/IDS, or network threat protection.
 
 ### Identity and Access Management
 
@@ -1150,7 +1283,7 @@ However, the IAM user in account B still cannot get objects in the S3 bucket. Wh
 1. Your company CSO has directed you to enhance the security of a critical application by implementing a CAPTCHA as part of the user sign-in process. What is the most efficient method to implement this capability?
     * An Auth Challenge Lambda Trigger should be created. AWS Lambda functions can be created and then triggered during user pool operations such as user sign-up, confirmation, and authentication.
 
-1. You are a security admin for an organisational unit named "DataAnalyticsTeam". You wish to streamline some of the security processes and delegate some security tasks to the development team. To this end, you wish to enable the development team to create roles and policies that can be attached to the various AWS services they are using. However, the services that they create should be able to access S3 buckets restricted to only the "us-west-1" region. The development team members have the "DeveloperRole" IAM role assigned to them. What combination of steps will accomplish this task?
+1. You are a security admin for an organisational unit named ‘DataAnalyticsTeam’. You wish to streamline some of the security processes and delegate some security tasks to the development team. To this end, you wish to enable the development team to create roles and policies that can be attached to the various AWS services they are using. However, the services that they create should be able to access S3 buckets restricted to only the "us-west-1" region. The development team members have the ‘DeveloperRole’ IAM role assigned to them. What combination of steps will accomplish this task?
     * The correct solution is to use permission boundaries. Firstly, create an IAM policy to allow access to S3 buckets in the desired region. Then create an IAM policy that will allow the creation of roles with a permission boundary. This will enable developers to create new roles and policies that have restrictions. Finally, attach the IAM policy to the developer's team role. The use of SCP and OU is not applicable in this scenario because limiting access to a specific region via SCP will also affect other members of the OU and not just the development team.
 
 1. A company wishes to enable SSO so that its employees can log in to the AWS management console using their corporate directory identity. Which of the following step is required as part of the process?
@@ -1223,7 +1356,7 @@ What security group configuration will allow the application to be secure and fu
         }
         ```
 
-1. You are designing a data lake for the analysis of financial data. The system consists of a data ingestion component utilising AWS Kinesis and a storage component utilising AWS S3. The data in Kinesis is encrypted by a CMK managed using AWS KMS. What is the best way to ensure that the CMK is only used by teh AWS Kinesis service?
+1. You are designing a data lake for the analysis of financial data. The system consists of a data ingestion component utilising AWS Kinesis and a storage component utilising AWS S3. The data in Kinesis is encrypted by a CMK managed using AWS KMS. What is the best way to ensure that the CMK is only used by the AWS Kinesis service?
     * The key policy should be updated to include the condition:
         ```JSON
         "StringEquals": {
@@ -1233,6 +1366,61 @@ What security group configuration will allow the application to be secure and fu
 
 1. You currently have an S3 bucket hosted in an AWS account. It holds information that needs to be accessed by a partner account. Which is the MOST secure way to allow the partner account to access the S3 bucket in your account?
     * An IAM role should be created which can be assumed by the partner account, the ARN for the role should be provided to the partner account, and the partner should use an external id when making the request.
+
+1. You have designed a travel website which allows users to share their photos from their trip and subscribe to receive notifications every time another member uploads a photo of one of their favourite destinations. Users upload their images to the website, which stores them in S3 and writes metadata about each photo in a DynamoDB table. When a photo is uploaded, a Lambda function will read the metadata from DynamoDB and send a notification to an SNS topic which notifies the subscribed users. During testing, you notice users are not being notified after a photo has been successfully uploaded, however when you test the Lambda function in isolation, it works perfectly. What might be causing this?
+    * S3 does not have permission to invoke the Lambda function. The S3 bucket needs to invoke your Lambda function, therefore you need to grant the event source the necessary permissions to invoke Lambda using a resource-based policy. The Lambda function works fine in isolation, so it does not require any additional permissions to read S3 or DynamoDB.
+
+1. You have developed an on-demand video website that allows paying customers to download instructional videos. The videos are stored in an S3 bucket, and access to the videos is implemented using pre-signed URLs. Management has just informed you that some customers are having issues downloading videos. You analyze the matter and determine that the pre-signed URLs are expiring before the URL expiration time that was specified when creating the pre-signed URL. Which of the following choices is the likely cause for this issue?
+    * The pre-signed URL was created using a role. It is not recommended to generate pre-signed URLs using roles. Roles use temporary access credentials that can expire before the specified URL expiry. Pre-signed URLs do not use bucket policies. Identity Federation allows external sources to provide authorization to gain access to AWS resources and services but is not used to create pre-signed URLs. IAM users have long term credentials and can be used to create pre-signed URLs eliminating the problem associated with roles.
+
+1. Your Chief Security Officer has mandated that all software license keys for your application running on EC2 instances must be stored centrally, in an encrypted format, in SSM Parameter Store. It is now time to upgrade the software, and in order to get access to the free upgrade, your application needs to access the license key string. You scheduled the upgrade for last weekend; however, most of the upgrades failed. What do you suspect the problem could be?
+    * The EC2 instance role does not have permission to use KMS to decrypt the parameter.
+    * The EC2 instance role does not have permission to read the parameter in SSM Parameter Store.
+
+1. You are the Head of Security for the Gaming division of a large software company responsible for developing augmented reality games that users can play on their smartphones. Due to the popularity of your latest release, your organization is growing rapidly and as the infrastructure grows, you want to ensure that all new projects have complete segregation between Development, Testing and Production environments, to avoid sharing resources across different environments. Which of the following is the best option to achieve this?
+    * Create one AWS account for production services, one for development, and one for testing. Account-level separation is strongly recommended for isolating production environments from development and test environments, or providing a strong logical boundary between workloads that process data of different sensitivity levels.
+
+1. You are designing a pet supplies website, which allows customers to purchase treats and toys for their pets as well as book them in for routine events like grooming, puppy training and health checks. Your application code runs as a number of different Lambda functions, with static web content stored in S3 and persistent customer and product data in DynamoDB tables. During testing, you notice that customers are not able to update their contact details in your application, what could be the reason for this?
+    * The Lambda execution role does not have permission to write to the DynamoDB table. The Lambda function will need permissions to read and write to the DynamoDB table. This should be done using an IAM role.
+
+1. You are working as the lead Security Architect for a large retail bank and you have an external auditor visiting from your regulating body. The auditor will be spending the next two weeks with your team and needs access to read your CloudTrail logs in order to complete their assessment and they already have their own AWS account. How can you configure access for the Auditor to complete their assessment?
+    * Create an IAM role in your account with an access policy allowing read-only access to the log files. Configure a trust policy in your account allowing the Auditor's AWS account to assume the role. You need to configure cross account access for the Auditor to enable them to have read only access to the relevant resources in your account - i.e. CloudTrail and the relevant S3 bucket. A trust policy is also required to enable the external account to assume the role.
+
+1. You need to develop functionality that provides temporary security credentials for cross-account access from your development account to your production account. Which of the following is a valid Security Token Service (STS) action is typically used for cross-account delegation?
+    * The AssumeRole action is typically used for cross-account delegation. The AssumeRoleWithSAML action obtains credentials through a SAML authentication response used to associate an organization's IdP to role-based AWS access. The AssumeRoleWithWebIdentity obtains credentials when authenticated by a web identity provider
+
+1. You are developing a web application that requires user authentication. In the first six months, you expect the web application to have six thousand users, and shortly after that, up to a million users. Which of the following options are best suited to support these requirements?
+    * Web Identity Federation and Amazon Cognito. Web Identity Federation allows external trusted ID providers (IdP), such as Amazon or Google, to authenticate and identify an unlimited number of users requesting access to AWS resources. Additionally, AWS recommends using Amazon Cognito in most scenarios because it acts as an identity broker and reduces the amount of federation work that would need to be performed.
+
+1. You have a number of AWS accounts, one for each department in your company. Your Head of Security has asked you to make sure that nobody has access to disable CloudTrail in any of your accounts. How should you do this?
+    * Create a new AWS Organization, group the accounts under a single OU and use a Service Control Policy to restrict any account in the OU from stopping CloudTrail. Service control policies (SCPs) are one type of policy that you can use to manage your organization. SCPs offer central control over the maximum available permissions for all accounts in your organization, allowing you to ensure your accounts stay within your organization’s access control guidelines.
+
+1. Consider the below IAM policy statement: What does the following snippet from an IAM policy statement do?
+    ```JSON
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": "s3:*",
+                "Resource": [
+                    "arn:aws:s3:::my_bucket",
+                    "arn:aws:s3:::my_bucket/*"
+                ]
+            }
+        ]
+    }
+    ```
+    * It allows user, group or roles with the IAM policy attached any S3 actions to ‘my_bucket’.
+
+1. What is the recommended approach to configuring a mobile application to allow users to sign-in and sign-up to your application via Facebook?
+    * Use Cognito as an Identity Broker between your application and the Web Identity Provider. Cognito is the preferred Web ID Federation mechanism in AWS Cognito For Mobile Apps.
+
+1. You are working on a project to build an online fashion retail website. The application is running on an auto-scaling group of EC2 instances behind an Elastic Load Balancer. The application needs to access a DynamoDB table to find product information, including sizing measurements, fabric content and care instructions. Promotional images and videos of models wearing the products are stored in S3. How can you give the EC2 instances access to the product data, promotional images and videos?
+    * Create an IAM role and assign read only permission to the DynamoDB table and the S3 bucket. Attach the role to the EC2 instance. An IAM role lets you define a set of permissions to access the resources that a user or service needs, but the permissions are not attached to a specific IAM user or group. Instead, IAM users, mobile and EC2-based applications, or AWS services like EC2 can programmatically assume the role. Distributing long-term IAM credentials to each instance is challenging to manage and a potential security risk.
+
+1. Your manager has tasked you with developing a solution to allow a new customer, having an external account, to store objects into an S3 bucket in your production account. Your manager requires that all objects stored in the S3 bucket by the customer must be owned by the production account and not the customer. Which of the following solutions is best suited to address this requirement?
+    * Create an IAM role in the production account that allows the customer to assume this role that provides the necessary permissions to store objects in the production account bucket. Three different approaches can be used to allow the external account to gain access to the S3 bucket in the production account. This can be achieved by using either the bucket's ACL, the bucket's policy, or creating an IAM role in the production account that the customer from the external account can assume. Implementing a solution using either the bucket's ACL or creating a bucket policy to allow the external account access to the production account's S3 bucket results in the copied object being owned by the external account and not the production account. The best-suited approach is to have the customer assume a role that provides the necessary permissions to copy objects to the S3 bucket. When the customer assumes the IAM role, the customer temporarily becomes an identity in the production account, which results in the copied object in the S3 bucket being owned by the production account.
 
 ### Data Protection
 
@@ -1325,7 +1513,7 @@ A CMK was used in the encryption operation. Then in another stage, the encrypted
     * The deletion of the CMK has no immediate effect on the EC2 instance or the EBS volume because EC2 uses the plaintext data key (not the CMK) to encrypt the disk.
 
 1. Your application currently uses customer keys which are generated via AMS KMS in the US east region. You now want to use the same set of keys from the EU-Central region. How can this be accomplished?
-    * AMS KMS supports multi-region keys, which are AWS KMS keys in different AWS regions that can be used interchangeably. Mult-region keys are not global, you create a multi-region primary key and then replicate it into regions that you select within an AWS partition, then you can manage the key in each region independently.
+    * AMS KMS supports multi-region keys, which are AWS KMS keys in different AWS regions that can be used interchangeably. Multi-region keys are not global, you create a multi-region primary key and then replicate it into regions that you select within an AWS partition, then you can manage the key in each region independently.
 
 1. Your company has created a set of keys using the AWS KMS service. They need to ensure that each key is only used for certain services. For example, they want one key to be used only by the S3 service. How can this be achieved?
     * The `kms:ViaService` condition key limits the use of a CMK to requests from particular AWS services.
@@ -1347,3 +1535,55 @@ A CMK was used in the encryption operation. Then in another stage, the encrypted
 
 1. You serve as a KMS Key Administrator for your company department. You've created a new KMS CMK with imported key material. You're importing the key material into the KMS CMK. The import operation is failing. What are the possible causes of the problem?
     * The key material must be a 256-bit symmetric key. The import token has a 24-hour expiration time and must be imported before 24 hours.
+
+1. Your company is using S3 for the storage of data in the cloud. They want to ensure that all data in the bucket is encrypted. Compliance policy specifies that the encryption key must be rotated every year. Which option meets this requirement with the least overhead?
+    * S3 is not encrypted by default. AWS-KMS SSE should be enabled and key rotation for the CMK. AWS KMS rotates every year.
+
+1. You are using a KMS key with imported key material. You have been asked by the head of Security to start rotating your key on an annual basis. The key has already been in use for over a year and you have been asked to perform the first rotation this week. How should you do this?
+    * Keep the original KMS key enabled so that AWS KMS can decrypt data that the original KMS key encrypted. When you begin using the new KMS key, be sure to keep the original KMS key enabled so that AWS KMS can decrypt data that the original KMS key encrypted.
+    * Create a new KMS key and use it in place of the original KMS key. When the new KMS key has different cryptographic material than the current KMS key, using the new KMS key has the same effect as changing the key material in an existing KMS key. This is known as manual key rotation.
+    * Note that automatic key rotation is not supported for imported keys, asymmetric keys, or keys generated in an AWS CloudHSM cluster using the AWS KMS custom key store feature.
+
+1. You are working for an investment bank which is designing a new application to analyse historical trading data, and use machine learning to predict stock market performance. The application is running in AWS and needs to access the historical data stored in a proprietary time series database located in your data centre. This information is highly confidential and could cause serious repercussions if any data was ever leaked to the public or your competitors. The application itself is extremely sensitive to network inconsistencies and during testing it frequently crashes if the network is not reliable. How should you configure the network connectivity for this application?
+    * Configure a VPN between your VPC and the data centre over a Direct Connect connection. With AWS Direct Connect plus VPN, you can combine one or more AWS Direct Connect dedicated network connections with the Amazon VPC VPN. This combination provides an IPsec-encrypted private connection that also reduces network costs, increases bandwidth throughput, and provides a more consistent network experience than internet-based VPN connections.
+
+1. You are about to begin using KMS to encrypt data in your AWS account. Your CTO asks you to create a key which can be automatically rotated once per year. Which type of key should you use?
+    * Use a CMK managed by you. A customer managed CMK supports automatic key rotation once per year. AWS managed keys automatically rotate once every three years. Automatic key rotation is not available for CMKs that have imported key material.
+
+1. You have given a new system administrator the ability to administer CMKs but not permission to perform cryptographic operations. Which of the following CMK operations can the new employee perform?
+    * They can perform the DescribeKey, EnableKey, and CreateKey operations. CMK administrative actions include CreateKey, EnableKey, DescribeKey, and others as well. However, the actions, Encrypt, Decrypt, and GenerateKey are required to perform cryptographic operations. Structuring permissions between the administration of the key and the cryptographic usage of that key adds a layer of security consistent with the principle of least privilege.
+
+1. You are using a CMK with imported key material. One of your administrators accidentally deleted the CMK key material and you can now no longer access any of your encrypted files. You still have the same key material that was originally imported into the CMK. What can you do to fix this?
+    * Re-import the same key material to your CMK. If you delete the key material, the CMK's key state changes to pending import, and the CMK becomes unusable. To use the CMK again, you must reimport the same key material. You cannot import the key material into a different key or import different key material, this will not work.
+
+1. Although you have recommended using SSE-KMS encryption, your new client insists that you use SSE-S3 to encrypt and store highly sensitive information into an S3 bucket. You have created a bucket policy that references the header s3:x-amz-server-side-encryption key, which is used to test against a specific value that corresponds to SSE-S3 encryption. Which statement below is most closely suited to signal that SSE-S3 encryption is to be used?
+    * StringEquals: s3:x-amz-server-side-encryption: AES256. The only other valid option is aws:kms which is for specifying KMS encryption.
+
+1. Which statements about Amazon Macie are true?
+    * It uses NLP methods to understand data.
+    * It can detect when large quantities of business-critical documents are shared - both internally and externally.
+    * It can identify PII in S3 buckets.
+
+1. Per the requirements of a government contract which your company recently won, you must encrypt all data at rest. Additionally, the material used to generate the encryption key cannot be produced by a third-party because that could result in a vulnerability. You are making use of S3, EBS and RDS as data stores, so these must be encrypted. Which of the following will meet the requirements at the least cost?
+    * Use AMS KMS to create a customer-managed CMK. Create a random 256-bit key and encrypt it with the wrapping key. Import the encrypted key with the import token. When creating S3 buckets, EBS volumes or RDS instances, select the CMK from the dropdown list.
+
+1. Which of the following AWS services allow native encryption of data, while at rest?
+    * EBS, S3 and EFS all allow the user to configure encryption at rest using either the AWS Key Management Service (KMS) or, in some cases, using customer provided keys. The exception on the list is ElastiCache for Memcached which does not offer a native encryption service, although ElastiCache for Redis does.
+
+1. You are planning to use KMS to encrypt data in your AWS account. According to company policy, you need to be able to rotate the CMK every three months. Which type of key should you use?
+    * Use a CMK managed by you. You can rotate keys according to your own schedule using a customer managed CMK. An AWS managed or AWS owned CMK does not give you the option to rotate according to your own schedule. AWS managed keys automatically rotate once every three years.
+
+1. You need to temporarily delegate access to your internal auditor to decrypt encrypted files stored in S3. How can you do this in AWS?
+    * Use a KMS Grant to grant access to use the CMK. With grants you can programmatically delegate the use of KMS CMK to other AWS principals. You can use them to allow access, but not deny it. Grants are typically used to provide temporary permissions or more granular permissions.
+
+1. A number of users are trying to access objects in your S3 bucket, however they are receiving the error : HTTP 403: Access Denied. You have already checked the bucket ACLs and bucket policy and they look fine. You checked the IAM permissions of the users and they all have read access to the bucket. What else could be the problem?
+    * To troubleshoot HTTP 403: Access Denied errors from Amazon S3, check the following: Permissions for bucket and object owners across AWS accounts, Issues in bucket policy or AWS Identity and Access Management (IAM) user policies, User credentials to access Amazon S3, VPC endpoint policy, Missing object, Object encryption by AWS Key Management Service (AWS KMS), Requester Pays enabled on bucket, AWS Organizations service control policy.
+
+1. Your CEO asks you to design a proactive approach to protect against unauthorized data access in the event that one of the company's CMKs becomes compromised. What is your recommendation?
+    * Avoid using a single key for everything and implement an appropriate key rotation schedule. Many organizations rotate CMKs yearly, however the frequency of key rotation is highly dependent upon local laws, regulations, and corporate policies. You can minimize the blast radius of a compromised key by using different keys for different purposes rather than a single key for everything. Deleting a key must be very carefully thought out. Data can’t be decrypted if the corresponding CMK has been deleted. Once a CMK is deleted, it’s gone forever.
+
+1. You are working for an online retail company selling bathroom accessories. Your applications store a lot of data in S3 including customer related data, marketing preferences as well as supplier contact details and credit referencing data. Your Head of Security has asked you to prepare a presentation to the leadership team explaining the controls you have in place for storing PII, including a list of all S3 buckets which include files containing PII. How will you approach this?
+    * Use Macie to identify files containing PII in your S3 buckets.
+
+1. You are designing a workflow that will handle very confidential healthcare information. You are designing a loosely coupled system comprised of different services. One service handles a decryption activity using a CMK stored in AWS KMS. To meet very strict audit requirements, you must demonstrate that you are following the Principle of Least Privilege dynamically--meaning that processes should only have the minimal amount of access and only precisely when they need it. Given this requirement and AWS limitations, what method is the most efficient to secure the Decryption service?
+    * In the step right before the Decryption step, programmatically apply a grant to the CMK that allows the service access to the CMK key. In the step immediately after the decryption, explicitly revoke the grant.
