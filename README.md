@@ -68,7 +68,7 @@
 
     * AWS services for visualisation of your environment include:
         * **Amazon GuardDuty:** A threat detection service that will continuously monitor your accounts and resources for malicious activity and unauthorised behaviour by utilising machine learning, anomaly detection, and integrated threat intelligence. A good tool to give you a quick dashboad glance of any findings based on AWS CloudTrail Logs, Amazon VPC flow logs, and DNS logs.
-        * **AWS Security Hub:** AWS Security Hub is considered a single pane-of-glass service and will give you a comprehensive view of high-priority security alerts, configuration, and compliance status across all of your AWS accounts. It can aggregate, organise, and prioritize security alerts and findings from services such as Amazon GuardDuty, Amazon Macie, Amazon Inspector, AWS IAM, AWS Firewall Manager, and even services offered by the  AWS Partner Solutions. AWS Security Hub integrates with Amazon Detective to allow for further investigation into events and compliance alerts.
+        * **AWS Security Hub:** AWS Security Hub is considered a single pane-of-glass service and will give you a comprehensive view of high-priority security alerts, configuration, and compliance status across all of your AWS accounts. It can aggregate, organise, and prioritize security alerts and findings from services such as Amazon GuardDuty, Amazon Macie, Amazon Inspector, AWS IAM, AWS Firewall Manager, and even services offered by the AWS Partner Solutions. AWS Security Hub integrates with Amazon Detective to allow for further investigation into events and compliance alerts.
         * **Amazon Detective:** Amazon Detective allows you to easily analyse, investigate, and identify the RCA of a potential security event or suspicious activity. Detective collects log data from your AWS resources and, like GuardDuty, utilizes machine learning, statistical analysis, and graph theory to build a set of data for event investigations.
         * **Amazon Macie:** Amazon Macie is a service AWS offers that takes advantage of machine learning to discover and classify sensitive data in AWS. Macie can discover personally identifiable information (PII) or intellectual property. It provides you with a dashboard and alerts to give visibility into whether this data is being accessed or moved.
 
@@ -339,6 +339,8 @@
 
     * HVM is preferred over PV where possible. PV is isolated by layers with the guest OS on layer 1 and applications on layer 3. Only AWS administrators have access to hypervisors. All storage memory and RAM is scrubbed before assigned to an EC2 instance.
 
+   * Security products from third party vendors can be purchased on the AWS Marketplace. This includes firewalls, hardened operating systems, WAF's, antivirus, security monitoring etc. There are various revenue models for these products.
+
 ## Identity and Access Management
 
 ### Design and implement a scalable authorization and authentication system to access AWS resources.
@@ -373,7 +375,7 @@
 
     * For a request to which only permissions policies apply, AWS first checks all policies for a Deny. If one exists, then the request is denied. Then AWS checks for each Allow. If **at least one policy** statement allows the action in the request, the request is allowed. It does not matter whether the Allow is in the identity-based policy or the resource-based policy.
 
-    * This logic applies **only when** the request is made within a single AWS account. For requests made from one account to another, the requester in Account A must have an identity-based policy that allows them to make a request to the resource in Account B. Also, the resource-based policy in Account B must allow the requester in Account A to access the resource. There **must be policies in both accounts that allow** the operation, otherwise the request fails. 
+    * This logic applies **only when** the request is made within a single AWS account. For requests made from one account to another, the requester in Account A must have an identity-based policy that allows them to make a request to the resource in Account B. Also, the resource-based policy in Account B must allow the requester in Account A to access the resource. There **must be policies in both accounts that allow** the operation, otherwise the request fails.
 
 1. Within an organization’s policy, determine when to federate a directory services to IAM.
 
@@ -507,11 +509,68 @@
 
 1. Analyze a given scenario to determine an appropriate key management solution.
 
-    * AWS Key Management Service (KMS) is a service for managing encryption keys that is used for both client side (optional) and server-side encryption with AWS. KMS only manages Customer Master Keys (CMKs) and it uses Hardware Security Modules (HSMs) to store the keys.
+    * AWS Key Management Service (KMS) is a service for managing encryption keys that is used for both client side (optional) and server-side encryption with AWS. KMS only manages Customer Master Keys (CMKs) and it uses Hardware Security Modules (HSMs) to store the keys. A CMK is a representation (like a pointer) for the customer of the actual key material stored on the HSM devices. The CMK includes the alias, creation date, description, key state, and key material (either customer provided, or AWS provided). It can never be exported. 
 
-    * KMS supports symmetric and asymmetric keys. A symmetric key never leaves KMS unencrypted, so to use it you must call AWS KMS. For an asymmetric key pair, the private key never leaves KMS unencrypted, but the public key can be downloaded and used outside of KMS. A symmetric key is recommended for most use cases as it is fast and efficient. An asymmetric key pair is required if you need users outside of AWS to encrypt data, as they can use the public key to encrypt. The public key of an asymmetric key pair can be used to sign messages and verify signatures.
+    * Access to MKS CMKs is controlled using:
+        * **Key Policy:** Add the root user, not the individual IAM users or roles.
+        * **IAM Policies:** Define the allowed actions and the CMK ARN.
+
+    * The key policy specifies who is allowed to use the CMK, and the IAM policy specifies if that user can make KMS API calls. Policy Conditions can be used to specify a condition within a Key Policy or IAM Policy for when a policy is in effect. KMS provides a set of predefined Condition Keys. Use `kms:ViaService` to allow or deny access to your CMK according to which service originated the request.
+
+    * A Grant programmatically delegates the use of your CMK to a user in your own account or in another account. It provides temporary and granular permissions.
+
+    * If you want to enable cross account access:
+        * Enable access in the Key Policy for the account which owns the CMK.
+        * Enable access to KMS in the IAM Policy for external account.
+
+    * To setup a CMK:
+        * Create an alias and description.
+        * Choose material option.
+        * Define key administrative permissions (IAM users/roles that can administer but not use the key through the KMS API).
+        * Define key usage permissions (IAM users/roles that can use the key to encrypt and decrypt data).
+
+    * To import your own key material:
+        * Create a CMK with no material.
+        * Download a public key (wrapping key) and import token.
+        * Encrypt the key material.
+        * Import the key material.
+
+    * KMS supports symmetric and asymmetric keys. A symmetric key never leaves KMS unencrypted, so to use it you must call AWS KMS. For an asymmetric key pair, the private key never leaves KMS unencrypted, but the public key can be downloaded and used outside of KMS. The symmetric key is used for both encryption and decryption. The asymmetric public key is used for encryption, and the asymmetric private key is used for decryption. A symmetric key is recommended for most use cases as it is fast and efficient. An asymmetric key pair is required if you need users outside of AWS to encrypt data, as they can use the public key to encrypt. The private key of an asymmetric key pair can be used to sign messages and the public key can be used to verify signatures (using the 'Sign' and 'Verify' APIs).
+
+    * Key types include:
+        * **Customer-Managed CMKs:** CMKs in your account that you fully create, own, and manage. They can be used via the AWS KMS API directly to encrypt and decrypt data that is less than 4KB. Any data over 4KB must use what is called a data key. The data key is encrypted by the CMK but is exportable unlike the CMK.
+        * **AWS-Managed CMKs:** CMKs in your account fully owned, managed, and used on your behalf by an AWS service integrated with AWS KMS. You do not have the ability to modify the key policy for these which means they cannot be used for cross-account access, and you do not have the ability to delete or rotate them.
+        * **AWS-Owned CMKs:** a collection of CMKs that a particular service will create and own and are in use across many AWS accounts.
+
+    * If you use your own key material you can delete key material without a 7-30 day wait. You will also have full control of the key. However, there is no automatic rotation.
+
+    * Key rotation depends on the key types:
+        * **Customer Managed CMKs:** Automatic rotation every 365 days but disabled by default. You can rotate manually. You need to update your applications or key alias to use the new CMK.
+        * **Customer Managed (Imported Key Material):** No automatic rotation, you must rotate manually. You need to update your applications or key alias to use the new CMK.
+        * **AWS Managed CMKs:** Automatically rotates every 3 years. You cannot rotate manually. AWS manages it and saves the old backing key.
+    
+    * You can use KMS to encrypt EBS volumes (including root device volumes), but you cannot use KMS to generate a public key and private key to log into EC2. You can import public keys into EC2 key pairs, but you cannot use EC2 key pairs to encrypt EBS volumes, you must use KMS or third-party applications or tools. You cannot use KMS with SSH for EC2 as you cannot export keys from KMS. You can do this with CloudHSM because you can export keys from CloudHSM.
+
+    * You can copy AMIs from one region to another and make those copies encrypted, but you must use the keys in the destination region to do the encryption. You cannot copy KMS keys from one region to another.
+ 
+    * To encrypt a root device volume, create an AMI. The initial AMI will be unencrypted, but you can then copy it and in doing so encrypt it. You can change encryption keys from Amazon managed to customer managed.
+
+    * Multiple public keys can be attached to an EC2 instance. You can add roles to existing E2 instances.
+
+    * You can view public keys in EC2 by going to `/home/ec2-users/.ssh/authorized_keys`. You can also view the public key using the E2 instance metadata. For example:
+        ```shell
+        curl http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key/
+        ```
+
+    * Deleting a key pair in the console will not delete it from the instance or the instances metadata. If you lose a key pair (public or private), simply take a snapshot of the EC2 instance, and then deploy it as a new instance. This will APPEND a new public key to `/home/ec2-users/.ssh/authorized_keys`. You can then go into that file and delete the outdated public keys.
+
+    * A CMK alias can be used to change the CMK they are associated with at any time. These are useful in key rotation scenarios.
+
+    * AWS KMS cannot utilise data keys directly to perform cryptographic operations via the API. A data key is created with the 'GenerateDataKey' API using the CMK specified in the API call. An encrypted version is returned using the 'GenerateDataKeyWithoutPlaintext' API call. The plaintext version of the data key will be used by an encryption algorithm specified by the service or library to convert plaintext data into ciphertext. Once the operation is complete, the plaintext data key is removed from memory. Decryption occurs using the encrypted data key.
 
     * KMS only manages CMKs, it does not manage data keys. A CMK never leaves the region that it was created and can only encrypt a maximum of 4kB of data. Data Keys can be used for larger object encryption.
+    
+    * A data key pair is similarly created using the 'GenerateDataKeyPair' API to provide a public key, plaintext private key, and encrypted private key. This should only be done when you are going to utilise the plaintext private key immediately, as having the private key in plaintext format is a security risk. You can use the 'GenerateDataKeyPairWithoutPlaintext' API to generate the public key and encrypted private key only. Data keys are protected using Key Encryption Key (KEK) to provide envelope encryption.
 
     * Many data keys can be generated from a CMK. These are not stored or managed in KMS. The plaintext data key is used to encrypt the data and is then deleted. This process is shown below:
         <p align="center">
@@ -520,15 +579,37 @@
 
     * To decrypt, first call the KMS API with the encrypted data key to return the plaintext data key. The plaintext data key can be used to decrypt the encrypted data.
 
+    * AWS CloudHSM is a cloud-based HSM that enables customers to create and manage encryption keys on a FIPS 140-2 Level 3–validated HSM, without the headache of managing one on-premises. It is easily managed and scalable, and you maintain full control of your encryption keys. AWS CloudHSM use cases include:
+        * Offloading SSL/TLS processing. This is sometimes known as SSL acceleration and is when the HSML cluster handles some of the computational load of SSL/TLS.
+        * Protecting private keys for Certificate Authorities (CAs).
+        * Enabling Transparent Data Encryption (TDE) for Oracle databases.
+
+    * All API calls made to your AWS CloudHSM cluster and HSMs are logged via AWS CloudTrail for auditing purposes to give you better insight into the management of your cluster. All audit logs gathered from your HSMs are sent to Amazon CloudWatch Logs so you can audit the creation and management of keys and users. You can monitor your CMKs using a combination of AWS CloudTrail and Amazon CloudWatch Alarms, Events, and Logs. These can all alert you when metrics gathered go above your determined baseline.
+
+    * HSM users are and their permissions are shown below:
+        <p align="center">
+        <img src="/res/HSM_roles.JPG">
+        </p>
+
+    * AWS Secrets Manager is a service that enables you to securely store credentials, like passwords, which can be retrieved via an API call, removing the need to have these credentials hardcoded in applications or database clients. You can store any information inside AWS Secrets Manager, but the most common are database credentials and API/SSH keys.  It has built in integration with RDS and rotation of RDS secrets. For this service you pay per secret per month and per 10,000 API calls.
+
+    * Parameter Store is typically used for passwords, database strings, license codes, configuration data, and parameter values. You can have user defined parameters and they can be encrypted. It is integrated with AWS Systems Manager. There is no additional charge for this service.
+
+    * AWS Certificate Manager (ACM) is a service that will handle the complex nature of creating, storing, and renewing public/private SSL/TLS X.509 certificates and keys. This is typically referred to as a public key infrastructure (PKI) setup.
+
 1. Given a set of data protection requirements, evaluate key usage and recommend required changes.
 
     * Knowing how a KMS key was used in the past might help you decide whether you will need it in the future. All AWS KMS API activity is recorded in AWS CloudTrail log files. If you have created a CloudTrail trail in the region where your KMS key is located, you can examine your CloudTrail log files to view a history of all AWS KMS API activity for a particular KMS key.
+    
+    * A symmetric key is recommended for most use cases as it is fast and efficient. An asymmetric key pair is required if you need users outside of AWS to encrypt data, as they can use the public key to encrypt. The private key of an asymmetric key pair can be used to sign messages and the public key can be used to verify signatures (using the 'Sign' and 'Verify' APIs).
 
 1. Determine and control the blast radius of a key compromise event and design a solution to contain the same.
 
     * It is recommended to define classification levels and have at least one CMK per level. For example, you could define a CMK for data classified as “Confidential,” and so on. This ensures that authorized users only have permissions for the key material that they require to complete their job.
 
-    * Creating KMS keys within each account that requires the ability to encrypt and decrypt sensitive data works best for most customers, but another option is to share the CMKs from a few centralized accounts. Maintaining the CMKs in the same account as most of the infrastructure using them helps users’ provision and run AWS services that use those keys
+    * Creating KMS keys within each account that requires the ability to encrypt and decrypt sensitive data works best for most customers, but another option is to share the CMKs from a few centralized accounts. Maintaining the CMKs in the same account as most of the infrastructure using them helps users’ provision and run AWS services that use those keys.
+
+    * Avoiding extensive reuse also lowers the blast radius. If your CMK is compromised your data will be compromised up to the point of the last rotation. Note that rotation of the key material effectively rotates the data keys used to encrypt your data. The old data key is still used for decryption for older data.
 
 ### Troubleshoot key management.
 
@@ -585,7 +666,7 @@
         * **Resource (Required):** In a key policy, the value of the Resource element is "*", which means "this KMS key." The asterisk ("*") identifies the KMS key to which the key policy is attached.
         * **Condition (Optional):** Conditions specify requirements that must be met for a key policy to take effect. With conditions, AWS can evaluate the context of an API request to determine whether the policy statement applies.
 
-When the principal is another AWS account or its principals, the permissions are effective only when the account is enabled in the Region with the KMS key and key policy.
+    * When the principal is another AWS account or its principals, the permissions are effective only when the account is enabled in the Region with the KMS key and key policy.
 
 1. Distinguish the compliance state of data through tag-based data classifications and automate remediation.
 
@@ -594,7 +675,7 @@ When the principal is another AWS account or its principals, the permissions are
 1. Evaluate a number of transport encryption techniques and select the appropriate method (i.e., TLS, IPsec, client-side KMS encryption).
 
     * AWS recommends following secure key and certificate management, enforcing encryption in transit, automating detection of unintended data access, and authenticating network communications: Specific best practices include:
-        * Implementing secure  protocols such as TLS or IPSec (relevant protocols depend on the services you are using).
+        * Implementing secure  protocols such as TLS or IPsec (relevant protocols depend on the services you are using).
         * Using HTTPS with Amazon CloudFront.
         * Using a VPN for external connectivity. Consider using an IPsec VPN for point-to-point or network-to-network connections.
         * Enabling a HTTPS listener for securing connections to load balancers.
@@ -711,7 +792,7 @@ When the principal is another AWS account or its principals, the permissions are
 
     * AWS Shield is a managed DDoS protection service for ELB, CloudFront and Route 53 that safeguards applications running on AWS. Primarily protects against layer 3 and layer 4 attacks.
  
-    * The advanced option costs $3000 per month and gives you an incident response team and in-depth reporting. You won't pay if you are the victim of an attack.
+    * The advanced option costs $3000 per month and gives you an incident response team and in-depth reporting. You will not pay if you are the victim of an attack.
 
 1. Amazon VPC
 
@@ -722,7 +803,7 @@ When the principal is another AWS account or its principals, the permissions are
     * A Network Access Control List (NACL) is an optional layer of security for your VPC that acts as a firewall for controlling traffic in and out of one or more subnets. The NACL might have rules like your security groups to add an additional layer of security to your VPC. The following are basic NACL concepts:
         * Your VPC automatically comes with a modifiable default network ACL. By default, it allows all inbound and outbound IPv4 traffic and, if applicable, IPv6 traffic.
         * You can create a custom network ACL and associate it with a subnet. By default, each custom network ACL denies all inbound and outbound traffic until you add rules.
-        * Each subnet in your VPC must be associated with a network ACL. If you don't explicitly associate a subnet with a network ACL, the subnet is automatically associated with the default network ACL.
+        * Each subnet in your VPC must be associated with a network ACL. If you do not explicitly associate a subnet with a network ACL, the subnet is automatically associated with the default network ACL.
         * You can associate a network ACL with multiple subnets. However, a subnet can be associated with only one network ACL at a time. When you associate a network ACL with a subnet, the previous association is removed.
         * A network ACL contains a numbered list of rules. We evaluate the rules in order, starting with the lowest numbered rule, to determine whether traffic is allowed in or out of any subnet associated with the network ACL. The highest number that you can use for a rule is 32766. We recommend that you start by creating rules in increments (for example, increments of 10 or 100) so that you can insert new rules where you need to later on.
         * A network ACL has separate inbound and outbound rules, and each rule can either allow or deny traffic.
@@ -738,7 +819,7 @@ When the principal is another AWS account or its principals, the permissions are
         * By default, a security group includes an outbound rule that allows all outbound traffic. You can remove the rule and add outbound rules that allow specific outbound traffic only. If your security group has no outbound rules, no outbound traffic originating from your instance is allowed.
         * There are quotas on the number of security groups that you can create per VPC, the number of rules that you can add to each security group, and the number of security groups that you can associate with a network interface.
         * Instances associated with a security group can't talk to each other unless you add rules allowing the traffic (exception: the default security group has these rules by default).
-        * Security groups are associated with network interfaces. After you launch an instance, you can change the security groups that are associated with the instance, which changes the security groups associated with the primary network interface (eth0). You can also specify or change the security groups associated with any other network interface. By default, when you create a network interface, it's associated with the default security group for the VPC, unless you specify a different security group.
+        * Security groups are associated with network interfaces. After you launch an instance, you can change the security groups that are associated with the instance, which changes the security groups associated with the primary network interface (eth0). You can also specify or change the security groups associated with any other network interface. By default, when you create a network interface, it is associated with the default security group for the VPC, unless you specify a different security group.
         * When you create a security group, you must provide it with a name and a description. There are limits to the length (255 characters) and allowed characters. Security group names must be unique within the VPC.
         * A security group can only be used in the VPC that you specify when you create the security group.
 
@@ -809,63 +890,7 @@ When the principal is another AWS account or its principals, the permissions are
 
 1. AWS Key Management Service (AWS KMS)
 
-    * AWS KMS is a managed service that makes it easy for you to create and control the encryption keys used to encrypt your data and uses Hardware Security Modules (HSMs) to protect the security of your keys.
-
-    * The Customer Master Key (CMK) includes the alias, creation date, description, key state, and key material (either customer provided, or AWS provided). It can never be exported.
-
-    * To setup a CMK:
-        * Create an alias and description.
-        * Choose material option.
-        * Define key administrative permissions (IAM users/roles that can administer but not use the key through the KMS API).
-        * Define key usage permissions (IAM users/roles that can use the key to encrypt and decrypt data).
-
-    * If you use your own key material you can delete key material without a 7-30 day wait. You will also have full control of the key. However, there is no automatic rotation.
-
-    * To import your own key material:
-        * Create a CMK with no material.
-        * Download a public key (wrapping key) and import token.
-        * Encrypt the key material.
-        * Import the key material.
-
-    * Key rotation depends on the key types:
-        * **AWS Managed:** Automatically rotates every 3 years. You cannot rotate manually. AWS manages it and saves the old backing key.
-        * **Customer Managed:** Automatic rotation every 365 days but disabled by default. You can rotate manually. You need to update your applications or key alias to use the new CMK.
-        * **Customer Managed (Imported Key Material):** No automatic rotation, you must rotate manually. You need to update your applications or key alias to use the new CMK.
-
-    * You can use KMS to encrypt EBS volumes, but you cannot use KMS to generate a public key/private key to log into EC2. You can import public keys into EC2 key pairs, but you cannot use EC2 key pairs to encrypt EBS volumes, you must use KMS or third-party applications/tools.
-
-    * You can use KMS to encrypt EBS volumes and it is possible to encrypt root device volumes. To encrypt a root device volume, create an AMI. The initial AMI will be unencrypted, but you can then copy it and in doing so encrypt it. You can change encryption keys from amazon managed to customer managed.
-
-    * You can copy AMIs from one region to another and make those copies encrypted, but you must use the keys in the destination region to do the encryption. You cannot copy KMS keys from one region to another.
-
-    * You can view public keys in EC2 by going to `/home/ec2-users/.ssh/authorized_keys`. You can also view the public key using the E2 instance metadata. For example:
-        ```shell
-        curl http://169.254.169.254/latest/meta-data/public-keys/0/openssh-key/
-        ```
-
-    * Multiple public keys can be attached to an EC2 instance. You can add roles to existing E2 instances.
-
-    * Deleting a key pair in the console will not delete it from the instance or the instances metadata. If you lose a key pair (public or private), simply take a snapshot of the EC2 instance, and then deploy it as a new instance. This will APPEND a new public key to `/home/ec2-users/.ssh/authorized_keys`. You can then go into that file and delete the outdated public keys.
-
-    * You cannot use KMS with SSH for EC2 as you cannot export keys from KMS. You can do this with CloudHSM because you can export keys from CloudHSM.
-
-    * Security products from third party vendors can be purchased on the AWS Marketplace. This includes firewalls, hardened operating systems, WAF's, antivirus, security monitoring etc. There are various revenue models for these products.
-
-    * A Grant programmatically delegates the use of your CMK to a user in your own account or in another account. It provides temporary and granular permissions.
-
-    * Policy Conditions can be used to specify a condition within a Key Policy or IAM Policy for when a policy is in effect. KMS provides a set of predefined Condition Keys. Use `kms:ViaService` to allow or deny access to your CMK according to which service originated the request.
-
-    * Access to MKS CMKs is controlled using:
-        * **Key Policy:** Add the root user, not the individual IAM users or roles.
-        * **IAM Policies:** Define the allowed actions and the CMK ARN.
-
-    * If you want to enable cross account access:
-        * Enable access in the Key Policy for the account which owns the CMK.
-        * Enable access to KMS in the IAM Policy for external account.
-
-    * Secrets Manager is typically used for database credentials and API/SSH keys. It has built in integration with RDS and rotation of RDS secrets. For this service you pay per secret per month and per 10,000 API calls.
-
-    * Parameter Store is typically used for passwords, database strings, license codes, configuration data, and parameter values. You can have user defined parameters and they can be encrypted. It is integrated with AWS Systems Manager. There is no additional charge for this service.
+	* AWS Key Management Service (KMS) is a service for managing encryption keys that is used for both client side (optional) and server-side encryption with AWS. KMS only manages Customer Master Keys (CMKs) and it uses Hardware Security Modules (HSMs) to store the keys.
 
 1. Amazon Macie
 
@@ -1096,7 +1121,7 @@ When the principal is another AWS account or its principals, the permissions are
 1. You have a set of applications, databases, and web servers hosted in AWS. The web servers are placed behind an ELB. There are separate security groups for the application, database, and web servers. The security groups have been defined accordingly. There is an issue with the communication between the application and database servers. In order to troubleshoot the issue between just the application and database server, what is the ideal set of minimal steps you would take?
     * As communication is usually from the application to the database, check the outbound rules for the application security group and the inbound rules for the database security group.
 
-1. You have a highly sensitive application which you would like to protect from being overwhelmed by malicious traffic. You are running your own proprietary web application firewall which performs packet inspection and filtering on two EC2 instances behind an application load balancer. Once the traffic is deemed safe, it is sent to your application servers. However a recent DDoS attack managed to overwhelm your infrastructure, causing legitimate requests to hang. How can you configure your infrastructure to be more scalable and resilient to this kind of attack?
+1. You have a highly sensitive application which you would like to protect from being overwhelmed by malicious traffic. You are running your own proprietary web application firewall which performs packet inspection and filtering on two EC2 instances behind an application load balancer. Once the traffic is deemed safe, it is sent to your application servers. However, a recent DDoS attack managed to overwhelm your infrastructure, causing legitimate requests to hang. How can you configure your infrastructure to be more scalable and resilient to this kind of attack?
     * Run the proprietary firewall software on an autoscaling group of EC2 instances behind an internet facing elastic load balancer. Place another load balancer in front of your application servers.
 
 1. Your web application is running on an auto-scaling group of EC2 instances behind an Elastic Load Balancer. You are receiving reports of multiple malicious requests which are attempting to perform a SQL injection attack. The requests are coming from a group of IP addresses in the same range. Which of the following could you do to block these requests to prevent them from impacting your application?
@@ -1140,7 +1165,7 @@ When the principal is another AWS account or its principals, the permissions are
     * Launch the EC2 instances in the private subnet, route internet-bound traffic to the NAT Gateway in the public subnet to access the government website.
 
 1. You have been asked to design an IPS/IDS solution to protect your AWS infrastructure from possible incidents, violations and threats. Which of the following do you recommend?
-    * Search for a third-party solution in the AWS Marketplace digital catalogue. AWS acknowledge that they do not provide IPS/IDS. Instead they suggest that third-party software can be used to provide additional functionality such as deep packet inspection, IPS/IDS, or network threat protection.
+    * Search for a third-party solution in the AWS Marketplace digital catalogue. AWS acknowledge that they do not provide IPS/IDS. Instead, they suggest that third-party software can be used to provide additional functionality such as deep packet inspection, IPS/IDS, or network threat protection.
 
 ### Identity and Access Management
 
