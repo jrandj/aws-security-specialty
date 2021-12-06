@@ -53,8 +53,8 @@
 
     * AWS offers many services that can be of assistance in an IRP. These include:
         * **AWS Shield:** Provides a managed service offering DDoS protection to applications running in AWS. AWS Shield Standard is free and AWS Shield Advanced costs additional.
-        * AWS WAF: Widely used with AWS Shield as it helps protect your layer 7 application-level traffic. AWS WAF Classic allows the creation of basic rules, and AWS WAF which offers more features.
-        * **AWS Firewall Manager:** Provides a way to simplify administration and maintenance tasks for AWS WAF, AWS Shield, and Amazon VPC security groups across multiple accounts and resources. Requires AWS account as an owner or member of an AWS organization, an IAM entity that can perform as an administrator role to activate it, and it AWS Config must be configured.
+        * **AWS WAF:** Widely used with AWS Shield as it helps protect your layer 7 application-level traffic. AWS WAF Classic allows the creation of basic rules, and AWS WAF which offers more features.
+        * **AWS Firewall Manager:** Provides a way to simplify administration and maintenance tasks for AWS WAF, AWS Shield, and Amazon VPC security groups across multiple accounts and resources. Requires AWS account as an owner or member of an AWS organization, an IAM entity that can perform as an administrator role to activate it, and AWS Config must be configured.
         * **AWS Config:** Tracks and records changes to AWS resources.
 
     * AWS logging services include:
@@ -68,13 +68,13 @@
 
     * AWS services for visualisation of your environment include:
         * **Amazon GuardDuty:** A threat detection service that will continuously monitor your accounts and resources for malicious activity and unauthorised behaviour by utilising machine learning, anomaly detection, and integrated threat intelligence. A good tool to give you a quick dashboad glance of any findings based on AWS CloudTrail Logs, Amazon VPC flow logs, and DNS logs.
-        * **AWS Security Hub:** AWS Security Hub is considered a single pane-of-glass service and will give you a comprehensive view of high-priority security alerts, configuration, and compliance status across all of your AWS accounts. It can aggregate, organise, and prioritize security alerts and findings from services such as Amazon GuardDuty, Amazon Macie, Amazon Inspector, AWS IAM, AWS Firewall Manager, and even services offered by the AWS Partner Solutions. AWS Security Hub integrates with Amazon Detective to allow for further investigation into events and compliance alerts.
+        * **AWS Security Hub:** AWS Security Hub is considered a single pane-of-glass service and will give you a comprehensive view of high-priority security alerts, configuration, and compliance status across all of your AWS accounts. It can aggregate, organise, and prioritise security alerts and findings from services such as Amazon GuardDuty, Amazon Macie, Amazon Inspector, AWS IAM, AWS Firewall Manager, and even services offered by the AWS Partner Solutions. AWS Security Hub integrates with Amazon Detective to allow for further investigation into events and compliance alerts.
         * **Amazon Detective:** Amazon Detective allows you to easily analyse, investigate, and identify the RCA of a potential security event or suspicious activity. Detective collects log data from your AWS resources and, like GuardDuty, utilizes machine learning, statistical analysis, and graph theory to build a set of data for event investigations.
         * **Amazon Macie:** Amazon Macie is a service AWS offers that takes advantage of machine learning to discover and classify sensitive data in AWS. Macie can discover personally identifiable information (PII) or intellectual property. It provides you with a dashboard and alerts to give visibility into whether this data is being accessed or moved.
 
 1. Recommend services, processes, procedures to remediate gaps.
 
-    * The most common preventative actions for incidents are around securing AWS access keys, utilising MFA devices, and properly configuring Amazon EC2 security groups. The ones not everyone knows about are utilizing perfect forward secrecy with AWS ALBs, AWS API Gateway throttling and caching abilities, and using AWS Systems Manager to perform operational and security operations on AWS resources.
+    * The most common preventative actions for incidents are around securing AWS access keys, utilising MFA devices, and properly configuring Amazon EC2 security groups. The ones not everyone knows about are utilising perfect forward secrecy with AWS ALBs, AWS API Gateway throttling and caching abilities, and using AWS Systems Manager to perform operational and security operations on AWS resources.
 
 ### Evaluate the configuration of automated alerting, and execute possible remediation of security-related incidents and emerging issues.
 
@@ -96,7 +96,7 @@
 
 1. Review previous security incidents and recommend improvements to existing systems.
 
-    * The most common preventative actions for incidents are around securing AWS access keys, utilising MFA devices, and properly configuring Amazon EC2 security groups. The ones not everyone knows about are utilizing perfect forward secrecy with AWS ALBs, AWS API Gateway throttling and caching abilities, and using AWS Systems Manager to perform operational and security operations on AWS resources.
+    * The most common preventative actions for incidents are around securing AWS access keys, utilising MFA devices, and properly configuring Amazon EC2 security groups. The ones not everyone knows about are utilising perfect forward secrecy with AWS ALBs, AWS API Gateway throttling and caching abilities, and using AWS Systems Manager to perform operational and security operations on AWS resources.
 
 ## Logging and Monitoring
 
@@ -124,7 +124,7 @@
 
 1.  Analyze the requirements for custom application monitoring, and determine how this could be achieved.
 
-    * The PutMetricData API can be used to publish data points for particular metrics. If the metric does not exist, CloudWatch creates the metric. A custom application can consume this API to provide application monitoring.
+    * The *PutMetricData* API can be used to publish data points for particular metrics. If the metric does not exist, CloudWatch creates the metric. A custom application can consume this API to provide application monitoring.
 
     * By using the CloudWatch Logs agent, you can publish your operating system, application, and custom log files to Amazon CloudWatch Logs, where they will be stored in durable fashion for as long as you would like. You can also configure the CloudWatch agent to monitor the incoming log entries for any desired symbols or messages and to present the results as CloudWatch metrics. 
 
@@ -148,7 +148,7 @@
 
     * Log file integrity validation includes SHA-256 hashing and RSA for digital signing. Log files are delivered with a digest file that can be used to validate the integrity of the log file.
 
-    * CloudTrail logs need to be secured as they may contain PII such as usernames and emails. Only security personnel should be granted administrator access to CloudTrail using IAM. Access to the S3 bucket containing the logs should be controlled using bucket policies, and MFA should be required for delete on those objects. Lifecycle rules should be used to move log files to Glacier or to delete them.
+    * CloudTrail logs need to be secured as they may contain PII such as usernames and emails. Only security personnel should be granted administrator access to CloudTrail using IAM. Access to the S3 bucket containing the logs should be controlled using bucket policies, and MFA should be required for delete on those objects. Lifecycle rules should be used to move log files to AWS Glacier or to delete them.
 
     * By default CloudTrail logs are encrypted by SSE-S3 even if there is no S3 bucket level encryption.
 
@@ -168,14 +168,14 @@
     * Log sources include:
         * **Account Level:** These log sources capture platform-wide activity. These should always be enabled. Examples include AWS CloudTrail and AWS Config.
         * **AWS Service Logs:** These represent log data that is generated by resources or the AWS service owning the resource. Decision on enablement is based on business need, regulatory requirement, or your internal company security policy. In general, these logs can be linked to an application or workload. Examples include ELB access logs, Amazon S3 access logs, and Amazon CloudFront access logs.
-        * **Host-based Logs:** These refer to log sources that are not generated by AWS and commonly are generated from with-in a specific resource, such as an EC2 instance. Examples include syslog, service logs, event logs, application logs such as NGINX, Apache, or IIS logs.
+        * **Host-based Logs:** These refer to log sources that are not generated by AWS and commonly are generated from within a specific resource, such as an EC2 instance. Examples include syslog, service logs, event logs, and application logs such as NGINX, Apache, or IIS logs.
 
 1. Analyze requirements and implement durable and secure log storage according to AWS best practices.
 
     * AWS CloudTrail logs are delivered to an S3 bucket. As AWS customers often use many AWS accounts for running their workloads, best practice is to create and use an AWS account as a log archive account. All other AWS accounts will have AWS CloudTrail enabled and deliver log files to an S3 bucket in this log archive account. This provides several benefits:
         * By logging to a dedicated and centralized Amazon S3 bucket, you can enforce strict security controls, access, and segregation of duties.
         * You can capture logs from ephemeral AWS accounts, which are created and deleted repeatedly.
-        * You can control access to log files. While AWS CloudTrail from other accounts delivers all the logs to the S3 bucket in the log archive account, by default, no principal (IAM user/role, etc.) in the accounts themselves have access to the log files in the log archive account. Access to log files can be enabled explicitly using IAM roles and IAM access policies by letting principals from other accounts call the AssumeRole API to assume a role, which can provide read-only access to the logs
+        * You can control access to log files. While AWS CloudTrail from other accounts delivers all the logs to the S3 bucket in the log archive account, by default, no principal (IAM user/role, etc.) in the accounts themselves have access to the log files in the log archive account. Access to log files can be enabled explicitly using IAM roles and IAM access policies by letting principals from other accounts call the *AssumeRole* API to assume a role, which can provide read-only access to the logs
 
     * By default, the log files delivered by AWS CloudTrail to your bucket are encrypted by Amazon server-side encryption with Amazon S3–managed encryption keys (SSE-S3). AWS CloudTrail also lets you use server-side encryption with AWS KMS (SSE-KMS) managed keys. To use this option, you first must create a CMK within the AWS KMS. Using SSE-KMS has several advantages:
         * You are in complete control of the customer master keys you create within AWS KMS. You can choose to rotate these CMKs at any point, which is considered a best practice.
@@ -199,7 +199,7 @@
         * **Amazon Kinesis:** Allows you to easily collect, process, and analyse real-time data. This permits you to read your log data as it comes in to alert quickly on new information and gather timely insights.
 
     * AWS services for visualisation of your environment include:
-        * **Amazon GuardDuty:** A threat detection service that will continuously monitor your accounts and resources for malicious activity and unauthorised behaviour by utilising machine learning, anomaly detection, and integrated threat intelligence. A good tool to give you a quick dashboard glance of any findings based on AWS CloudTrail Logs, Amazon VPC flow logs, and DNS logs.
+        * **Amazon GuardDuty:** A threat detection service that will continuously monitor your accounts and resources for malicious activity and unauthorised behaviour by utilising machine learning, anomaly detection, and integrated threat intelligence. GuardDuty is a good tool to give you a quick dashboard glance of any findings based on AWS CloudTrail Logs, Amazon VPC flow logs, and DNS logs.
         * **AWS Security Hub:** AWS Security Hub is considered a single pane-of-glass service and will give you a comprehensive view of high-priority security alerts, configuration, and compliance status across all of your AWS accounts. It can aggregate, organise, and prioritize security alerts and findings from services such as Amazon GuardDuty, Amazon Macie, Amazon Inspector, AWS IAM, AWS Firewall Manager, and even services offered by the AWS Partner Solutions. AWS Security Hub integrates with Amazon Detective to allow for further investigation into events and compliance alerts.
         * **Amazon Detective:** Amazon Detective allows you to easily analyze, investigate, and identify the RCA of a potential security event or suspicious activity. Detective collects log data from your AWS resources and, like GuardDuty, utilizes machine learning, statistical analysis, and graph theory to build a set of data for event investigations.
         * **Amazon Macie:** Amazon Macie is a service AWS offers that takes advantage of machine learning to discover and classify sensitive data in AWS. Macie can discover personally identifiable information (PII) or intellectual property. It provides you with a dashboard and alerts to give visibility into whether this data is being accessed or moved.
@@ -222,7 +222,7 @@
 
 1.  Based on the security policy requirements, determine the correct log level, type, and sources.
 
-    * You can choose from OFF, ALL, ERROR, or FATAL. No event types log when set to OFF and all event types do when set to ALL. For ERROR and FATAL, see the following table.
+    * As an example from AWS Step Functions, you can choose from OFF, ALL, ERROR, or FATAL. No event types log when set to OFF and all event types do when set to ALL.
 
 ## Infrastructure Security
 
@@ -296,7 +296,7 @@
 
     * NAT Gateways are much preferred to NAT instances. They automatically scale, are more secure, patch automatically (but no SSH access) etc. They are not associated with security groups.
     
-    * A NAT is used to provide internet traffic to EC2 instances in private subnets. A Bastion is used to securely administer E2 instances (using SSH or RDP) in private subnets. In Australia they are called jump boxes.
+    * A NAT Gateway or instance is used to provide internet traffic to EC2 instances in private subnets. A Bastion is used to securely administer E2 instances (using SSH or RDP) in private subnets. In Australia they are called jump boxes.
 
     * An Internet Gateway allows instances with public IPs to access the internet. A NAT Gateway (or NAT instance) allows instances with no public IPs to access the internet.
 
@@ -349,7 +349,7 @@
 
     * IAM Access Analyzer helps you identify the resources in your organization and accounts, such as Amazon S3 buckets or IAM roles, shared with an external entity. For each instance of a resource shared outside of your account, Access Analyzer generates a finding. Findings include information about the access and the external principal granted to it.
 
-    * Access Analyzer analyzes only policies applied to resources in the same AWS Region where it is enabled. To monitor all resources in your AWS environment, you must create an analyzer to enable Access Analyzer in each Region where you are using supported AWS resources.
+    * Access Analyzer analyses only policies applied to resources in the same AWS Region where it is enabled. To monitor all resources in your AWS environment, you must create an analyser to enable Access Analyzer in each Region where you are using supported AWS resources.
 
 1. Given a description how an organization manages their AWS accounts, verify security of their root user.
 
@@ -379,7 +379,7 @@
 
 1. Within an organization’s policy, determine when to federate a directory services to IAM.
 
-    * Identity federation is a system of trust between two parties for the purpose of authenticating users and conveying information needed to authorize their access to resources. In this system, an identity provider (IdP) is responsible for user authentication, and a service provider (SP), such as a service or an application, controls access to resources. By administrative agreement and configuration, the SP trusts the IdP to authenticate users and relies on the information provided by the IdP about them. After authenticating a user, the IdP sends the SP a message, called an assertion, containing the user's sign-in name and other attributes that the SP needs to establish a session with the user and to determine the scope of resource access that the SP should grant. Federation is a common approach to building access control systems which manage users centrally within a central IdP and govern their access to multiple applications and services acting as SPs.
+    * Identity federation is a system of trust between two parties for the purpose of authenticating users and conveying information needed to authorize their access to resources. In this system, an Identity Provider (IdP) is responsible for user authentication, and a Service Provider (SP), such as a service or an application, controls access to resources. By administrative agreement and configuration, the SP trusts the IdP to authenticate users and relies on the information provided by the IdP about them. After authenticating a user, the IdP sends the SP a message, called an assertion, containing the user's sign-in name and other attributes that the SP needs to establish a session with the user and to determine the scope of resource access that the SP should grant. Federation is a common approach to building access control systems which manage users centrally within a central IdP and govern their access to multiple applications and services acting as SPs.
 
     * You can use AWS SSO for identities in the AWS SSO’s user directory, your existing corporate directory, or external IdP. With AWS SSO, you can assign permissions based on the group membership in your IdP’s directory, and then control the access for your users by simply modifying users and groups in the IdP.
 
@@ -414,9 +414,9 @@
     * The benefits of ABAC in this solution are that you need to provision fewer IAM roles and that your S3 objects can have different prefixes without the need to explicitly add all those prefixes to your IAM permissions policies like you would with RBAC.
 
     * Once configured, the authentication flow would be:
-        * User authenticates to your IdP — AD FS in this case.
-        * The IdP queries the identity store — Active Directory in this case — to retrieve the tag values for the authenticated user.
-        * The identity store supplies the tag values to AWS — together with other information — in a SAML token.
+        * User authenticates to your IdP - AD FS in this case.
+        * The IdP queries the identity store - Active Directory in this case - to retrieve the tag values for the authenticated user.
+        * The identity store supplies the tag values to AWS - together with other information - in a SAML token.
         * IAM checks the trust policy to determine if the IdP is allowed to federate the user into the specified role.
         * Users can access the data directly or through another supported service using the credentials and in accordance with the permissions granted.
 
@@ -458,7 +458,7 @@
 
 1. Investigate a user’s inability to switch roles to a different account.
 
-    * To use the AssumeRole API call with multiple accounts or cross-accounts, you must have a trust policy to grant permission to assume roles. As an example, user Bob_Account is required to assume a role Alice in Account_Alice.
+    * To use the *AssumeRole* API call with multiple accounts or cross-accounts, you must have a trust policy to grant permission to assume roles. As an example, user Bob_Account is required to assume a role Alice in Account_Alice.
 
     * The IAM policy for Bob_Account:
         ```JSON
@@ -511,7 +511,7 @@
 
     * AWS Key Management Service (KMS) is a service for managing encryption keys that is used for both client side (optional) and server-side encryption with AWS. KMS only manages Customer Master Keys (CMKs) and it uses Hardware Security Modules (HSMs) to store the keys. A CMK is a representation (like a pointer) for the customer of the actual key material stored on the HSM devices. The CMK includes the alias, creation date, description, key state, and key material (either customer provided, or AWS provided). It can never be exported. 
 
-    * Access to MKS CMKs is controlled using:
+    * Access to KMS CMKs is controlled using:
         * **Key Policy:** Add the root user, not the individual IAM users or roles.
         * **IAM Policies:** Define the allowed actions and the CMK ARN.
 
@@ -535,7 +535,7 @@
         * Encrypt the key material.
         * Import the key material.
 
-    * KMS supports symmetric and asymmetric keys. A symmetric key never leaves KMS unencrypted, so to use it you must call AWS KMS. For an asymmetric key pair, the private key never leaves KMS unencrypted, but the public key can be downloaded and used outside of KMS. The symmetric key is used for both encryption and decryption. The asymmetric public key is used for encryption, and the asymmetric private key is used for decryption. A symmetric key is recommended for most use cases as it is fast and efficient. An asymmetric key pair is required if you need users outside of AWS to encrypt data, as they can use the public key to encrypt. The private key of an asymmetric key pair can be used to sign messages and the public key can be used to verify signatures (using the 'Sign' and 'Verify' APIs).
+    * KMS supports symmetric and asymmetric keys. A symmetric key never leaves KMS unencrypted, so to use it you must call AWS KMS. For an asymmetric key pair, the private key never leaves KMS unencrypted, but the public key can be downloaded and used outside of KMS. The symmetric key is used for both encryption and decryption. The asymmetric public key is used for encryption, and the asymmetric private key is used for decryption. A symmetric key is recommended for most use cases as it is fast and efficient. An asymmetric key pair is required if you need users outside of AWS to encrypt data, as they can use the public key to encrypt. The private key of an asymmetric key pair can be used to sign messages and the public key can be used to verify signatures (using the *Sign* and *Verify* APIs).
 
     * Key types include:
         * **Customer-Managed CMKs:** CMKs in your account that you fully create, own, and manage. They can be used via the AWS KMS API directly to encrypt and decrypt data that is less than 4KB. Any data over 4KB must use what is called a data key. The data key is encrypted by the CMK but is exportable unlike the CMK.
@@ -566,11 +566,11 @@
 
     * A CMK alias can be used to change the CMK they are associated with at any time. These are useful in key rotation scenarios.
 
-    * AWS KMS cannot utilise data keys directly to perform cryptographic operations via the API. A data key is created with the 'GenerateDataKey' API using the CMK specified in the API call. An encrypted version is returned using the 'GenerateDataKeyWithoutPlaintext' API call. The plaintext version of the data key will be used by an encryption algorithm specified by the service or library to convert plaintext data into ciphertext. Once the operation is complete, the plaintext data key is removed from memory. Decryption occurs using the encrypted data key.
+    * AWS KMS cannot utilise data keys directly to perform cryptographic operations via the API. A data key is created with the *GenerateDataKey* API using the CMK specified in the API call. An encrypted version is returned using the *GenerateDataKeyWithoutPlaintext* API call. The plaintext version of the data key will be used by an encryption algorithm specified by the service or library to convert plaintext data into ciphertext. Once the operation is complete, the plaintext data key is removed from memory. Decryption occurs using the encrypted data key.
 
     * KMS only manages CMKs, it does not manage data keys. A CMK never leaves the region that it was created and can only encrypt a maximum of 4kB of data. Data Keys can be used for larger object encryption.
     
-    * A data key pair is similarly created using the 'GenerateDataKeyPair' API to provide a public key, plaintext private key, and encrypted private key. This should only be done when you are going to utilise the plaintext private key immediately, as having the private key in plaintext format is a security risk. You can use the 'GenerateDataKeyPairWithoutPlaintext' API to generate the public key and encrypted private key only. Data keys are protected using Key Encryption Key (KEK) to provide envelope encryption.
+    * A data key pair is similarly created using the *GenerateDataKeyPair* API to provide a public key, plaintext private key, and encrypted private key. This should only be done when you are going to utilise the plaintext private key immediately, as having the private key in plaintext format is a security risk. You can use the *GenerateDataKeyPairWithoutPlaintext* API to generate the public key and encrypted private key only. Data keys are protected using Key Encryption Key (KEK) to provide envelope encryption.
 
     * Many data keys can be generated from a CMK. These are not stored or managed in KMS. The plaintext data key is used to encrypt the data and is then deleted. This process is shown below:
         <p align="center">
@@ -601,11 +601,11 @@
 
     * Knowing how a KMS key was used in the past might help you decide whether you will need it in the future. All AWS KMS API activity is recorded in AWS CloudTrail log files. If you have created a CloudTrail trail in the region where your KMS key is located, you can examine your CloudTrail log files to view a history of all AWS KMS API activity for a particular KMS key.
     
-    * A symmetric key is recommended for most use cases as it is fast and efficient. An asymmetric key pair is required if you need users outside of AWS to encrypt data, as they can use the public key to encrypt. The private key of an asymmetric key pair can be used to sign messages and the public key can be used to verify signatures (using the 'Sign' and 'Verify' APIs).
+    * A symmetric key is recommended for most use cases as it is fast and efficient. An asymmetric key pair is required if you need users outside of AWS to encrypt data, as they can use the public key to encrypt. The private key of an asymmetric key pair can be used to sign messages and the public key can be used to verify signatures (using the *Sign* and *Verify* APIs).
 
 1. Determine and control the blast radius of a key compromise event and design a solution to contain the same.
 
-    * It is recommended to define classification levels and have at least one CMK per level. For example, you could define a CMK for data classified as “Confidential,” and so on. This ensures that authorized users only have permissions for the key material that they require to complete their job.
+    * It is recommended to define classification levels and have at least one CMK per level. For example, you could define a CMK for data classified as 'Confidential', and so on. This ensures that authorized users only have permissions for the key material that they require to complete their job.
 
     * Creating KMS keys within each account that requires the ability to encrypt and decrypt sensitive data works best for most customers, but another option is to share the CMKs from a few centralized accounts. Maintaining the CMKs in the same account as most of the infrastructure using them helps users’ provision and run AWS services that use those keys.
 
@@ -617,7 +617,7 @@
 
     * When authorising access to a KMS key, AWS KMS evaluates the following:
         * The key policy that is attached to the key. The key policy is always defined in the AWS account and Region that owns the KMS key. The Key Policy is a resource-based policy attached to the CMK, it defines key users and key administrators and trusted external accounts.
-        * All IAM policies that are attached to the IAM user or role making the request. IAM policies that govern a principal's use of a KMS key are always defined in the principal's AWS account. The IAM Policy is assigned to a User, Group, or Role, and defines the allows actions e.g. kms:ListKeys.
+        * All IAM policies that are attached to the IAM user or role making the request. IAM policies that govern a principal's use of a KMS key are always defined in the principal's AWS account. The IAM Policy is assigned to a User, Group, or Role, and defines the allows actions e.g. `kms:ListKeys`.
         * All grants that apply to the KMS key. Grants are advanced mechanisms for specifying permissions that you or an AWS service integrated with AWS KMS can use to specify how and when a KMS key can be used. Grants are attached to a KMS key, and each grant contains the principal who receives permission to use the KMS key and a list of operations that are allowed. Grants are an alternative to the key policy and are useful for specific use cases.
         * Other types of policies that might apply to the request to use the KMS key, such as AWS Organizations service control policies and VPC endpoint policies. These policies are optional and allow all actions by default, but you can use them to restrict permissions otherwise given to principals.
 
@@ -1550,7 +1550,7 @@ A CMK was used in the encryption operation. Then in another stage, the encrypted
     * Server sid encryption is the easiest. Use SSE-E3 with a CMK to allow managing the key policy and its rotation.
 
 1. You are building a distributed HPC system that will process large multi-GB files. The sensitive nature of the data in these files requires them to be encrypted. What steps are the best approach to use AWS KMS to satisfy the encryption requirement?
-    * The Encrypt API can encrypt up to 4 kB of data, which is not large enough for this question. You will need to use the GenerateDataKeyWithoutPlaintext API to generate a data key, and then distribute the key to the components of the system. The Decrypt API can be used to decrypt the data key, and the plaintext key can be used to encrypt the data.
+    * The *Encrypt* API can encrypt up to 4 kB of data, which is not large enough for this question. You will need to use the *GenerateDataKeyWithoutPlaintext* API to generate a data key, and then distribute the key to the components of the system. The *Decrypt* API can be used to decrypt the data key, and the plaintext key can be used to encrypt the data.
 
 1. A company is using a Redshift cluster as its data warehouse solution. There is a requirement from the internal IT security team to ensure that data gets encrypted at rest for the Redshift database. How can this be achieved?
     * The Redshift cluster can be encrypted with either AWS KMS or HSM.
