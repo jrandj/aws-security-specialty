@@ -254,6 +254,106 @@
 
 1.  Given a set of edge protection requirements for an application, evaluate the mechanisms to prevent and detect intrusions for compliance and recommend required changes.
 
+    * AWS Services to protect the edge layer are shown below:
+        <p align="center">
+        <img src="/res/edge_services.JPG">
+        </p>
+
+    * You can have multiple origins in a CloudFront distribution. An origin is a source of content served by a CloudFront distribution. It can be a custom origin, such as an HTTP web server, an ELB, an S3 bucket configured to host a static website and publicly accessible, or an S3 bucket configured to allow a CloudFront Origin Access identity.
+
+    * It is widespread practice to host content in an S3 bucket and use Amazon CloudFront to distribute this content over its edge locations. Best practise is to not expose the bucket publicly and control access to the S3 bucket by creating a CloudFront Origin Access Identity and adding it to the bucket policy. This method allows the CloudFront distribution to authenticate into the S3 service and get objects from the bucket without exposing the S3 bucket publicly. You can also restrict or allow access based on the country of origin for the request.
+
+    * When you create or import an SSL certificate to use in Amazon CloudFront, always use the US East 1 region.
+    
+    * When you host your application directly in web servers that you manage, such as Apache, Nginx, or Microsoft IIS, you are responsible for keeping the software updated with the latest security patches and may need to use additional services such as firewalls or IPS to protect against threats. Hosting this content with Amazon CloudFront shifts this responsibility to AWS.
+
+    * Amazon API Gateway works as a reverse proxy for HTTP/S and WebSocket requests. The web client opens a request to API Gateway, and it can perform authorization, request validation, caching, throttling, and transformations before the API Gateway submits the request to the configured integration backend. The flow of requests through API Gateway is shown below:
+        <p align="center">
+        <img src="/res/API_Gateway.JPG">
+        </p>
+
+    * An API Gateway endpoint can be edge-optimised, region, or private. Edge-optimised have the lowest latency, regional has low latency, and private is used when you do not want to expose the REST API over the internet. An API Gateway can be integrated with Lambda function, HTTP, mock, AWS service, or VPC link backends.
+
+    * A Lambda authoriser is an authorisation method that uses a custom Lambda function to evaluate if the request has the authorization to access specific resources and methods from the API before processing the request and sending it to the integration backend. As a result of the authorisation process, the Lambda function returns an IAM policy that the API Gateway uses to decide if the requester has access to the requested method.
+
+    * The event presented to the Lambda function by the API Gateway can come in two formats: token based or request parameter based. In the token-based method, you can define a request header, frequently named *Authorization*, that must be present and contains a bearer token such as JWT. The event arrives to the Lambda function in this format:
+        ```JSON
+        {
+            "type": "TOKEN",
+            "authorizationToken": "{caller-supplied-token}",
+            "methodArn": "arn:aws:execute-api:{regionId}:{accountId}:{apiId}/{stage}/{httpVerb}/[{resource}/[{child-resources}]]"
+        }
+        ```
+
+    * In the request parameter–based method, the whole request sent by the client is provided as an event to the Lambda function, and any field from the request can be used to make a decision about access. The event arrives to the Lambda function in the following format:
+        ```JSON
+        {
+            "type": "REQUEST",
+            "methodArn": "arn:aws:execute-api:us-east-1:123456789012:s4x3opwd6i/test/GET/request",
+            "resource": "/request",
+            "path": "/request",
+            "httpMethod": "GET",
+            "headers": {
+                "X-AMZ-Date": "20170718T062915Z",
+                "Accept": "*/*",
+                "HeaderAuth1": "headerValue1",
+                "CloudFront-Viewer-Country": "US",
+                "CloudFront-Forwarded-Proto": "https",
+                "CloudFront-Is-Tablet-Viewer": "false",
+                "CloudFront-Is-Mobile-Viewer": "false",
+                "User-Agent": "...",
+                "X-Forwarded-Proto": "https",
+                "CloudFront-Is-SmartTV-Viewer": "false",
+                "Host": "....execute-api.us-east-1.amazonaws.com",
+                "Accept-Encoding": "gzip, deflate",
+                "X-Forwarded-Port": "443",
+                "X-Amzn-Trace-Id": "...",
+                "Via": "...cloudfront.net (CloudFront)",
+                "X-Amz-Cf-Id": "...",
+                "X-Forwarded-For": "..., ...",
+                "Postman-Token": "...",
+                "cache-control": "no-cache",
+                "CloudFront-Is-Desktop-Viewer": "true",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            "queryStringParameters": {
+                "QueryString1": "queryValue1"
+            },
+            "pathParameters": {},
+            "stageVariables": {
+                "StageVar1": "stageValue1"
+            },
+            "requestContext": {
+                "path": "/request",
+                "accountId": "123456789012",
+                "resourceId": "05c7jb",
+                "stage": "test",
+                "requestId": "...",
+                "identity": {
+                    "apiKey": "...",
+                    "sourceIp": "..."
+                },
+                "resourcePath": "/request",
+                "httpMethod": "GET",
+                "apiId": "s4x3opwd6i"
+            }
+        }
+        ```
+
+    * A common authorisation flow is shown below:
+        <p align="center">
+        <img src="/res/Authorisation_Flow.JPG">
+        </p>
+
+    * The steps in this flow are:
+        * The web client authenticates against an IdP such as Facebook or Google. The IdP returns a bearer token to the client. This token contains claims about the user that can be used for the authorisation.
+        * The web client sends a request to the API Gateway with an authorisation header containing the token provided by the IdP.
+        * The API Gateway receives the request and checks that the incoming request is related to a resource and method that requires Lambda authoriser authorisation. The API Gateway sends an event to the Lambda function configured as the authoriser containing the authorisation token.
+        * The Lambda authoriser receives the event from API Gateway, decodes and validates the token and its claims, and returns an IAM policy to API Gateway containing the resources and methods that the token has the authorisation to access.
+        * The API Gateway reads the IAM policy returned by the Lambda authoriser and checks if the resource and method requested are included in the IAM policy to determine if the access is authorised or not. The API Gateway can also cache the IAM policy from the Lambda authoriser to avoid sending authorisation requests again for the same token.
+
+    * When a user from Cognito user pools authenticates in an application, Cognito generates a JWT token that can be used during requests to Amazon API Gateway. Cognito authentication can also be used if you only need to authorise requests based on the scopes provided by a JWT token. If you need to validate other JWT token claims or have many APIs in different AWS accounts and want to centralise authorisation, then the Lambda Authoriser is a better fit.
+
 1.  Test WAF rules to ensure they block malicious traffic.
 
 ### Design and implement a secure network infrastructure.
@@ -825,7 +925,7 @@
 
 1. AWS WAF
 
-    * AWS Web Application Firewall (WAF) lets you monitor the HTTP and HTTPS requests that are forwarded to Amazon CloudFront or an application load balancer. It does not integrate with services like EC2 directly. You can configure conditions such as what IP addresses are allowed to make this request or what query string parameters need to be passed for the request to be allowed.
+    * AWS Web Application Firewall (WAF) lets you monitor the HTTP and HTTPS requests that are forwarded to Amazon CloudFront or an application load balancer. It does not integrate with services like EC2 directly. You can configure conditions such as what IP addresses are allowed to make this request or what query string parameters need to be passed for the request to be allowed. AWS WAF is normally associated with services closer to the user's request.
 
     * As a basic level WAF allows 3 different behaviours:
         * Allow all requests except the ones that you specify.
@@ -890,7 +990,7 @@
 
 1. AWS Key Management Service (AWS KMS)
 
-	* AWS Key Management Service (KMS) is a service for managing encryption keys that is used for both client side (optional) and server-side encryption with AWS. KMS only manages Customer Master Keys (CMKs) and it uses Hardware Security Modules (HSMs) to store the keys.
+    * AWS Key Management Service (KMS) is a service for managing encryption keys that is used for both client side (optional) and server-side encryption with AWS. KMS only manages Customer Master Keys (CMKs) and it uses Hardware Security Modules (HSMs) to store the keys.
 
 1. Amazon Macie
 
