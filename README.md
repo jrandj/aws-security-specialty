@@ -53,7 +53,7 @@
 
     * AWS offers many services that can be of assistance in an IRP. These include:
         * **AWS Shield:** Provides a managed service offering DDoS protection to applications running in AWS. AWS Shield Standard is free and AWS Shield Advanced costs additional.
-        * **AWS WAF:** Widely used with AWS Shield as it helps protect your layer 7 application-level traffic. AWS WAF Classic allows the creation of basic rules, and AWS WAF which offers more features.
+        * **AWS WAF:** Widely used with AWS Shield as it helps protect your layer 7 application-level traffic. AWS WAF Classic allows the creation of basic rules, and AWS WAF offers additional features.
         * **AWS Firewall Manager:** Provides a way to simplify administration and maintenance tasks for AWS WAF, AWS Shield, and Amazon VPC security groups across multiple accounts and resources. Requires AWS account as an owner or member of an AWS organization, an IAM entity that can perform as an administrator role to activate it, and AWS Config must be configured.
         * **AWS Config:** Tracks and records changes to AWS resources.
 
@@ -354,7 +354,28 @@
 
     * When a user from Cognito user pools authenticates in an application, Cognito generates a JWT token that can be used during requests to Amazon API Gateway. Cognito authentication can also be used if you only need to authorise requests based on the scopes provided by a JWT token. If you need to validate other JWT token claims or have many APIs in different AWS accounts and want to centralise authorisation, then the Lambda Authoriser is a better fit.
 
+    * Similar to Amazon CloudFront, the Amazon API Gateway is a service that does not run inside a VPC. If the backend is hosted inside a VPC, without a VPC link, you would need to make the backend available on the Internet for the API Gateway to connect with it, which can expose it to attacks. Instead, by using a VPC link, you can privately connect the API to any host inside a VPC.
+
+    * An ALB is orientated for web applications. In contrast, an NBL is a load balancer that primarily runs on layer 4, and because of that, it can process requests faster support other TCP protocols such as FTP, SFTP, IMAP, and UDP. An NLB does not support security groups. If you need to filter the traffic going to an application behind the NLB, you can still have a security group applied directly to the resource, as the NLB does not change the source IP address of requests.
+
 1.  Test WAF rules to ensure they block malicious traffic.
+
+    * WAF classic provides 2 REST APIs for the service: one for the global WAF for association with Amazon CloudFront, and another API for region services, such as API Gateway and the ALB. AWS WAF Classic uses conditions to match incoming requests with patterns. It provides conditions for cross-site scripting, geolocation based on the requester’s IP address, IP address matching, request size constraints, SQL injection patterns, and string/regex matching. A rule contains one or more conditions to match incoming requests and take a block, allow, or account action. Multiple conditions are combined with a logical AND.
+
+    * WAF rules are a little more complicated. WAF also introduces the concept of ACL capacity units, which are a method used to calculate capacity for rules based on the complexity. When you create a web ACL, it comes with 1,500 Web ACL Capacity Units (WCUs). Rules are either regular or rate based. The rule components are shown below:
+        <p align="center">
+        <img src="/res/WAF_Rules.JPG">
+        </p>
+
+    * The steps to create a regular rule are:
+        * Provide a name for the rule.
+        * Select the statement logic to use.
+        * Select what you want AWS WAF to inspect from the incoming request. Options include any part of the HTTP request, such as the body (first 8 Kb), header, URI, and query strings. Originating country for the request can be set here.
+        * Select the match type to determine how AWS WAF evaluates the content of the request for matching.
+        * Provide any text transformations to normalise request parts into a standard format. A common use case here is to bypass the encoding of SQL injection attacks.
+        * Specify the action: block, allow, or count.
+
+    * The steps to create a rate-based rule are similar; however, you can define a threshold of how many requests matching a rule should trigger a block, allow, or count action. You can also apply rate-based rules for all requests instead of having to match some specific criteria.
 
 ### Design and implement a secure network infrastructure.
 
@@ -939,6 +960,8 @@
     * You can use AWS WAF to protect web sites not hosted in AWS via CloudFront. CloudFront supports custom origins outside of AWS.
 
     * WAF supports both IPv4 and IPv6 and IP's can be blocked at a /8, /16, /24, and /32 level.
+
+    * WAF protects against Cross-Site Scripting, SQL Injection, HTTP Flooding, Bots, and the OWASP Top 10 threats.
 
 1. AWS Certificate Manager (ACM)
 
