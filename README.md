@@ -272,7 +272,7 @@
         <img src="/res/API_Gateway.JPG">
         </p>
 
-    * An API Gateway endpoint can be edge-optimised, region, or private. Edge-optimised have the lowest latency, regional has low latency, and private is used when you do not want to expose the REST API over the internet. An API Gateway can be integrated with Lambda function, HTTP, mock, AWS service, or VPC link backends.
+    * An API Gateway endpoint can be edge-optimised, region, or private. Edge-optimised have the lowest latency, regional has low latency, and private is used when you do not want to expose the REST API over the Internet. An API Gateway can be integrated with Lambda function, HTTP, mock, AWS service, or VPC link backends.
 
     * A Lambda authoriser is an authorisation method that uses a custom Lambda function to evaluate if the request has the authorization to access specific resources and methods from the API before processing the request and sending it to the integration backend. As a result of the authorisation process, the Lambda function returns an IAM policy that the API Gateway uses to decide if the requester has access to the requested method.
 
@@ -381,6 +381,8 @@
 
 1. Disable any unnecessary network ports and protocols.
 
+    * The Amazon VPC is a software-defined network that uses a proprietary overlay protocol to allow EC2 instances located in many physical hosts across multiple AZs in the same AWS region to communicate. Most importantly, it virtually isolates the network from other virtual networks.
+
     * When you create a VPC, an Amazon DNS server is automatically created. This is used for hostname resolution for instances in your VPC. If preferred, you can disable this and create a new DHCP option to set your own DNS server.
 
     * VPCs can get complicated in large numbers, with VPC peering required for communication between them. A Transit Gateway is a solution to this problem, as any VPC connected to the gateway can communicate with any other VPC that is also connected.
@@ -395,9 +397,9 @@
 
 1.  Determine the use case for VPN or Direct Connect.
 
-    * AWS Direct Connect is a networking service that provides an alternative to using the internet to connect to AWS. Using Direct Connect, data that would have previously been transported over the internet is delivered through a private network connection between your facilities and AWS. A VPN connectivity option can be used if traffic going over the internet is not a constraint.
+    * AWS Direct Connect is a networking service that provides an alternative to using the Internet to connect to AWS. Using Direct Connect, data that would have previously been transported over the Internet is delivered through a private network connection between your facilities and AWS. A VPN connectivity option can be used if traffic going over the Internet is not a constraint.
 
-    * A VPC Gateway Endpoint enables you to privately connect your VPC to supported AWS services powered by PrivateLink without requiring an internet gateway, NAT device, VPN connection, or AWS Direct Connect connection.
+    * A VPC Gateway Endpoint enables you to privately connect your VPC to supported AWS services powered by PrivateLink without requiring an Internet gateway, NAT device, VPN connection, or AWS Direct Connect connection.
 
 1.  Determine the use case for enabling VPC Flow Logs.
 
@@ -409,17 +411,33 @@
 
 1.  Given a description of the network infrastructure for a VPC, analyze the use of subnets and gateways for secure operation.
 
+    * An AWS Region is a cluster of data centres physically located within a geographic area. Each region provides at least two Availability Zones (AZs) not very far from each other, usually within 100 km. One AZ clusters one or more physical data centres. AWS uses a private backbone to interconnect data centres, AZs, and regions with low-latency and highly available links. A typical design involves using 2 or 3 AZs to provide availability and use a load balancer to balance the traffic across the servers available in each zone. Note that data flowing between AZs and regions is encrypted.
+
+    * There are more edge locations available than regions. Wherever possible, Amazon CloudFront should be used to distribute your applications so that user requests to your application can enter the AWS backbone and reach the destination region closer to where they are located.
+
+    * Many customers are still running a hybrid environment with on-premises data centres that need to connect with AWS Cloud. Direct Connect locations are points of presence distributed in many locations around the world that provide a low-latency and high-throughput connection point for customers to the AWS backbone. These locations are commonly located inside co-location facilities that serve many customers already.
+
+    * VPC resources include:
+        * **Subnets:** A VPC subnet is a method for segmenting the VPC by allocating a subset IP range from the VPC CIDR block bounded to a single availability zone.
+        * **Route Table:** A VPC subnet, by default, provides access to other subnets in the same VPC. However, instances within the subnet cannot communicate with networks outside of the VPC, such as the Internet or other VPCs. In traditional networks (using a simple example), you use a router to establish communication across different networks. The router usually has a connection with both networks. In AWS this functionality is implemented using a VPC route table. For example, you can set a route pointing to an AWS resource that can route an Internet request - such as an Internet Gateway, a NAT Gateway, or a NAT instance.
+        * **Internet Gateway:** An Internet Gateway allows a public IP address to associate with an EC2 instance. By doing this, an EC2 instance can make outbound connections to the Internet and receive incoming connections from the Internet. Note that you also need to associate the Internet Gateway with a VPC and create a route in the route table. If a subnet has a route to an Internet Gateway it is considered a public subnet.
+        * **Network Address Translation (NAT) Gateway:** Before this service was released, if you wanted to provide outbound Internet access inside a VPC, you frequently used an EC2 instance to perform NAT. This requires disabling the *check source/destination* feature on the instance, and creating a default route in the route table targeting the instance. This solution does not offer robust availability and limited scalability as you can only increase the instance size. The NAT Gateway is a managed service from AWS to meet this use case. Note that a NAT Gateway cannot be associated with a security group.
+        * **Egress-only Internet Gateway:** This is a stateful gateway for IPv6 addresses that can route traffic from EC2 instances to the Internet and route the returning associated traffic from the Internet to the EC2 instances.
+        * **VPC Peering:**
+        * **Shared VPCs:**
+        * **ENIs:**
+
     * A VPC is a logical datacentre in AWS. It consists of IGWs, Route Tables, Network Access Control Lists, Subnets, and Security Groups. 1 Subnet corresponds to 1 Availability Zone.
 
-    * A NAT instance enables instances in a private subnet to initiate outbound IPv4 traffic to the internet or other AWS services but prevent the instances from receiving inbound traffic initiated on the internet.
+    * A NAT instance enables instances in a private subnet to initiate outbound IPv4 traffic to the Internet or other AWS services but prevent the instances from receiving inbound traffic initiated on the Internet.
 
     * When creating a NAT instance, you must disable the Source/Destination Check on the instance. NAT instances must be in a public subnet, and there must be a route out of the private subnet to the NAT instance. The amount of traffic that a NAT instance can support depends on the instance size. NAT instances also sit behind a security group.
 
     * NAT Gateways are much preferred to NAT instances. They automatically scale, are more secure, patch automatically (but no SSH access) etc. They are not associated with security groups.
     
-    * A NAT Gateway or instance is used to provide internet traffic to EC2 instances in private subnets. A Bastion is used to securely administer E2 instances (using SSH or RDP) in private subnets. In Australia they are called jump boxes.
+    * A NAT Gateway or instance is used to provide Internet traffic to EC2 instances in private subnets. A Bastion is used to securely administer E2 instances (using SSH or RDP) in private subnets. In Australia they are called jump boxes.
 
-    * An Internet Gateway allows instances with public IPs to access the internet. A NAT Gateway (or NAT instance) allows instances with no public IPs to access the internet.
+    * An Internet Gateway allows instances with public IPs to access the Internet. A NAT Gateway (or NAT instance) allows instances with no public IPs to access the Internet.
 
     * Remember that a Security Group is the firewall of EC2 instances, and a NACL is the firewall of the VPC Subnets. An example architecture is shown below to illustrate this:
         <p align="center">
@@ -919,7 +937,7 @@
 
     * Amazon VPC is a foundational AWS service. Other AWS services, such as EC2, cannot be accessed without an underlying VPC network. A VPC behaves like a traditional TCP/IP network that can be expanded and scaled as needed. Typical data centre components (routers, switches, VLANS etc.) do not explicitly exist, but have been abstract and re-engineered into cloud software.
 
-    * A VPC endpoint enables connections between a VPC and supported services, without requiring that you use an internet gateway, NAT device, VPN connection, or AWS Direct Connect connection. Therefore, your VPC is not exposed to the public internet.
+    * A VPC endpoint enables connections between a VPC and supported services, without requiring that you use an Internet gateway, NAT device, VPN connection, or AWS Direct Connect connection. Therefore, your VPC is not exposed to the public Internet.
 
     * A Network Access Control List (NACL) is an optional layer of security for your VPC that acts as a firewall for controlling traffic in and out of one or more subnets. The NACL might have rules like your security groups to add an additional layer of security to your VPC. The following are basic NACL concepts:
         * Your VPC automatically comes with a modifiable default network ACL. By default, it allows all inbound and outbound IPv4 traffic and, if applicable, IPv6 traffic.
@@ -1196,8 +1214,8 @@
 1. You have a website that is sitting behind AWS CloudFront. You need to protect the website against threats such as SQL injection and Cross-site scripting attacks. Which services can help in such a scenario?
     * AWS Config is not relevant here as it is used to check configuration changes on your AWS account. AWS Inspector is not relevant here as it can be used to scan EC2 instances for vulnerabilities but not protect against the threats in this question. AWS Trusted Advisor is also not relevant here as that is to improve the security on your AWS account. AWS WAF allows you to create rules that can help to protect against common web exploits.
 
-1. You have a 2-tier application hosted in AWS. It consists of a web server and database server (SQL Server) hosted on separate EC2 instances. You are devising the security groups for these EC2 instances. The Web tier needs to be accessed by users across the internet. You have created a web security group (wg-123) and a database security group (db-345). Which combination of the following security group rules will allow the application to be secure and functional?
-    * In wg-123 allow access from ports 80 and 443 for HTTP and HTTPS traffic for all users from the internet. In db-345 allow port 1443 traffic from wg-123.
+1. You have a 2-tier application hosted in AWS. It consists of a web server and database server (SQL Server) hosted on separate EC2 instances. You are devising the security groups for these EC2 instances. The Web tier needs to be accessed by users across the Internet. You have created a web security group (wg-123) and a database security group (db-345). Which combination of the following security group rules will allow the application to be secure and functional?
+    * In wg-123 allow access from ports 80 and 443 for HTTP and HTTPS traffic for all users from the Internet. In db-345 allow port 1443 traffic from wg-123.
 
 1. A company wants to have an Intrusion detection system available for their VPC in AWS. They want to have complete control over the system. What should they implement?
     * A custom solution from the AWS Marketplace should be used. AWS does not provide an intrusion detection system natively.
@@ -1217,7 +1235,7 @@
 1. A company is deploying a new web application on AWS. Based on their other web applications, they anticipate being the target of frequent DDoS attacks. Which steps can the company take to protect its applications?
     * An AWS Application Load Balancer and Auto Scaling group can be used to absorb malicious traffic. CloudFront and AWS WAF can prevent malicious traffic from reaching the application.
 
-1. Your current setup in AWS consists of the following architecture. 2 public subnets, one subnet which has the EC2 web servers accessed by users across the internet and the other subnet for the EC2 database server. The application uses the HTTPs protocol. Which of the following changes to the architecture would add a better security boundary to the resources hosted in your setup?
+1. Your current setup in AWS consists of the following architecture. 2 public subnets, one subnet which has the EC2 web servers accessed by users across the Internet and the other subnet for the EC2 database server. The application uses the HTTPs protocol. Which of the following changes to the architecture would add a better security boundary to the resources hosted in your setup?
     * The database server should be moved to a private subnet. Only port 443 should be allowed in for the webserver EC2 instances.
 
 1. A company is planning to create private connections from on-premises AWS Infrastructure to the AWS Cloud. They need to have a solution that would give core benefits of traffic encryption and ensure latency is kept to a minimum. Which of the following would help fulfil this requirement?
@@ -1245,7 +1263,7 @@
     * As communication is usually from the application to the database, check the outbound rules for the application security group and the inbound rules for the database security group.
 
 1. You have a highly sensitive application which you would like to protect from being overwhelmed by malicious traffic. You are running your own proprietary web application firewall which performs packet inspection and filtering on two EC2 instances behind an application load balancer. Once the traffic is deemed safe, it is sent to your application servers. However, a recent DDoS attack managed to overwhelm your infrastructure, causing legitimate requests to hang. How can you configure your infrastructure to be more scalable and resilient to this kind of attack?
-    * Run the proprietary firewall software on an autoscaling group of EC2 instances behind an internet facing elastic load balancer. Place another load balancer in front of your application servers.
+    * Run the proprietary firewall software on an autoscaling group of EC2 instances behind an Internet facing elastic load balancer. Place another load balancer in front of your application servers.
 
 1. Your web application is running on an auto-scaling group of EC2 instances behind an Elastic Load Balancer. You are receiving reports of multiple malicious requests which are attempting to perform a SQL injection attack. The requests are coming from a group of IP addresses in the same range. Which of the following could you do to block these requests to prevent them from impacting your application?
     * Use AWS WAF to block SQL injection attacks from this IP address range. AWS WAF is a web application firewall that helps protect web applications from attacks by allowing you to configure rules that allow, block, or monitor web requests based on conditions that you define. These conditions include IP addresses, HTTP headers, HTTP body, URI strings, SQL injection and cross-site scripting. GuardDuty is a Threat Detection service and cannot be used to block traffic. Inspector assesses applications for exposure, vulnerabilities, and deviations from best practices, it cannot be used to block traffic.
@@ -1254,7 +1272,7 @@
 1. You are designing an e-commerce application which will run on a number of EC2 instances behind an Application Load Balancer, storing product and customer data in DynamoDB and product images in S3. In your previous role at another company, your systems were frequently targeted by SQL injection and cross-site scripting attacks. Which of the following can be used to protect against this type of attack?
     * AWS WAF.
 
-1. You are helping an IT organization meet some security audit requirements imposed on them by a prospective customer. The customer wants to ensure their vendors uphold the same security practices as they do before they can become authorized vendors. The organization's assets consist of around 50 EC2 instances all within a single private VPC. The VPC is only accessible via an OpenVPN connection to an OpenVPN server hosted on an EC2 instance in the VPC. The customer's audit requirements disallow any direct exposure to the public internet. Additionally, prospective vendors must demonstrate that they have a proactive method in place to ensure OS-level vulnerabilities are remediated as soon as possible. Which of the following AWS services will fulfill this requirement?
+1. You are helping an IT organization meet some security audit requirements imposed on them by a prospective customer. The customer wants to ensure their vendors uphold the same security practices as they do before they can become authorized vendors. The organization's assets consist of around 50 EC2 instances all within a single private VPC. The VPC is only accessible via an OpenVPN connection to an OpenVPN server hosted on an EC2 instance in the VPC. The customer's audit requirements disallow any direct exposure to the public Internet. Additionally, prospective vendors must demonstrate that they have a proactive method in place to ensure OS-level vulnerabilities are remediated as soon as possible. Which of the following AWS services will fulfill this requirement?
     * Employ Amazon Inspector to periodically assess applications for vulnerabilities or deviations from best practices. AWS Inspector will proactively monitor instances using a database of known vulnerabilities and suggest patches.
 
 1. You are troubleshooting a CloudFront setup for a client. The client has an Apache web server that is configured for both HTTP and HTTPS. It has a valid TLS certificate acquired from LetsEncrypt.org. They have also configured the Apache server to redirect HTTP to HTTPS to ensure a safe connection. In front of that web server, they have created a CloudFront distribution with the web server as the origin. The distribution is set for GET and HEAD HTTP methods using an Origin Protocol Policy of HTTP only. When a web browser tries to connect to the CloudFront URL, the browser just spins and never reaches the web server. However, when a web browser points to the web server itself, we get the page properly. Which of the following if done by themselves would most likely fix the problem?
@@ -1285,7 +1303,7 @@
     * AWS Network Firewall. You can filter network traffic at the perimeter of your VPC using AWS Network Firewall. Network Firewall is a stateful, managed, network firewall and intrusion detection and prevention service. Rule groups in AWS Network Firewall provide detailed criteria for packet inspection and specify what to do when a packet matches the criteria. When Network Firewall finds a match between the criteria and a packet, the packet matches the rule group.
 
 1. You are working for a charity which is working to monitor global climate change. You have created a VPC which has a private subnet and a public subnet with a NAT Gateway. You have been asked to provision a number of EC2 instances which will run an application which needs to download publicly available climate statistics from a government website. Which of the following options is the most secure way to configure this?
-    * Launch the EC2 instances in the private subnet, route internet-bound traffic to the NAT Gateway in the public subnet to access the government website.
+    * Launch the EC2 instances in the private subnet, route Internet-bound traffic to the NAT Gateway in the public subnet to access the government website.
 
 1. You have been asked to design an IPS/IDS solution to protect your AWS infrastructure from possible incidents, violations and threats. Which of the following do you recommend?
     * Search for a third-party solution in the AWS Marketplace digital catalogue. AWS acknowledge that they do not provide IPS/IDS. Instead, they suggest that third-party software can be used to provide additional functionality such as deep packet inspection, IPS/IDS, or network threat protection.
@@ -1443,7 +1461,7 @@ However, the IAM user in account B still cannot get objects in the S3 bucket. Wh
     * **sgDB:** Associated with the database.
     * **sgBastion:** Associated with the bastion host.
 What security group configuration will allow the application to be secure and functional?
-    * On sgLB allow ports 80 and 443 from 0.0.0.0/0 (all internet traffic). On sgWeb allow ports 80 and 443 from sgLB (accessed only from ELB). On sgDB allow port 3306 from sgWeb and sgBastion (accessed by application and bastion). On sgBastion allow port 22 from the corporate IP address range.
+    * On sgLB allow ports 80 and 443 from 0.0.0.0/0 (all Internet traffic). On sgWeb allow ports 80 and 443 from sgLB (accessed only from ELB). On sgDB allow port 3306 from sgWeb and sgBastion (accessed by application and bastion). On sgBastion allow port 22 from the corporate IP address range.
 
 1. Your financial services organisation is using the AWS S3 service to store highly sensitive data. What is the correct IAM policy that must be applied to ensure that all objects uploaded to the S3 bucket are encrypted?
     * The policy is shown below:
@@ -1604,7 +1622,7 @@ What security group configuration will allow the application to be secure and fu
     * KMS cannot be used as the management of the keys will be within AWS. S3 Server Side encryption is not applicable as it does not generate or manage cryptographic keys. CloudHSM allows you to securely generate, store, and manage cryptographic keys.
 
 1. You have an EC2 instance in a private subnet that needs to access the KMS service privately within the AWS network. Which of the following methods can help to fulfil this requirement, keeping security in perspective?
-    * An Internet Gateway should not be used because if it is a private subnet the intention is that it cannot access the internet. An AWS VPN is not relevant as that is for connecting on-premises environments to AWS. VPC Peering is also not relevant as that is used for communication between several VPCs and would not help in this scenario. A VPC endpoint should be used to establish communication between your VPC and AWS KMS.
+    * An Internet Gateway should not be used because if it is a private subnet the intention is that it cannot access the Internet. An AWS VPN is not relevant as that is for connecting on-premises environments to AWS. VPC Peering is also not relevant as that is used for communication between several VPCs and would not help in this scenario. A VPC endpoint should be used to establish communication between your VPC and AWS KMS.
 
 1. You are working as an AWS administrator of your company. As part of code deployment, you have provisioned EC2 instances with EBS volumes being encrypted using customer-managed CMK. The automatic key rotation is enabled. When will the KMS key be rotated automatically?
     * The customer-managed CMK gets rotated automatically every 365 days (only if it is enabled, which it is).
@@ -1693,7 +1711,7 @@ A CMK was used in the encryption operation. Then in another stage, the encrypted
     * Note that automatic key rotation is not supported for imported keys, asymmetric keys, or keys generated in an AWS CloudHSM cluster using the AWS KMS custom key store feature.
 
 1. You are working for an investment bank which is designing a new application to analyse historical trading data, and use machine learning to predict stock market performance. The application is running in AWS and needs to access the historical data stored in a proprietary time series database located in your data centre. This information is highly confidential and could cause serious repercussions if any data was ever leaked to the public or your competitors. The application itself is extremely sensitive to network inconsistencies and during testing it frequently crashes if the network is not reliable. How should you configure the network connectivity for this application?
-    * Configure a VPN between your VPC and the data centre over a Direct Connect connection. With AWS Direct Connect plus VPN, you can combine one or more AWS Direct Connect dedicated network connections with the Amazon VPC VPN. This combination provides an IPsec-encrypted private connection that also reduces network costs, increases bandwidth throughput, and provides a more consistent network experience than internet-based VPN connections.
+    * Configure a VPN between your VPC and the data centre over a Direct Connect connection. With AWS Direct Connect plus VPN, you can combine one or more AWS Direct Connect dedicated network connections with the Amazon VPC VPN. This combination provides an IPsec-encrypted private connection that also reduces network costs, increases bandwidth throughput, and provides a more consistent network experience than Internet-based VPN connections.
 
 1. You are about to begin using KMS to encrypt data in your AWS account. Your CTO asks you to create a key which can be automatically rotated once per year. Which type of key should you use?
     * Use a CMK managed by you. A customer managed CMK supports automatic key rotation once per year. AWS managed keys automatically rotate once every three years. Automatic key rotation is not available for CMKs that have imported key material.
