@@ -381,19 +381,27 @@
 
 1. Disable any unnecessary network ports and protocols.
 
-    * The Amazon VPC is a software-defined network that uses a proprietary overlay protocol to allow EC2 instances located in many physical hosts across multiple AZs in the same AWS region to communicate. Most importantly, it virtually isolates the network from other virtual networks.
-
-    * When you create a VPC, an Amazon DNS server is automatically created. This is used for hostname resolution for instances in your VPC. If preferred, you can disable this and create a new DHCP option to set your own DNS server.
-
-    * VPCs can get complicated in large numbers, with VPC peering required for communication between them. A Transit Gateway is a solution to this problem, as any VPC connected to the gateway can communicate with any other VPC that is also connected.
-
-    * Transitive VPC peering is not supported.
+    * Security groups and NACLs can deny access to specific ports and protocols as appropriate.
 
 1. Given a set of edge protection requirements, evaluate the security groups and NACLs of an application for compliance and recommend required changes.
 
+    * Security groups and NACLs can deny access to specific ports and protocols as appropriate.
+
 1.  Given security requirements, decide on network segmentation (e.g., security groups and NACLs) that allow the minimum ingress/egress access required.
 
-    * For optimal use of EC2 resources, terminate TLS/SSL on the Elastic Load Balancer (ELB). If there is a requirement to ensure traffic is encrypted all the way to the ECT instance, terminate TLS/SSL on the EC2 instance. If you need to terminate traffic at the EC2 instances, then you will need to use the TCP protocol with a Network or Classic Load Balancer (Application Load Balancer is HTTP/HTTPS only).
+    * The Amazon VPC is a software-defined network that uses a proprietary overlay protocol to allow EC2 instances located in many physical hosts across multiple AZs in the same AWS region to communicate. Most importantly, it virtually isolates the network from other virtual networks. A VPC is a logical datacentre in AWS. It consists of IGWs, Route Tables, Network Access Control Lists, Subnets, and Security Groups.
+
+    * When you create a VPC, an Amazon DNS server is automatically created. This is used for hostname resolution for instances in your VPC. If preferred, you can disable this and create a new DHCP option to set your own DNS server.
+
+    * VPCs can get complicated in large numbers, with VPC peering required for communication between them. A Transit Gateway is a solution to this problem, as any VPC connected to the gateway can communicate with any other VPC that is also connected. Note that transitive VPC peering is not supported.
+
+    * An essential aspect of network security is controlling access to resources. There are two primary services available in a VPC to control access at the network level: NACLs and security groups.
+
+    * VPC NACLs are associated with subnets, and you can use them to filter the network traffic between subnets by adding rules that can allow or block requests. VPC NACLs are stateless.
+
+    * Security groups are used to control network access to EC2 instances in a VPC. The security group is a stateful layer four network access control mechanism that works as a virtual firewall and is associated with instances and network interfaces. Unlike NACLs which both allow and deny but do nothing by default, security groups only contain allow rules and all traffic is denied unless a rule explicitly allows it.
+
+    * For optimal use of EC2 resources, you can terminate TLS/SSL on the Elastic Load Balancer (ELB). If there is a requirement to ensure traffic is encrypted all the way to the ECT instance, terminate TLS/SSL on the EC2 instance. If you need to terminate traffic at the EC2 instances, then you will need to use the TCP protocol with a Network or Classic Load Balancer (Application Load Balancer is HTTP/HTTPS only).
 
 1.  Determine the use case for VPN or Direct Connect.
 
@@ -407,7 +415,7 @@
 
     * You cannot enable flow logs for VPCs that are peered with your VPC unless the peer VPC is in your account. You cannot tag a flow log. Once you have created a flow log, you cannot change its configuration.
 
-    * Not all IP traffic is monitored. For example, instances contacting the Amazon DNS server (if you used your own DNS server that would be logged), DHCP traffic etc.
+    * Not all IP traffic is monitored. For example, instances contacting the Amazon DNS server (although if you used your own DNS server that would be logged), DHCP traffic etc.
 
 1.  Given a description of the network infrastructure for a VPC, analyze the use of subnets and gateways for secure operation.
 
@@ -421,17 +429,19 @@
         * **Subnets:** A VPC subnet is a method for segmenting the VPC by allocating a subset IP range from the VPC CIDR block bounded to a single availability zone.
         * **Route Table:** A VPC subnet, by default, provides access to other subnets in the same VPC. However, instances within the subnet cannot communicate with networks outside of the VPC, such as the Internet or other VPCs. In traditional networks (using a simple example), you use a router to establish communication across different networks. The router usually has a connection with both networks. In AWS this functionality is implemented using a VPC route table. For example, you can set a route pointing to an AWS resource that can route an Internet request - such as an Internet Gateway, a NAT Gateway, or a NAT instance.
         * **Internet Gateway:** An Internet Gateway allows a public IP address to associate with an EC2 instance. By doing this, an EC2 instance can make outbound connections to the Internet and receive incoming connections from the Internet. Note that you also need to associate the Internet Gateway with a VPC and create a route in the route table. If a subnet has a route to an Internet Gateway it is considered a public subnet.
-        * **Network Address Translation (NAT) Gateway:** Before this service was released, if you wanted to provide outbound Internet access inside a VPC, you frequently used an EC2 instance to perform NAT. This requires disabling the *check source/destination* feature on the instance, and creating a default route in the route table targeting the instance. This solution does not offer robust availability and limited scalability as you can only increase the instance size. The NAT Gateway is a managed service from AWS to meet this use case. Note that a NAT Gateway cannot be associated with a security group.
+        * **Network Address Translation (NAT) Gateway:** Before this service was released, if you wanted to provide outbound Internet access inside a VPC, you frequently used an EC2 instance to perform NAT. This requires disabling the *check source/destination* feature on the instance and creating a default route in the route table targeting the instance. This solution does not offer robust availability and limited scalability as you can only increase the instance size. The NAT Gateway is a managed service from AWS to meet this use case. Note that a NAT Gateway cannot be associated with a security group.
         * **Egress-only Internet Gateway:** This is a stateful gateway for IPv6 addresses that can route traffic from EC2 instances to the Internet and route the returning associated traffic from the Internet to the EC2 instances.
-        * **VPC Peering:**
-        * **Shared VPCs:**
-        * **ENIs:**
+        * **VPC Peering:** A VPC peering connection is a logical connection between two VPCs that leverages the existing infrastructure. It does not use physical hardware to route the traffic across the VPCs. You still need to add routes in the route table associated with the subnets in both VPCs to enable communication across the peered networks. Peering can occur across regions but is not transitive.
+        * **Shared VPCs:** Some organisations adopt a multi-account strategy at AWS, so that each team or organisation unit has freedom in viewing, creating, modifying, or deleting their own AWS resources and can limit the blast radius. Shared VPCs provide a new method that still allows the benefits of resource isolation in multiple AWS accounts but provides the ability to share VPC subnets across multiple accounts. Subnets can only be shared with AWS accounts within the same organisation.
+        * **Elastic Network Interfaces (ENIs):** When you create AWS resources bounded to a VPC, they are assigned an ENI, most commonly referred to as network interface. A network interface is a logical networking component that represents a virtual network card.
 
-    * A VPC is a logical datacentre in AWS. It consists of IGWs, Route Tables, Network Access Control Lists, Subnets, and Security Groups. 1 Subnet corresponds to 1 Availability Zone.
+    * VPC endpoints are used to provide a private communication channel to services.
+
+    * An AWS Transit Gateway is the native and managed solution provided by AWS where you have hundreds of VPCs that need to communicate with each other and with the on-premises network. 
 
     * A NAT instance enables instances in a private subnet to initiate outbound IPv4 traffic to the Internet or other AWS services but prevent the instances from receiving inbound traffic initiated on the Internet.
 
-    * When creating a NAT instance, you must disable the Source/Destination Check on the instance. NAT instances must be in a public subnet, and there must be a route out of the private subnet to the NAT instance. The amount of traffic that a NAT instance can support depends on the instance size. NAT instances also sit behind a security group.
+    * When creating a NAT instance, you must disable the *Source/Destination Check* on the instance. NAT instances must be in a public subnet, and there must be a route out of the private subnet to the NAT instance. The amount of traffic that a NAT instance can support depends on the instance size. NAT instances also sit behind a security group.
 
     * NAT Gateways are much preferred to NAT instances. They automatically scale, are more secure, patch automatically (but no SSH access) etc. They are not associated with security groups.
     
@@ -448,9 +458,64 @@
 
 1. Determine where network traffic flow is being denied.
 
-    * Check routing tables, Security Groups, and NACLs. VPC Flow Logs will show allow and deny messages useful for troubleshooting.
+    * Check routing tables, Security Groups, and NACLs. VPC flow logs will show allow and deny messages useful for troubleshooting.
 
     * Remember that NACLs are stateless so you need to configure both inbound and outbound rules. Security Groups are stateful, so you only need 1 rule. 
+
+    * To troubleshoot a bastion host in a public subnet that cannot be connected with using SSH:
+        * Confirm that the bastion instance is associated with the public IP address. This can be done using:
+            ```bash
+            aws ec2 describe-instances --instance-ids INSTANCE_ID --query 'Reservations[*].Instances[*].PublicIpAddress' --output text
+            ```
+        * Confirm that the instance is associated with a subnet:
+            ```bash
+            aws ec2 describe-instances --instance-ids INSTANCE_ID --query 'Reservations[*].Instances[*].SubnetId'
+            ```
+        * Now that you have the subnet ID, list the route entries inside the route table associated with the subnet:
+            ```bash
+            aws ec2 describe-route-tables --filters Name=association.subnet-id,Values= SUBNET_ID --query 'RouteTables[*].Routes'
+            ```
+        * If the route table is appropriately configured, we can proceed to the NACL. To identify the NACL associated with the subnet:
+            ```bash
+             aws ec2 describe-network-acls --filters Name=association.subnet-id,Values=SUBNET_ID --query 'NetworkAcls[*].Entries'
+            ```
+
+    * To troubleshoot a web application delivered using Amazon CloudFront, with static artifacts stored in Amazon S3, restful APIs exposed through the Amazon API Gateway, and DNS configured in Amazon Route 53:
+        * Confirm DNS resolution is working correctly:
+            ```bash
+            nslookup app.example.com
+            ```    
+        * Confirm that the domain name is configured as an alternate domain name (CNAMEs) for the CloudFront distribution:
+            ```bash
+            aws cloudfront get-distribution-config --id CLOUDFRONT_DISTRIBUTION_ID --query 'DistributionConfig.Aliases.Items[*]'
+            ```
+        * Confirm that the origin or origin group is correct in the CloudFront distribution
+        * Confirm that the necessary HTTP methods are allowed in the CloudFront distribution.
+        * Confirm that (when serving dynamic content) query string and cookies are being forwarded in the CloudFront distribution.
+        * Confirm that the origin supports the minimum SSL protocol required for CloudFront.
+        * Confirm that the origin protocol matches the CloudFront protocol.
+        * Confirm that security permissions on S3 buckets and objects is provided. Best practice is to provide CloudFront access to S3 by creating an OAI.
+        
+    * To troubleshoot CloudFront access to an S3 bucket:
+        * Confirm that the CloudFront distribution is set to use an OAI:
+            ```bash
+            aws cloudfront get-distribution-config --id E1F2G3RJAI12ULLS --query 'DistributionConfig.Origins.Items[*].{DomainName:DomainName,OIA:S3OriginConfig.OriginAccessIdentity}'
+            ```
+        * Confirm that the S3 bucket policy is allowing the OAI:
+            ```bash
+            aws s3api get-bucket-policy --bucket your_bucket_name
+            ```
+
+    * To troubleshoot egress to the Internet via an Internet Gateway for a public EC2 instance:
+        * Confirm that the instance has a public IP address.
+        * Confirm that there is an outbound HTTPS rule in the security group.
+        * Confirm that there is no deny rule in the subnet NACL blocking HTTPS traffic. Note that NACL rules are evaluated from the lowest rule, so there could be conflicting rules.
+        * Confirm that the Internet Gateway has been attached to the VPC, and that a route table entry exists that routes traffic destined to the Internet to the Internet Gateway. The route table also needs to be attached to the subnet associated with the EC2 instance.
+
+    * To troubleshoot VPC egress to the Internet via a NAT Gateway (from within a private subnet):
+        * Confirm that the security group has an outbound rule that allows traffic to the NAT Gateway.
+        * Confirm that the NACL outbound rules allow traffic to reach the NAT Gateway or the public subnet associated with the NAT Gateway.
+        * Confirm that the route table has a route to the NAT Gateway.
 
 1. Given a configuration, confirm security groups and NACLs have been implemented correctly.
 
