@@ -533,15 +533,33 @@
 
 1. Given security requirements, install and configure host-based protections including Inspector, SSM.
 
+    * Security is comprised of multiple layers of protection to increase the overall security of your application. These layers include:
+        * Network level controls such as encryption in transit, port restrictions with security groups and NACLs, and inspection of application layer requests with WAFs.
+        * Application authentication and authorisation to only allow authenticated identities the appropriate access.
+        * Encryption of data at rest to ensure nonauthorised entities cannot read data if they are somehow able to access it.
+        * Auditing systems to log activity for investigation or validation.
+
+    * With these protections there is still a risk of failure due to misconfigured application or a vulnerability in software. Protections against these risks include:
+        * Patching software that runs in your EC2 instance to avoid the exploitation of known vulnerabilities.
+        * Running software to inspect an analyse activities in your instance.
+
+    * AWS Systems Manager automates the process of patching managed instances with both security-related and other types of updates. It cannot upgrade major versions of operating systems, but it can include minor upgrades. It also provides a Session Manger which allows you to connect a remote shell without the need to open any port to the Internet or internal network. This also allows you to leverage IAM policies to give remote access without the need for local accounts on the EC2 instance, and the remote session could be logged and stored on an S3 bucket for auditing purposes.
+
+    * An IDS/IPS can protect from malicious software or remote attacks. Usually this is done at the network level but can also be installed inside the instance as a host based IDS/IPS. In an elastic environment where instances can be initialised and retired at any time, the network IDS/IPS can be a challenge.
+
 1. Decide when to use host-based firewall like iptables.
 
+    * In addition to using security groups and NACLs, host-based firewalls such as iptables can add another layer to a defence in depth approach. Using multiple layers protects against an exploit, flaw, or misconfiguration in one of the other layers.
+
 1. Recommend methods for host hardening and monitoring.
+
+    * AWs provides the EC2 image builder, which is a a solution to create a base AMI and apply customisation in this image that could include configuration hardening, installation, or removal of software, automated tests, and distribution of this new AMI. AWS Inspector can be executed during the AMI build to execute a vulnerability scan and generate a result and based on this result the AMI build will stop or continue. If there is a vulnerability in the build, you can apply automated scripts to update the build.
 
     * Dedicated instances and dedicated hosts have dedicated hardware. Dedicated instances are charged by the instance, and dedicate hosts are charged by the host. If you have specific regulatory requirements or licensing conditions, choose dedicated hosts. Dedicated instances may share the same hardware with other AWS instances from the same account that are not dedicated.
 
     * EC2 runs on a mixture of Nitro and Xen hypervisors. Eventually all EC2 will be based on Nitro. Both hypervisors can have guest operating systems running either as Paravirtualisation (PV) or using Hardware Virtual Machine (HVM).
 
-    * HVM is preferred over PV where possible. PV is isolated by layers with the guest OS on layer 1 and applications on layer 3. Only AWS administrators have access to hypervisors. All storage memory and RAM is scrubbed before assigned to an EC2 instance.
+    * HVM is preferred over PV where possible. PV is isolated by layers with the guest OS on layer one and applications on layer 3. Only AWS administrators have access to hypervisors. All storage memory and RAM is scrubbed before assigned to an EC2 instance.
 
    * Security products from third party vendors can be purchased on the AWS Marketplace. This includes firewalls, hardened operating systems, WAF's, antivirus, security monitoring etc. There are various revenue models for these products.
 
