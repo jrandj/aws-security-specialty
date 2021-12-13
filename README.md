@@ -1337,6 +1337,15 @@
 1. When creating a custom metric filter in CloudWatch Logs what is filtered?
     * All streams in a log group are filtered. A custom metric filter cannot be configured to only filter some of the streams in a log group.
 
+1. A member of the security audit team would like to perform an analysis and investigation of ELB access logs by doing some ad-hoc queries. The ELB access logging is enabled. Which solution allows the team members to perform access log analysis most efficiently?
+	* Athena supports S3 as a data source and can be used to query log data in S3.
+
+1. A company has multiple AWS accounts and has hired a third-party security auditor. The auditor has its own AWS account, and the auditor needs read-only access to all AWS resources and the logs of API activities that have occured on AWS. How can the company meet the auditor's requirements without compromising security in the AWS environment?
+	* Enable CloudTrail logging and use a cross-acoutn IAM role to provide read-only access to the auditor to the S3 bucket.
+
+1. An auditor needs access to logs that record all API events on AWS. The auditor only needs read-only access to the log files and does not need access to each AWS account. The company has multiple AWS accounts, and the auditor needs access to all the logs for all the account. Which of the following options is the best way to configure access for the auditor to view event logs from all accounts?
+	* Configure CloudTrail in each AWS account and have the logs delivered to a signle AWS S3 bucket in the primary acount. Create an IAM user for thea uditor with an IAM policy to S3 read-only access for only the bucket which stores the logs in the primary account.
+
 ### Infrastructure Security
 
 1. A company hosts a popular web application that connects to an Amazon RDS MySQL DB instance running in a private VPC subnet created with default Network ACL settings. The IT Security department has a suspicion that a DoS attack is coming from a suspecting IP. How can you protect the subnets from this attack?
@@ -1470,6 +1479,24 @@
 
 1. Your application is running on an EC2 instance in a private subnet. You have added a number of image files to an S3 bucket and you now want to your application to be able to access the files. you have configured an IAM role with permission to read files in the S3 bucket and associated this role with your EC2 instance. This is a secure internal application and your CEO has already informed you that the system must be as secure as possible. How can you configure the communication between your EC2 instance and the S3 bucket in the most secure way?
     * The bucket should be accessed using AWS PrivateLink for Amazon S3. An S3 endpoint should also be used to allow private connection to your VPC without requiring an internet gateway, NAT device, VPN connection, or AWS Direct Connect connection.
+
+1. A DevOps team is currently looking at the security aspect of their CI/CD pipeline. They are making use of AWS resources for their infrastructure. They want to ensure that the EC2 instances do not have any high security vulnerabilities. They want to ensure a complete DevSecOps process. How can this be achieved?
+	* AWS Inspector offers APIs for the DevOps pipeline.
+
+1. You want to track access requests for a particular S3 bucket. How can you achieve this in the easiest possible way?
+	* Enable server access logging for the S3 bucket.
+
+1. A company security team would like to receive notifications of an EC2 instance in their AWS environment is querying IP addresses that are associated with cryptocurrency-related activity. What steps can the security team take to achieve this most efficiently?
+	* GuardDuty can perform an assessment of network communications and can produce a cryptocurrency finding in this scenario. An SNS topic can be used to provide notifications.
+
+1. DDos attacks that happen at the application-layer commonly target web applications with lower traffic volumes compared to infrastructure attacks. To mitigate these types of attacks, you should probably want to include a non-AWS WAF as part of your infrastructure. To inspect all HTTP requests, WAFs sit in line wtih your appliation traffic. Unfortunately, this creates a scenario where WAFs can become a point of failure or bottleneck. To mitigate this problem, you need the ability to run multiple WAFs on demand during traffic spikes. This type of scaling for WAF is done via a 'WAF sandwhich'. What best describes this?
+	* The EC2 instances running your WAF software is included in an auto-scaling group and placed between two ELBs.
+
+1. An employee keeps terminating EC2 instances in the production environment. You have determined the best way to ensure this doesn't happen is to add an extra layer of defence against terminating the instances. Which of the following methods is the most appropriate one to add security protection that prevents the employee from terminating the production instances?
+	* Tag the instance with a production-identifying tag and add a resource-level permission tot he IAM policy of the employee with an explicit deny on the terminate API call to instances with the production tag.
+
+1. You have been given a new brief from your supervisor for a client who needs a web application to set up on AWs. The most important requirement is that MySQL must be used as the database. The database must not be hosted in the public cloud but rather at the client's data centre due to security risks. Which of the following solutions would be best to assure that the client's requirements are met?
+	* Build the application server on a public subnet and the database at the client's data centre. Connect them with a VPN connection that uses IPSec.
 
 ### Identity and Access Management
 
@@ -1760,6 +1787,24 @@ What security group configuration will allow the application to be secure and fu
 1. You have written a Lambda function which will be invoked by an EventBridge rule any time a user adds an Internet Gateway in your VPC. The function is designed to terminate all Internet Gateways as an additional precaution to prevent your systems from being exposed to the internet. However when you test the configuration by launching an Internet Gateway in your VPC, the gateway is never deleted. What could be the reason for this?
     * EventBridge may not have permission to trigger the function, and the function execution role may not have permission to terminate internet gateways.
 
+1. You need to launch a Linux EC2 instance in AWS. Which of the following steps can be used to ensure secure authentication to the EC2 instance from a Windows machine?
+	* Create a key pair using PuTTYgen and use the private key to log into the instance.
+
+1. You have just developed a new mobile application that handles analytics workloads on large scale datasets stored on Amazon Redshift. Consequently, the application needs to access Amazon Redshift tables. Which of the below methods would be the best, both practically and security-wise, to access the tables?
+	* Use roles that allow a web identity federated user to assume a role that allows access to the table by providing a temporary credential.
+
+1. Your application currently uses AWS Cognito for authenticating users. Your application consists of different types of users. Some users are only allowed to read access to the application and others are given contriubtor access. How would you manage the access efficiently?
+	* You can use Cognito groups to create a collection of users in a user pool, which is often done to set the permissons for those users.
+
+1. Your company has a hybrid environment with on-premises servers and servers hosted in the AWS cloud. They are planning to use the Systems Manager for patching servers. Which of the following is a pre-requisite for this to work?
+	* An IAM service role needs to e created for allowing the on-premises serers to communicate with the AWS Systems Manager.
+
+1. An application deployed to EC2 is configured to use AWS Secrets Manager to rotate secrets for the RDS database. The application experiences occasional intermittent sign-in failures. Which options can resolve this issue?
+	* The *Exponential Backoff* feature can be enabled to implement retry functionality in the application. The multi-user rotation strategy can also be used.
+
+1. A large organization is planning on AWS to host its resources. They have several autonomous departments that wish to use AWS. What could be the strategy to adopt for managing the accounts?
+	* Use multiple accounts for each autonomous department. This reduces the blast radius compared to other approaches like having multiple groups in one account, and also reduces the operational overhead to manage the groups.
+
 ### Data Protection
 
 1. In your organization, a customer-managed key named TestCMK has been created for a new project. This key is supposed to be used only by related AWS services in this project including EC2 and RDS in region us-west-2. For security concerns, you need to make sure that no other services can encrypt or decrypt using this CMK. In the meantime, EC2 and RDS should use the key without issues. How should you implement this?
@@ -1936,3 +1981,10 @@ A CMK was used in the encryption operation. Then in another stage, the encrypted
     * Data key caching stores data keys and related cryptographic material in a cache. When you encrypt or decrypt, the AWS Encryption SDK looks for a matching data key in the cache. This can improve performance, reduce cost, and help you reduce API calls as your application scales.
 
 1. AWS Systems Manager Parameter Store provides secure, hierarchical storage for configuration data and secrets management. Which of the following AWS services natively support Parameter Store?
+	* Amazon EC2, AWS CloudFormation, and AWS Lambda natively support Parameter Store. Note that RDS uses Secrets Manager.
+
+1. In order to encrypt data in transit for a connection to an AWS RDS instance, which of the following would you implement?
+	* SSL/TLS from your application.
+
+1. A device manufacturer wants to digitally sign their firmware software to generate a digital signature to ensure authenticity. How can this be accomplished in the most cost-efficient way?
+	* Use the *Sign* API provided by AWS KMS.
