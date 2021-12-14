@@ -23,7 +23,7 @@
         * Detach  the  Amazon  EC2  instance  from  any  AWS  Auto  Scaling  groups.
         * Deregister  the  Amazon  EC2  instance  from  any  related  Elastic Load Balancing  service.
         * Snapshot  the  Amazon  EBS  data  volumes  that  are  attached  to  the  EC2  instance  for  preservation  and follow-up  investigations.
-        * Tag  the  Amazon  EC2  instance  as  quarantined  for  investigation,  and  add  any  pertinent  metadata,  such as  the  trouble  ticket  associated  with  the  investigation.
+        * Tag  the  Amazon  EC2  instance  as  quarantined  for  investigation,  and  add  any  pertinent  metadata,  such as  the  problem  ticket  associated  with  the  investigation.
 
 1. Analyze logs relevant to a reported instance to verify a breach, and collect relevant data.
 
@@ -274,9 +274,9 @@
 
     * An API Gateway endpoint can be edge-optimised, region, or private. Edge-optimised have the lowest latency, regional has low latency, and private is used when you do not want to expose the REST API over the Internet. An API Gateway can be integrated with Lambda function, HTTP, mock, AWS service, or VPC link backends.
 
-    * A Lambda authoriser is an authorisation method that uses a custom Lambda function to evaluate if the request has the authorization to access specific resources and methods from the API before processing the request and sending it to the integration backend. As a result of the authorisation process, the Lambda function returns an IAM policy that the API Gateway uses to decide if the requester has access to the requested method.
+    * A Lambda authoriser is an authorisation method that uses a custom Lambda function to evaluate if the request has the authorisation to access specific resources and methods from the API before processing the request and sending it to the integration backend. As a result of the authorisation process, the Lambda function returns an IAM policy that the API Gateway uses to decide if the requester has access to the requested method.
 
-    * The event presented to the Lambda function by the API Gateway can come in two formats: token based or request parameter based. In the token-based method, you can define a request header, frequently named *Authorization*, that must be present and contains a bearer token such as JWT. The event arrives to the Lambda function in this format:
+    * The event presented to the Lambda function by the API Gateway can come in two formats: token-based or request parameter based. In the token-based method, you can define a request header, frequently named *Authorization*, that must be present and contains a bearer token such as JWT. The event arrives to the Lambda function in this format:
         ```JSON
         {
             "type": "TOKEN",
@@ -389,7 +389,7 @@
 
 1.  Given security requirements, decide on network segmentation (e.g., security groups and NACLs) that allow the minimum ingress/egress access required.
 
-    * The Amazon VPC is a software-defined network that uses a proprietary overlay protocol to allow EC2 instances located in many physical hosts across multiple AZs in the same AWS region to communicate. Most importantly, it virtually isolates the network from other virtual networks. A VPC is a logical datacentre in AWS. It consists of IGWs, Route Tables, Network Access Control Lists, Subnets, and Security Groups.
+    * The Amazon VPC is a software-defined network that uses a proprietary overlay protocol to allow EC2 instances located in many physical hosts across multiple AZs in the same AWS region to communicate. Most importantly, it virtually isolates the network from other virtual networks. A VPC is a logical datacentre in AWS. It consists of IGWs, Route Tables, Network Access Control Lists, Subnets, and security groups.
 
     * When you create a VPC, an Amazon DNS server is automatically created. This is used for hostname resolution for instances in your VPC. If preferred, you can disable this and create a new DHCP option to set your own DNS server.
 
@@ -401,7 +401,7 @@
 
     * Security groups are used to control network access to EC2 instances in a VPC. The security group is a stateful layer four network access control mechanism that works as a virtual firewall and is associated with instances and network interfaces. Unlike NACLs which both allow and deny but do nothing by default, security groups only contain allow rules and all traffic is denied unless a rule explicitly allows it.
 
-    * For optimal use of EC2 resources, you can terminate TLS/SSL on the Elastic Load Balancer (ELB). If there is a requirement to ensure traffic is encrypted all the way to the ECT instance, terminate TLS/SSL on the EC2 instance. If you need to terminate traffic at the EC2 instances, then you will need to use the TCP protocol with a Network or Classic Load Balancer (Application Load Balancer is HTTP/HTTPS only).
+    * For optimal use of EC2 resources, you can terminate TLS/SSL on the Elastic Load Balancer (ELB). If there is a requirement to ensure traffic is encrypted all the way to the EC2 instance, terminate TLS/SSL on the EC2 instance. If you need to terminate traffic at the EC2 instances, then you will need to use the TCP protocol with a Network or Classic Load Balancer (Application Load Balancer is HTTP/HTTPS only).
 
 1.  Determine the use case for VPN or Direct Connect.
 
@@ -449,7 +449,7 @@
 
     * An Internet Gateway allows instances with public IPs to access the Internet. A NAT Gateway (or NAT instance) allows instances with no public IPs to access the Internet.
 
-    * Remember that a Security Group is the firewall of EC2 instances, and a NACL is the firewall of the VPC Subnets. An example architecture is shown below to illustrate this:
+    * Remember that a security group is the firewall of EC2 instances, and a NACL is the firewall of the VPC Subnets. An example architecture is shown below to illustrate this:
         <p align="center">
         <img src="/res/network.JPG">
         </p>
@@ -460,7 +460,7 @@
 
     * Check routing tables, security groups, and NACLs. VPC flow logs will show allow and deny messages useful for troubleshooting.
 
-    * Remember that NACLs are stateless so you need to configure both inbound and outbound rules. Security Groups are stateful, so you only need one rule. 
+    * Remember that NACLs are stateless so you need to configure both inbound and outbound rules. Security groups are stateful, so you only need one rule. 
 
     * To troubleshoot a bastion host in a public subnet that cannot be connected with using SSH:
         * Confirm that the bastion instance is associated with the public IP address. This can be done using:
@@ -527,7 +527,7 @@
 
     * NACLs contain a numbered list of rules that is evaluated in order, starting with the lowest numbered rule. NACLs have separate inbound and outbound rules, and each rule can either allow or deny traffic. NACLs are stateless. Responses to allowed inbound traffic are subject to the rules for outbound traffic (and vice versa.).
 
-    * IP addresses can be blocked using NACLs but not Security Groups.
+    * IP addresses can be blocked using NACLs but not security groups.
 
 ### Design and implement host-based security.
 
@@ -553,7 +553,7 @@
 
 1. Recommend methods for host hardening and monitoring.
 
-    * AWs provides the EC2 image builder, which is a a solution to create a base AMI and apply customisation in this image that could include configuration hardening, installation, or removal of software, automated tests, and distribution of this new AMI. AWS Inspector can be executed during the AMI build to execute a vulnerability scan and generate a result and based on this result the AMI build will stop or continue. If there is a vulnerability in the build, you can apply automated scripts to update the build.
+    * AWS provides the EC2 image builder, which is a a solution to create a base AMI and apply customisation in this image that could include configuration hardening, installation, or removal of software, automated tests, and distribution of this new AMI. AWS Inspector can be executed during the AMI build to execute a vulnerability scan and generate a result and based on this result the AMI build will stop or continue. If there is a vulnerability in the build, you can apply automated scripts to update the build.
 
     * Dedicated instances and dedicated hosts have dedicated hardware. Dedicated instances are charged by the instance, and dedicate hosts are charged by the host. If you have specific regulatory requirements or licensing conditions, choose dedicated hosts. Dedicated instances may share the same hardware with other AWS instances from the same account that are not dedicated.
 
@@ -588,11 +588,11 @@
     * If the root user has left, several tasks are required. A new root user password with a strong password policy should be created. The previous MFA should be deleted and recreated. Any root user Access Key ID and Secret Access Key should be deleted. Other user accounts should be checked and deleted if not legitimate.
 
 1. Given your organization’s compliance requirements, determine when to apply user policies and resource policies.
-	
-	* The Amazon Resource Name (ARN) has the following format:
-	    ```bash
-	    arn:partition:service:region:account:resource
-	    ```
+    
+    * The Amazon Resource Name (ARN) has the following format:
+        ```bash
+        arn:partition:service:region:account:resource
+        ```
 
     * All AWS services use IAM policies to authorise access. A policy will explicitly deny by default and only allow if there is an explicit allow. The policies utilise the JSON syntax. The elements are:
         * **Version:** Define the document language version
@@ -606,12 +606,12 @@
 
     * AWS Organizations SCPs are policy documents that you can apply at the AWS account level to restrict what API actions users can execute. Those SCP policies are managed in the master account (where AWS Organizations is enabled) and applied to the member accounts that you can organize with organization units (OUs) or attach directly to the account.
 
-	* The AWS STS is the AWS service that enables you to request temporary credentials for IAM users or federated users. You can use the following API actions to request temporary credentials:
-		* **AssumeRole:** The IAM user or IAM role can call this API, and the credential lifetime range is between 15 minutes and 1 hour. The maximum duration is the default. With this credential, the user can’t invoke the APIs GetFederationToken and GetSessionToken.
-		* **AssumeRoleWithSAML:** Any user can call this API; the caller must pass a SAML authentication response that indicates authentication from a known identity provider. The credential lifetime range is between 15 minutes and 1 hour. The maximum duration is the default. With this credential, the user can’t invoke the APIs GetFederationToken and GetSessionToken.
-		* **AssumeRoleWithWebIdentity:** Any user can call this API; the caller must pass a web identity token that indicates authentication from a known identity provider. The credential lifetime range is between 15 minutes and 1 hour. The maximum duration is the default. With this credential, the user can’t invoke the APIs GetFederationToken and GetSessionToken.
-		* **GetFederationToken:** Any IAM user or AWS account root user can invoke this API. The credential lifetime range is between 15 minutes and 36 hours. The default is 12 hours for IAM users and for the root user the lifetime is 15 minutes to 1 hour (the default is 1 hour). With this credential, the user can’t invoke IAM operations using the AWS CLI or AWS API.
-		* **GetSessionToken:** Any IAM user or AWS account root user can invoke this  API. The credential lifetime range is between 15 minutes and 36 hours. The default is 12 hours for IAM users and for root users, the lifetime is 15 minutes to 1 hour (the default is 1 hour). With this credential, the user can’t call IAM API operations unless MFA information is included with the request; it also cannot call AWS STS API operations except AssumeRole or GetCallerIdentity.
+    * The AWS STS is the AWS service that enables you to request temporary credentials for IAM users or federated users. You can use the following API actions to request temporary credentials:
+        * **AssumeRole:** The IAM user or IAM role can call this API, and the credential lifetime range is between 15 minutes and 1 hour. The maximum duration is the default. With this credential, the user can’t invoke the APIs *GetFederationToken* and *GetSessionToken*.
+        * **AssumeRoleWithSAML:** Any user can call this API; the caller must pass a SAML authentication response that indicates authentication from a known identity provider. The credential lifetime range is between 15 minutes and 1 hour. The maximum duration is the default. With this credential, the user can’t invoke the APIs *GetFederationToken* and *GetSessionToken*.
+        * **AssumeRoleWithWebIdentity:** Any user can call this API; the caller must pass a web identity token that indicates authentication from a known identity provider. The credential lifetime range is between 15 minutes and 1 hour. The maximum duration is the default. With this credential, the user can’t invoke the APIs *GetFederationToken* and *GetSessionToken*.
+        * **GetFederationToken:** Any IAM user or AWS account root user can invoke this API. The credential lifetime range is between 15 minutes and 36 hours. The default is 12 hours for IAM users and for the root user the lifetime is 15 minutes to 1 hour (the default is 1 hour). With this credential, the user can’t invoke IAM operations using the AWS CLI or AWS API.
+        * **GetSessionToken:** Any IAM user or AWS account root user can invoke this  API. The credential lifetime range is between 15 minutes and 36 hours. The default is 12 hours for IAM users and for root users, the lifetime is 15 minutes to 1 hour (the default is 1 hour). With this credential, the user can’t call IAM API operations unless MFA information is included with the request; it also cannot call AWS STS API operations except *AssumeRole* or *GetCallerIdentity*.
 
     * A policy is an object in AWS that, when associated with an identity or resource, defines their permissions. When you create a permissions policy to restrict access to a resource, you can choose an identity-based policy or a resource-based policy.
 
@@ -647,7 +647,7 @@
         * If using an identity token, leave the **OAuth Scopes** option unspecified. If needed choose **Integration Request** to add the `context.authorizer.claims` expressions in a body-mapping template to pass the specified identity claims property from the user pool to the backend.
         * If using an access token, type one or more full names of scope into **OAuth Scopes** that has been configured when the Amazon Cognito user pool was created.
 
-    * With the COGNITO_USER_POOLS authorizer, if the OAuth Scopes option isn't specified, API Gateway treats the supplied token as an identity token and verifies the claimed identity against the one from the user pool. Otherwise, API Gateway treats the supplied token as an access token and verifies the access scopes that are claimed in the token against the authorization scopes declared on the method.
+    * With the COGNITO_USER_POOLS authorizer, if the OAuth Scopes option isn't specified, API Gateway treats the supplied token as an identity token and verifies the claimed identity against the one from the user pool. Otherwise, API Gateway treats the supplied token as an access token and verifies the access scopes that are claimed in the token against the authorisation scopes declared on the method.
 
     * Instead of using the API Gateway console, you can also enable an Amazon Cognito user pool on a method by specifying an OpenAPI definition file and importing the API definition into API Gateway.
 
@@ -673,7 +673,7 @@
         * **Customer Managed Policies:** Customer managed policies that provide more precise control. 
         * **Inline Policies:** Policies that you can add directly to a single user, group, or role. These maintain a strict one-to-one relationship between a policy and an identity. They are deleted when you delete the identity.
 
-    * S3 Bucket Policies are attached only to S3 buckets. They can be at the user level and specify what actions are allowed or denied on the bucket. They apply for S3 only.
+    * S3 Bucket Policies are attached only to S3 buckets. They can be at the user level and specify what actions are allowed or denied on the bucket.
 
     * S3 ACLs are a legacy access control mechanism that predates IAM. AWS recommend sticking to IAM policies and S3 bucket policies. However, if you need to apply policies on the objects themselves, then S3 ACLs can be used. These apply at the object level unlike bucket policies which apply at the bucket level.
 
@@ -761,7 +761,7 @@
         * **Key Policy:** Add the root user, not the individual IAM users or roles.
         * **IAM Policies:** Define the allowed actions and the CMK ARN.
 
-    * The key policy specifies who is allowed to use the CMK, and the IAM policy specifies if that user can make KMS API calls. Policy Conditions can be used to specify a condition within a Key Policy or IAM Policy for when a policy is in effect. KMS provides a set of predefined Condition Keys. Use `kms:ViaService` to allow or deny access to your CMK according to which service originated the request.
+    * The key policy specifies who is allowed to use the CMK, and the IAM policy specifies if that user can make KMS API calls. Policy Conditions can be used to specify a condition within a Key Policy or IAM Policy for when a policy is in effect. KMS provides a set of predefined Condition Keys. Use *kms:ViaService* to allow or deny access to your CMK according to which service originated the request.
 
     * A Grant programmatically delegates the use of your CMK to a user in your own account or in another account. It provides temporary and granular permissions.
 
@@ -932,6 +932,9 @@
 
 ## Appendix
 
+### Security Pillar
+The Security Pillar of the AWS Well-Architected Framework is available [here](https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/wellarchitected-security-pillar.pdf#welcome).
+
 ### Key Tools and Technologies
 
 1. AWS CLI
@@ -960,7 +963,7 @@
 
 1. TLS
 
-    * Transport Layer Security, or TLS, is a widely adopted security protocol designed to facilitate privacy and data security for communications over the Internet. A primary use case of TLS is encrypting the communication between web applications and servers, such as web browsers loading a website. TLS can also be used to encrypt other communications such as email, messaging, and voice over IP (VoIP).
+    * Transport Layer Security, or TLS, is a widely adopted security protocol designed to facilitate privacy and data security for communications over the Internet. A primary use case of TLS is encrypting the communication between web applications and servers, such as web browsers loading a website. TLS can also be used to encrypt other communications such as email, messaging, and Voice over IP (VoIP).
 
 1. Certificate management
 
@@ -1012,7 +1015,7 @@
 
 1. AWS Trusted Advisor
 
-    * Trusted Advisor is an online resource to help your educe cost, increase performance, and improve security by optimising your AWS environment. The advice will cover cost optimisation, performance, security, and fault tolerance. To access all services within Trusted Advisor a business support plan is required.
+    * Trusted Advisor is an online resource to help your reduce cost, increase performance, and improve security by optimising your AWS environment. The advice will cover cost optimisation, performance, security, and fault tolerance. To access all services within Trusted Advisor a business support plan is required.
 
 1. Amazon Detective
 
@@ -1071,7 +1074,7 @@
 
 1. AWS WAF
 
-    * AWS Web Application Firewall (WAF) lets you monitor the HTTP and HTTPS requests that are forwarded to Amazon CloudFront or an application load balancer. It does not integrate with services like EC2 directly. You can configure conditions such as what IP addresses are allowed to make this request or what query string parameters need to be passed for the request to be allowed. AWS WAF is normally associated with services closer to the user's request.
+    * AWS Web Application Firewall (WAF) lets you monitor HTTP/S requests that are forwarded to Amazon CloudFront or an application load balancer. It does not integrate with services like EC2 directly. You can configure conditions such as what IP addresses are allowed to make this request or what query string parameters need to be passed for the request to be allowed. AWS WAF is normally associated with services closer to the user's request.
 
     * As a basic level WAF allows 3 different behaviours:
         * Allow all requests except the ones that you specify.
@@ -1338,18 +1341,18 @@
     * All streams in a log group are filtered. A custom metric filter cannot be configured to only filter some of the streams in a log group.
 
 1. A member of the security audit team would like to perform an analysis and investigation of ELB access logs by doing some ad-hoc queries. The ELB access logging is enabled. Which solution allows the team members to perform access log analysis most efficiently?
-	* Athena supports S3 as a data source and can be used to query log data in S3.
+    * Athena supports S3 as a data source and can be used to query log data in S3.
 
 1. A company has multiple AWS accounts and has hired a third-party security auditor. The auditor has its own AWS account, and the auditor needs read-only access to all AWS resources and the logs of API activities that have occured on AWS. How can the company meet the auditor's requirements without compromising security in the AWS environment?
-	* Enable CloudTrail logging and use a cross-acoutn IAM role to provide read-only access to the auditor to the S3 bucket.
+    * Enable CloudTrail logging and use a cross-acoutn IAM role to provide read-only access to the auditor to the S3 bucket.
 
 1. An auditor needs access to logs that record all API events on AWS. The auditor only needs read-only access to the log files and does not need access to each AWS account. The company has multiple AWS accounts, and the auditor needs access to all the logs for all the account. Which of the following options is the best way to configure access for the auditor to view event logs from all accounts?
-	* Configure CloudTrail in each AWS account and have the logs delivered to a signle AWS S3 bucket in the primary acount. Create an IAM user for thea uditor with an IAM policy to S3 read-only access for only the bucket which stores the logs in the primary account.
+    * Configure CloudTrail in each AWS account and have the logs delivered to a signle AWS S3 bucket in the primary acount. Create an IAM user for thea uditor with an IAM policy to S3 read-only access for only the bucket which stores the logs in the primary account.
 
 ### Infrastructure Security
 
 1. A company hosts a popular web application that connects to an Amazon RDS MySQL DB instance running in a private VPC subnet created with default Network ACL settings. The IT Security department has a suspicion that a DoS attack is coming from a suspecting IP. How can you protect the subnets from this attack?
-    * Change the inbound NACL to deny access from the suspecting IP. The NACL is responsible for controlling traffic in and out of a subnet. Security Groups work on the instance level and not the Subnet level, and you cannot configure a Security Group to deny access.
+    * Change the inbound NACL to deny access from the suspecting IP. The NACL is responsible for controlling traffic in and out of a subnet. Security groups work on the instance level and not the Subnet level, and you cannot configure a security group to deny access.
 
 1. A company is hosting a website that must be accessible to users for HTTPS traffic. Also, port 22 should be open for administrative purposes. The administrator's workstation has static IP addresses of 203.0.113.1/32. Which of the following security group configurations is the MOST secure but still functional to support these requirements?
     * Port 443 from 0.0.0.0/0 (all addresses) should be open. Port 22 from 203.0.113.1/32 (the administrative workstation only) should be open.
@@ -1481,22 +1484,22 @@
     * The bucket should be accessed using AWS PrivateLink for Amazon S3. An S3 endpoint should also be used to allow private connection to your VPC without requiring an internet gateway, NAT device, VPN connection, or AWS Direct Connect connection.
 
 1. A DevOps team is currently looking at the security aspect of their CI/CD pipeline. They are making use of AWS resources for their infrastructure. They want to ensure that the EC2 instances do not have any high security vulnerabilities. They want to ensure a complete DevSecOps process. How can this be achieved?
-	* AWS Inspector offers APIs for the DevOps pipeline.
+    * AWS Inspector offers APIs for the DevOps pipeline.
 
 1. You want to track access requests for a particular S3 bucket. How can you achieve this in the easiest possible way?
-	* Enable server access logging for the S3 bucket.
+    * Enable server access logging for the S3 bucket.
 
 1. A company security team would like to receive notifications of an EC2 instance in their AWS environment is querying IP addresses that are associated with cryptocurrency-related activity. What steps can the security team take to achieve this most efficiently?
-	* GuardDuty can perform an assessment of network communications and can produce a cryptocurrency finding in this scenario. An SNS topic can be used to provide notifications.
+    * GuardDuty can perform an assessment of network communications and can produce a cryptocurrency finding in this scenario. An SNS topic can be used to provide notifications.
 
 1. DDos attacks that happen at the application-layer commonly target web applications with lower traffic volumes compared to infrastructure attacks. To mitigate these types of attacks, you should probably want to include a non-AWS WAF as part of your infrastructure. To inspect all HTTP requests, WAFs sit in line wtih your appliation traffic. Unfortunately, this creates a scenario where WAFs can become a point of failure or bottleneck. To mitigate this problem, you need the ability to run multiple WAFs on demand during traffic spikes. This type of scaling for WAF is done via a 'WAF sandwhich'. What best describes this?
-	* The EC2 instances running your WAF software is included in an auto-scaling group and placed between two ELBs.
+    * The EC2 instances running your WAF software is included in an auto-scaling group and placed between two ELBs.
 
 1. An employee keeps terminating EC2 instances in the production environment. You have determined the best way to ensure this doesn't happen is to add an extra layer of defence against terminating the instances. Which of the following methods is the most appropriate one to add security protection that prevents the employee from terminating the production instances?
-	* Tag the instance with a production-identifying tag and add a resource-level permission tot he IAM policy of the employee with an explicit deny on the terminate API call to instances with the production tag.
+    * Tag the instance with a production-identifying tag and add a resource-level permission tot he IAM policy of the employee with an explicit deny on the terminate API call to instances with the production tag.
 
 1. You have been given a new brief from your supervisor for a client who needs a web application to set up on AWs. The most important requirement is that MySQL must be used as the database. The database must not be hosted in the public cloud but rather at the client's data centre due to security risks. Which of the following solutions would be best to assure that the client's requirements are met?
-	* Build the application server on a public subnet and the database at the client's data centre. Connect them with a VPN connection that uses IPSec.
+    * Build the application server on a public subnet and the database at the client's data centre. Connect them with a VPN connection that uses IPSec.
 
 ### Identity and Access Management
 
@@ -1727,7 +1730,7 @@ What security group configuration will allow the application to be secure and fu
     * S3 does not have permission to invoke the Lambda function. The S3 bucket needs to invoke your Lambda function, therefore you need to grant the event source the necessary permissions to invoke Lambda using a resource-based policy. The Lambda function works fine in isolation, so it does not require any additional permissions to read S3 or DynamoDB.
 
 1. You have developed an on-demand video website that allows paying customers to download instructional videos. The videos are stored in an S3 bucket, and access to the videos is implemented using pre-signed URLs. Management has just informed you that some customers are having issues downloading videos. You analyze the matter and determine that the pre-signed URLs are expiring before the URL expiration time that was specified when creating the pre-signed URL. Which of the following choices is the likely cause for this issue?
-    * The pre-signed URL was created using a role. It is not recommended to generate pre-signed URLs using roles. Roles use temporary access credentials that can expire before the specified URL expiry. Pre-signed URLs do not use bucket policies. Identity Federation allows external sources to provide authorization to gain access to AWS resources and services but is not used to create pre-signed URLs. IAM users have long term credentials and can be used to create pre-signed URLs eliminating the problem associated with roles.
+    * The pre-signed URL was created using a role. It is not recommended to generate pre-signed URLs using roles. Roles use temporary access credentials that can expire before the specified URL expiry. Pre-signed URLs do not use bucket policies. Identity Federation allows external sources to provide authorisation to gain access to AWS resources and services but is not used to create pre-signed URLs. IAM users have long term credentials and can be used to create pre-signed URLs eliminating the problem associated with roles.
 
 1. Your Chief Security Officer has mandated that all software license keys for your application running on EC2 instances must be stored centrally, in an encrypted format, in SSM Parameter Store. It is now time to upgrade the software, and in order to get access to the free upgrade, your application needs to access the license key string. You scheduled the upgrade for last weekend; however, most of the upgrades failed. What do you suspect the problem could be?
     * The EC2 instance role does not have permission to use KMS to decrypt the parameter.
@@ -1743,7 +1746,7 @@ What security group configuration will allow the application to be secure and fu
     * Create an IAM role in your account with an access policy allowing read-only access to the log files. Configure a trust policy in your account allowing the Auditor's AWS account to assume the role. You need to configure cross account access for the Auditor to enable them to have read only access to the relevant resources in your account - i.e. CloudTrail and the relevant S3 bucket. A trust policy is also required to enable the external account to assume the role.
 
 1. You need to develop functionality that provides temporary security credentials for cross-account access from your development account to your production account. Which of the following is a valid Security Token Service (STS) action is typically used for cross-account delegation?
-    * The AssumeRole action is typically used for cross-account delegation. The AssumeRoleWithSAML action obtains credentials through a SAML authentication response used to associate an organization's IdP to role-based AWS access. The AssumeRoleWithWebIdentity obtains credentials when authenticated by a web identity provider
+    * The AssumeRole action is typically used for cross-account delegation. The *AssumeRoleWithSAML* action obtains credentials through a SAML authentication response used to associate an organization's IdP to role-based AWS access. The *AssumeRoleWithWebIdentity* obtains credentials when authenticated by a web identity provider
 
 1. You are developing a web application that requires user authentication. In the first six months, you expect the web application to have six thousand users, and shortly after that, up to a million users. Which of the following options are best suited to support these requirements?
     * Web Identity Federation and Amazon Cognito. Web Identity Federation allows external trusted ID providers (IdP), such as Amazon or Google, to authenticate and identify an unlimited number of users requesting access to AWS resources. Additionally, AWS recommends using Amazon Cognito in most scenarios because it acts as an identity broker and reduces the amount of federation work that would need to be performed.
@@ -1788,22 +1791,22 @@ What security group configuration will allow the application to be secure and fu
     * EventBridge may not have permission to trigger the function, and the function execution role may not have permission to terminate internet gateways.
 
 1. You need to launch a Linux EC2 instance in AWS. Which of the following steps can be used to ensure secure authentication to the EC2 instance from a Windows machine?
-	* Create a key pair using PuTTYgen and use the private key to log into the instance.
+    * Create a key pair using PuTTYgen and use the private key to log into the instance.
 
 1. You have just developed a new mobile application that handles analytics workloads on large scale datasets stored on Amazon Redshift. Consequently, the application needs to access Amazon Redshift tables. Which of the below methods would be the best, both practically and security-wise, to access the tables?
-	* Use roles that allow a web identity federated user to assume a role that allows access to the table by providing a temporary credential.
+    * Use roles that allow a web identity federated user to assume a role that allows access to the table by providing a temporary credential.
 
 1. Your application currently uses AWS Cognito for authenticating users. Your application consists of different types of users. Some users are only allowed to read access to the application and others are given contriubtor access. How would you manage the access efficiently?
-	* You can use Cognito groups to create a collection of users in a user pool, which is often done to set the permissons for those users.
+    * You can use Cognito groups to create a collection of users in a user pool, which is often done to set the permissons for those users.
 
 1. Your company has a hybrid environment with on-premises servers and servers hosted in the AWS cloud. They are planning to use the Systems Manager for patching servers. Which of the following is a pre-requisite for this to work?
-	* An IAM service role needs to e created for allowing the on-premises serers to communicate with the AWS Systems Manager.
+    * An IAM service role needs to e created for allowing the on-premises serers to communicate with the AWS Systems Manager.
 
 1. An application deployed to EC2 is configured to use AWS Secrets Manager to rotate secrets for the RDS database. The application experiences occasional intermittent sign-in failures. Which options can resolve this issue?
-	* The *Exponential Backoff* feature can be enabled to implement retry functionality in the application. The multi-user rotation strategy can also be used.
+    * The *Exponential Backoff* feature can be enabled to implement retry functionality in the application. The multi-user rotation strategy can also be used.
 
 1. A large organization is planning on AWS to host its resources. They have several autonomous departments that wish to use AWS. What could be the strategy to adopt for managing the accounts?
-	* Use multiple accounts for each autonomous department. This reduces the blast radius compared to other approaches like having multiple groups in one account, and also reduces the operational overhead to manage the groups.
+    * Use multiple accounts for each autonomous department. This reduces the blast radius compared to other approaches like having multiple groups in one account, and also reduces the operational overhead to manage the groups.
 
 ### Data Protection
 
@@ -1981,10 +1984,10 @@ A CMK was used in the encryption operation. Then in another stage, the encrypted
     * Data key caching stores data keys and related cryptographic material in a cache. When you encrypt or decrypt, the AWS Encryption SDK looks for a matching data key in the cache. This can improve performance, reduce cost, and help you reduce API calls as your application scales.
 
 1. AWS Systems Manager Parameter Store provides secure, hierarchical storage for configuration data and secrets management. Which of the following AWS services natively support Parameter Store?
-	* Amazon EC2, AWS CloudFormation, and AWS Lambda natively support Parameter Store. Note that RDS uses Secrets Manager.
+    * Amazon EC2, AWS CloudFormation, and AWS Lambda natively support Parameter Store. Note that RDS uses Secrets Manager.
 
 1. In order to encrypt data in transit for a connection to an AWS RDS instance, which of the following would you implement?
-	* SSL/TLS from your application.
+    * SSL/TLS from your application.
 
 1. A device manufacturer wants to digitally sign their firmware software to generate a digital signature to ensure authenticity. How can this be accomplished in the most cost-efficient way?
-	* Use the *Sign* API provided by AWS KMS.
+    * Use the *Sign* API provided by AWS KMS.
