@@ -1183,7 +1183,7 @@ The Security Pillar of the AWS Well-Architected Framework is available [here](ht
     * A new key pair must be generated. The root volume can then be attached to another instance, and the authorized_keys file on the mounted volume can be updated with the new public key.
 
 1. You have accidentally lost the administrator password for an EBS-backed Windows Server EC2 instance. The instance has the Systems Manager agent installed. You want to regain access to your instance. What is the easiest way to resolve the issue?
-    * The Systems Manager Run Command can be used to run the `AWSSupport-RunEC2RescueForWIndowsTool` command.
+    * The Systems Manager Run Command can be used to run the `AWSSupport-RunEC2RescueForWindowsTool` command.
 
 1. You have requested that your development team do not provision any new EC2 instances over the next few weeks while you are completing a security audit of your development environment. Last weekend, many of the developers worked over time and most of them disregarded your request, which has invalidated a lot of the work you have completed so far. You have decided to take action to prevent this happening again and you have convinced the CTO to give you permission to automatically terminate any instances that the development team launches over the coming weeks. You want to accomplish this in the simplest way that will ensure any newly created EC2 instances are terminated as soon as possible to minimise the impact on your work. From the following choices, which two different approaches can be taken to address the situation?
     * Use CloudTrail to detect when a user launches a new instance. Configure an EventBridge rule to trigger on AWS API calls from CloudTrail and invoke a Lambda function to terminate EC2 instances. You can also use an AWS Config customer managed rule to invoke a Lambda function that automatically terminates any new instances.
@@ -1229,7 +1229,7 @@ The Security Pillar of the AWS Well-Architected Framework is available [here](ht
     * AWS Config can be used to get a list of all resources. Methods such as using a bash or PowerShell script are less efficient.
 
 1. A company uses CloudTrail to log all AWS API activity for all regions in all its accounts. The CISO has asked that additional steps be taken to protect the integrity of the log files. What combination of steps will protect the log files from intentional or unintentional alteration?
-    * An S3 bucket should be created in a dedicated log account and other accounts should have write only access to this account. CloudTrail log file integrity validation should be enabled.
+    * An S3 bucket should be created in a dedicated log account and other accounts should have write only access to this account. CloudTrail log file integrity validation should be enabled (note it is enabled by default).
 
 1. You have enabled CloudTrail logs for your company’s AWS account. In addition, the IT Security department has mentioned that the logs need to be encrypted. How can this be achieved?
     * By default all AWS CloudTrail event log files are encrypted using Amazon S3 Server-Side Encryption (SSE).
@@ -1344,10 +1344,10 @@ The Security Pillar of the AWS Well-Architected Framework is available [here](ht
     * Athena supports S3 as a data source and can be used to query log data in S3.
 
 1. A company has multiple AWS accounts and has hired a third-party security auditor. The auditor has its own AWS account, and the auditor needs read-only access to all AWS resources and the logs of API activities that have occured on AWS. How can the company meet the auditor's requirements without compromising security in the AWS environment?
-    * Enable CloudTrail logging and use a cross-acoutn IAM role to provide read-only access to the auditor to the S3 bucket.
+    * Enable CloudTrail logging and use a cross-account IAM role to provide read-only access to the auditor to the S3 bucket.
 
 1. An auditor needs access to logs that record all API events on AWS. The auditor only needs read-only access to the log files and does not need access to each AWS account. The company has multiple AWS accounts, and the auditor needs access to all the logs for all the account. Which of the following options is the best way to configure access for the auditor to view event logs from all accounts?
-    * Configure CloudTrail in each AWS account and have the logs delivered to a signle AWS S3 bucket in the primary acount. Create an IAM user for thea uditor with an IAM policy to S3 read-only access for only the bucket which stores the logs in the primary account.
+    * Configure CloudTrail in each AWS account and have the logs delivered to a single AWS S3 bucket in the primary acount. Create an IAM user for thea uditor with an IAM policy to S3 read-only access for only the bucket which stores the logs in the primary account.
 
 ### Infrastructure Security
 
@@ -1363,8 +1363,8 @@ The Security Pillar of the AWS Well-Architected Framework is available [here](ht
 1. You have a 2-tier application hosted in AWS. It consists of a web server and database server (SQL Server) hosted on separate EC2 instances. You are devising the security groups for these EC2 instances. The Web tier needs to be accessed by users across the Internet. You have created a web security group (wg-123) and a database security group (db-345). Which combination of the following security group rules will allow the application to be secure and functional?
     * In wg-123 allow access from ports 80 and 443 for HTTP and HTTPS traffic for all users from the Internet. In db-345 allow port 1443 traffic from wg-123.
 
-1. A company wants to have an Intrusion detection system available for their VPC in AWS. They want to have complete control over the system. What should they implement?
-    * A custom solution from the AWS Marketplace should be used. AWS does not provide an intrusion detection system natively.
+1. A company wants to have an Intrusion Detection System available for their VPC in AWS. They want to have complete control over the system. What should they implement?
+    * A custom solution from the AWS Marketplace should be used. AWS does not provide an IDS natively.
 
 1. A security team must present a daily briefing to the CISO that includes a report of which of the company's thousands of EC2 instances and on-premises servers are missing the latest security patches. All instances/servers must be brought into compliance within 24 hours so that they do not show up on the next day's report. How can the security team fulfill these requirements?
     * Systems Manager Patch Manager can be used to generate the report of out of compliance instances and servers, and to install the missing patches. Deploy the latest AMIs is not correct as it will affect the applications running on these systems.
@@ -1381,7 +1381,7 @@ The Security Pillar of the AWS Well-Architected Framework is available [here](ht
 1. A company is deploying a new web application on AWS. Based on their other web applications, they anticipate being the target of frequent DDoS attacks. Which steps can the company take to protect its applications?
     * An AWS Application Load Balancer and Auto Scaling group can be used to absorb malicious traffic. CloudFront and AWS WAF can prevent malicious traffic from reaching the application.
 
-1. Your current setup in AWS consists of the following architecture. 2 public subnets, one subnet which has the EC2 web servers accessed by users across the Internet and the other subnet for the EC2 database server. The application uses the HTTPs protocol. Which of the following changes to the architecture would add a better security boundary to the resources hosted in your setup?
+1. Your current setup in AWS consists of the following architecture. Two public subnets, one subnet which has the EC2 web servers accessed by users across the Internet and the other subnet for the EC2 database server. The application uses the HTTPs protocol. Which of the following changes to the architecture would add a better security boundary to the resources hosted in your setup?
     * The database server should be moved to a private subnet. Only port 443 should be allowed in for the webserver EC2 instances.
 
 1. A company is planning to create private connections from on-premises AWS Infrastructure to the AWS Cloud. They need to have a solution that would give core benefits of traffic encryption and ensure latency is kept to a minimum. Which of the following would help fulfil this requirement?
@@ -1480,7 +1480,7 @@ The Security Pillar of the AWS Well-Architected Framework is available [here](ht
     }
     ```
 
-1. Your application is running on an EC2 instance in a private subnet. You have added a number of image files to an S3 bucket and you now want to your application to be able to access the files. you have configured an IAM role with permission to read files in the S3 bucket and associated this role with your EC2 instance. This is a secure internal application and your CEO has already informed you that the system must be as secure as possible. How can you configure the communication between your EC2 instance and the S3 bucket in the most secure way?
+1. Your application is running on an EC2 instance in a private subnet. You have added a number of image files to an S3 bucket and you now want to your application to be able to access the files. You have configured an IAM role with permission to read files in the S3 bucket and associated this role with your EC2 instance. This is a secure internal application and your CEO has already informed you that the system must be as secure as possible. How can you configure the communication between your EC2 instance and the S3 bucket in the most secure way?
     * The bucket should be accessed using AWS PrivateLink for Amazon S3. An S3 endpoint should also be used to allow private connection to your VPC without requiring an internet gateway, NAT device, VPN connection, or AWS Direct Connect connection.
 
 1. A DevOps team is currently looking at the security aspect of their CI/CD pipeline. They are making use of AWS resources for their infrastructure. They want to ensure that the EC2 instances do not have any high security vulnerabilities. They want to ensure a complete DevSecOps process. How can this be achieved?
@@ -1504,7 +1504,7 @@ The Security Pillar of the AWS Well-Architected Framework is available [here](ht
 ### Identity and Access Management
 
 1.  You are designing a custom IAM policy that would allow users to list buckets in S3 only if they are MFA authenticated. Which of the following would best match this requirement?
-    * The actions for ListAllMyBuckets and GetBucketLocation are required, and the type for the condition is also required. The policy should be:
+    * The actions for *ListAllMyBuckets* and *GetBucketLocation* are required, and the type for the condition is also required. The policy should be:
     ```JSON
     {
         "Version": "2012-10-17",
@@ -1531,7 +1531,7 @@ The Security Pillar of the AWS Well-Architected Framework is available [here](ht
     * MFA should be enabled for these users.
 
 1. An application running on EC2 instances must use a username and password to access a database. The developer has stored these secrets in the SSM Parameter Store with type SecureString using the customer managed KMS CMK. Which combination of configuration steps will allow the application to access the secrets via the API? Select 2 answers from the options below.
-    * The EC2 instance role needs permission to read the SSM parameter. The kms:Decrypt permission needs to be in the EC2 instance role so that the EC2 instances can use the KMS key. A sample policy that would be required is shown below:
+    * The EC2 instance role needs permission to read the SSM parameter. The *kms:Decrypt* permission needs to be in the EC2 instance role so that the EC2 instances can use the KMS key. A sample policy that would be required is shown below:
     ```JSON
     {
         "Version": "2012-10-17",
@@ -1581,7 +1581,7 @@ The Security Pillar of the AWS Well-Architected Framework is available [here](ht
 1. The security team in your company will start a new security audit for all AWS accounts, and your manager asked you to present him with a document stating the IAM usage status in your AWS account. You have downloaded a recent credential report in IAM and replied to your manager. However, which information does NOT exist in the report?
     * IAM role information and SAML IAM identity provider information is not shown in the credential report.
 
-1. In your AWS account A, there is an S3 bucket that contains artifacts that need to be fetched by an IAM user in another AWS account B. The S3 bucket has the below bucket policy:
+1. In your AWS account A, there is an S3 bucket that contains artifacts that need to be fetched by an IAM user in another AWS account B. The S3 bucket has the below bucket policy. However, the IAM user in account B still cannot get objects in the S3 bucket. Which one may cause the failure?
     ```JSON
     {
         "Version": "2012-10-17",
@@ -1603,20 +1603,20 @@ The Security Pillar of the AWS Well-Architected Framework is available [here](ht
         ]
     }
     ```    
-However, the IAM user in account B still cannot get objects in the S3 bucket. Which one may cause the failure?
+
     * The IAM user in account B may not have IAM permissions to get an object in the S3 bucket. 
 
-1. You have maintained an AWS account A containing an S3 bucket that another AWS account B needs to upload files to. In the S3 bucket policy, s3:PutObject is allowed for the IAM user in account B. And the IAM user in account B can use `aws s3api put-object` to upload objects to the S3 bucket successfully. However, it has been found that users in AWS account A cannot open the new uploaded objects. How should you fix this issue?
+1. You have maintained an AWS account A containing an S3 bucket that another AWS account B needs to upload files to. In the S3 bucket policy, *s3:PutObject* is allowed for the IAM user in account B. And the IAM user in account B can use `aws s3api put-object` to upload objects to the S3 bucket successfully. However, it has been found that users in AWS account A cannot open the new uploaded objects. How should you fix this issue?
     * The problem is that once account B has uploaded objects to the bucket in account A, the objects are still owned by account B, and account A does not have access to it. The option `--acl bucket-owner-full-control` should be added to the command `aws s3api put-object` to give permissions to the bucket owner for the objects.
 
 1. Which of the following is used as a secure way to log into an EC2 Linux instance?
     * SSH key pairs are used to login to EC2 instance. IAM credentials are not relevant as they are of the AWS console. AWS Access Keys are not relevant as they are used to log into the AWS console and services using the command line.
 
 1. Your company owns many AWS accounts managed by AWS Organizations. To meet security compliance, the CloudTrail should always be enabled in all AWS accounts. However, during the last couple of weeks, it was noticed that IAM users in certain AWS accounts disabled the CloudTrail feature. You need to add a restriction rule to prevent such actions. What is the best way to achieve that?
-    * A Service Control Policy (SCP) can be configured to deny the CloudTrail StopLogging action and add the policy to the relevant OUs in the organization. Configuring policies at the user level would be an inefficient method in this scenario.
+    * A Service Control Policy (SCP) can be configured to deny the CloudTrail *StopLogging* action and add the policy to the relevant OUs in the organization. Configuring policies at the user level would be an inefficient method in this scenario.
 
 1. You are working in the cloud security team in a big company. To meet security compliance, you oversee applying AWS Config rules to AWS accounts in other organizational units (OUs). However, it has been found that the Config rules may be deleted by IAM users accidentally in these AWS accounts. You need to prevent such actions from happening again. How should you implement this?
-    * An SCP should be implemented that denies the DeleteConfigRule action. The new SCP should be applied to organizational units in the AWS Organization. Permission boundaries are not relevant in SCP.
+    * An SCP should be implemented that denies the *DeleteConfigRule* action. The new SCP should be applied to organizational units in the AWS Organization. Permission boundaries are not relevant in SCP.
 
 1. Every application in a company's portfolio has a separate AWS account for development and production. The security team wants to prevent the root user and all IAM users in the production accounts from accessing a specific set of unneeded services. How can they control this functionality?
     * An SCP that denies access to the services can be created. If all production accounts are in the same OU, the SCP can be applied to that OU.
@@ -1642,18 +1642,17 @@ However, the IAM user in account B still cannot get objects in the S3 bucket. Wh
 1. Your company CSO has directed you to enhance the security of a critical application by implementing a CAPTCHA as part of the user sign-in process. What is the most efficient method to implement this capability?
     * An Auth Challenge Lambda Trigger should be created. AWS Lambda functions can be created and then triggered during user pool operations such as user sign-up, confirmation, and authentication.
 
-1. You are a security admin for an organizational unit named ‘DataAnalyticsTeam’. You wish to streamline some of the security processes and delegate some security tasks to the development team. To this end, you wish to enable the development team to create roles and policies that can be attached to the various AWS services they are using. However, the services that they create should be able to access S3 buckets restricted to only the "us-west-1" region. The development team members have the ‘DeveloperRole’ IAM role assigned to them. What combination of steps will accomplish this task?
+1. You are a security admin for an organizational unit named ‘DataAnalyticsTeam’. You wish to streamline some of the security processes and delegate some security tasks to the development team. To this end, you wish to enable the development team to create roles and policies that can be attached to the various AWS services they are using. However, the services that they create should be able to access S3 buckets restricted to only the `us-west-1` region. The development team members have the ‘DeveloperRole’ IAM role assigned to them. What combination of steps will accomplish this task?
     * The correct solution is to use permission boundaries. Firstly, create an IAM policy to allow access to S3 buckets in the desired region. Then create an IAM policy that will allow the creation of roles with a permission boundary. This will enable developers to create new roles and policies that have restrictions. Finally, attach the IAM policy to the developer's team role. The use of SCP and OU is not applicable in this scenario because limiting access to a specific region via SCP will also affect other members of the OU and not just the development team.
 
 1. A company wishes to enable SSO so that its employees can log in to the AWS management console using their corporate directory identity. Which of the following step is required as part of the process?
     * Creating an IAM role that establishes a trust relationship between IAM and the corporate directory IdP is a necessary step.
 
-1. A web application runs in a VPC on EC2 instances behind an ELB Application Load Balancer. The application stores data in an RDS MySQL DB instance. A Linux bastion host is used to apply schema updates to the database (administrators connect to the host via SSH from a corporate workstation). The following security groups are applied to the infrastructure:
+1. A web application runs in a VPC on EC2 instances behind an ELB Application Load Balancer. The application stores data in an RDS MySQL DB instance. A Linux bastion host is used to apply schema updates to the database (administrators connect to the host via SSH from a corporate workstation). What security group configuration will allow the application to be secure and functional, noting the below groups?
     * **sgLB:** Associated with the ELB.
     * **sgWeb:** Associated with the EC2 instances.
     * **sgDB:** Associated with the database.
     * **sgBastion:** Associated with the bastion host.
-What security group configuration will allow the application to be secure and functional?
     * On sgLB allow ports 80 and 443 from 0.0.0.0/0 (all Internet traffic). On sgWeb allow ports 80 and 443 from sgLB (accessed only from ELB). On sgDB allow port 3306 from sgWeb and sgBastion (accessed by application and bastion). On sgBastion allow port 22 from the corporate IP address range.
 
 1. Your financial services organization is using the AWS S3 service to store highly sensitive data. What is the correct IAM policy that must be applied to ensure that all objects uploaded to the S3 bucket are encrypted?
@@ -1678,6 +1677,8 @@ What security group configuration will allow the application to be secure and fu
             ]
         }
         ```
+
+	* TBC
 
 1. You are trying to use the AWS Systems Manager run command on a set of Amazon Linux AMI instances. The run command is not working on a set of instances. What can you do to diagnose the issue?
     * Confirm that the SSM agent is running on the target machine. The SSM agent stores logs in `/var/log/amazon/ssm/error.log` that can assist troubleshooting problems. Note that port 22 is not used by the SSM agent.
@@ -1746,7 +1747,7 @@ What security group configuration will allow the application to be secure and fu
     * Create an IAM role in your account with an access policy allowing read-only access to the log files. Configure a trust policy in your account allowing the Auditor's AWS account to assume the role. You need to configure cross account access for the Auditor to enable them to have read only access to the relevant resources in your account - i.e. CloudTrail and the relevant S3 bucket. A trust policy is also required to enable the external account to assume the role.
 
 1. You need to develop functionality that provides temporary security credentials for cross-account access from your development account to your production account. Which of the following is a valid Security Token Service (STS) action is typically used for cross-account delegation?
-    * The AssumeRole action is typically used for cross-account delegation. The *AssumeRoleWithSAML* action obtains credentials through a SAML authentication response used to associate an organization's IdP to role-based AWS access. The *AssumeRoleWithWebIdentity* obtains credentials when authenticated by a web identity provider
+    * The *AssumeRole* action is typically used for cross-account delegation. The *AssumeRoleWithSAML* action obtains credentials through a SAML authentication response used to associate an organization's IdP to role-based AWS access. The *AssumeRoleWithWebIdentity* obtains credentials when authenticated by a web identity provider
 
 1. You are developing a web application that requires user authentication. In the first six months, you expect the web application to have six thousand users, and shortly after that, up to a million users. Which of the following options are best suited to support these requirements?
     * Web Identity Federation and Amazon Cognito. Web Identity Federation allows external trusted ID providers (IdP), such as Amazon or Google, to authenticate and identify an unlimited number of users requesting access to AWS resources. Additionally, AWS recommends using Amazon Cognito in most scenarios because it acts as an identity broker and reduces the amount of federation work that would need to be performed.
