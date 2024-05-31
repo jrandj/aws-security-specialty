@@ -25,6 +25,26 @@
 	* Deploying security services (for example, AWS Security Hub, Amazon Macie, Amazon GuardDuty, Amazon Inspector, AWS Config, Amazon Detective, AWS Identity and Access Management Access Analyzer)
 	* Configuring integrations with native AWS services and third-party services (for example, by using Amazon EventBridge and the ASFF)
 
+1. Amazon GuardDuty
+	* Amazon GuardDuty performs intelligent threat discovery to protect your AWS account using machine learning. It takes input from CloudTrail event logs (management and data), VPC flow logs, DNS logs, and optional features such as EKS audit logs or S3 logs. You can configure EventBridge rules to be notified in case of findings, which can target Lambda or SNS. This is a good tool to protect against cryptocurrency attacks.
+	* You can use GuardDuty with multiple accounts through AWS Organizations. Member accounts can be specified as a delegated administrator for GuardDuty. When events are published they are published to both the administrator account and the member account that it is originated from.
+	* Each finding has a severity value between 0.1 to 8+. There is a naming convention for findings which is *ThreatPurpose:ResourceTypeAffected/ThreatFamilyName.DetectionMechanism!Artifact*.
+	* Automated threat responses are actions such as modify a web ACL in WAF or updating the subnet NACL in response to an SSH brute force attempt.
+	* For public IP addresses, you can specify a trusted IP list and a threat IP list. Only the GuardDuty administrator account can manage these lists.
+	* Suppression rules can be used to automatically filter and archive new findings. For example, false-positive findings or threats you don't intend to act on. These findings can still be viewed in the archive.
+	* Note that GuardDuty only processes DNS logs if you use the default VPC DNS resolver.
+	* It is best practice to enable GuardDuty even in Regions you don't use.
+
+1. AWS Security Hub
+	* AWS Security Hub is a central security tool to manage security across multiple AWS accounts and automate security checks. It requires that the AWS Config service is enabled. It provides integrated dashboards which show the current security and compliance status. Alerts are aggregated from various AWS services and partner tools such as Config, GuardDuty, Inspector, Macie, IAM Access Analyzer, etc.
+	* Findings can be aggregated across multiple Regions into a single Region, and across all accounts using AWS Organizations (with member accounts designated as Security Hub administrators).
+	* Security Hub findings are stored in AWS Security Finding Format (ASFF). Findings are usually sent within 5 minutes. Note that archiving a GuardDuty finding will not update the finding in Security Hub.
+	* A Security Hub Insight is a collection of related findings that identifies a security area that requires attention and intervention. Custom Insights can be created in addition to the default ones.
+	* A Security Hub Custom Action can be created to trigger an event in EventBridge which invokes a Lambda function.
+
+1. Amazon Detective
+	* Amazon Detective is used for deeper analysis on the root cause of issues. It automatically collects and processes events from VPC Flow Logs, CloudTrail, and GuardDuty.
+
 ### Task Statement 1.2: Detect security threats and anomalies by using AWS services.
 
 1. Knowledge of:
