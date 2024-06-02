@@ -6,7 +6,7 @@
 - [Identity and Access Management](#Identity-and-Access-Management)
 - [Data Protection](#Data-Protection)
 - [Management and Security Governance](#Management-and-Security-Governance)
-- [Practise Questions](#Practise-Questions)
+- [Practise Questions for C02](#Practise-Questions-for-C02)
 
 ## Threat Detection and Incident Response
 
@@ -347,7 +347,7 @@
 	* Identifying unused resources by using AWS services and tools (for example, AWS Trusted Advisor, AWS Cost Explorer)
 	* Using the AWS Well-Architected Tool to identify security gaps
 
-## Practise Questions
+## Practise Questions for C02
 
 # Exam SCS-C01
 
@@ -357,7 +357,7 @@
 - [Identity and Access Management](#Identity-and-Access-Management)
 - [Data Protection](#Data-Protection)
 - [Appendix](#Appendix)
-- [Practise Questions](#Practise-Questions)
+- [Practise Questions for C01](#Practise-Questions-for-C01)
 
 ## Incident Response
 
@@ -1514,7 +1514,7 @@ The Security Pillar of the AWS Well-Architected Framework is available [here](ht
 
 1. Migration and transfer services
 
-## Practise Questions
+## Practise Questions for C01
 
 ### Incident Response
 
